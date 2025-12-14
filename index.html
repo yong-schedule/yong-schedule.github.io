@@ -5,65 +5,149 @@
 <title>솔라 스케줄</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+<!-- FullCalendar -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<!-- FontAwesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Pretendard:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
-body { margin:0; font-family:system-ui, sans-serif; background:#fafafa; }
-header { padding:16px; font-size:24px; font-weight:900; text-align:center; }
-#calendar { max-width:750px; margin:auto; padding:10px; min-height:500px; }
-#addBtn, #modifyBtn { position:fixed; bottom:16px; padding:14px 18px; border-radius:999px; color:white; border:none; z-index:100; }
-#addBtn { right:16px; background:black; }
-#modifyBtn { right:90px; background:#2563eb; }
+body {
+  margin:0;
+  font-family: 'Pretendard', system-ui, sans-serif;
+  background:#fdfdfd;
+}
+
+header {
+  padding:16px;
+  font-size:24px;
+  font-weight:700;
+  text-align:center;
+  font-family: 'Montserrat', sans-serif;
+  color:#111;
+}
+
+#calendar {
+  max-width:750px;
+  margin:auto;
+  padding:10px;
+  background:#ffffff;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  min-height:500px;
+  font-family:'Pretendard', sans-serif;
+}
+
+#addBtn {
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  padding:14px 18px;
+  border-radius:999px;
+  background:#111;
+  color:white;
+  border:none;
+  z-index:100;
+  font-size:16px;
+}
+
 .fc-event-title { white-space: normal !important; line-height:1.2; }
-@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);} }
-.fc-event.today{ animation:pulse 1.5s infinite; box-shadow:0 0 0 3px rgba(59,130,246,.4); }
+.fc-day-other { display:none !important; } /* 마지막 회색칸 제거 */
+
+.fc .fc-toolbar-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight:700;
+  font-size:18px;
+  color:#222;
+}
+
+.fc .fc-col-header-cell-cushion {
+  font-family: 'Pretendard', sans-serif;
+  font-weight:500;
+  font-size:14px;
+  color:#555;
+}
+
+.fc .fc-daygrid-day {
+  border:1px solid #f0f0f0;
+  background:#fafafa;
+}
+
+.fc-event {
+  border-radius:6px;
+  font-size:12px;
+  padding:2px 4px;
+  cursor:pointer;
+}
+
+.fc-event 축하{background:#f59e0b;color:white;}
+.fc-event 발매{background:#10b981;color:white;}
+.fc-event 방송{background:#3b82f6;color:white;}
+.fc-event 행사{background:#8b5cf6;color:white;}
 
 @media(max-width:600px){
-  header { font-size:28px; padding-bottom:16px; }
+  header { font-size:20px; padding-bottom:10px; }
   #calendar { max-width:100%; height:80vh; }
   .fc-event, .fc-event-title, .fc-event-title span {
     display:block !important;
     font-size:5pt !important;
-    white-space: normal !important;
     line-height:1.2 !important;
+    white-space: normal !important;
     overflow-wrap: break-word !important;
     word-break: break-word !important;
-    padding:2px 4px !important;
+    padding:2px 3px !important;
     margin-bottom:2px !important;
   }
 }
 
-/* 마지막 회색줄 제거 */
-.fc-day-other { display:none !important; }
-
-/* 모달 스타일 */
-.modal { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%);
-  background:#fff; padding:16px; border-radius:8px; max-width:90%; max-height:80%; overflow-y:auto;
-  box-shadow:0 4px 12px rgba(0,0,0,0.3); display:none; z-index:9999; }
+/* 모달 */
+.modal {
+  position: fixed;
+  top:50%;
+  left:50%;
+  transform: translate(-50%,-50%);
+  background:#fff;
+  padding:16px;
+  border-radius:8px;
+  max-width:90%;
+  max-height:80%;
+  overflow-y:auto;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  display:none;
+  z-index:9999;
+}
 .modal.show{display:block;}
 .modal .close-btn{ position:absolute; top:8px; right:8px; border:none; background:none; font-size:18px; cursor:pointer; }
-.modal input, .modal textarea{ width:100%; margin:6px 0; padding:6px; box-sizing:border-box; }
-.modal button{ margin-top:8px; padding:6px 12px; cursor:pointer; }
+.modal input, .modal select, .modal textarea{ width:100%; margin:6px 0; padding:6px; box-sizing:border-box; font-family:'Pretendard', sans-serif; }
+.modal button{ margin-top:8px; padding:6px 12px; cursor:pointer; font-family:'Pretendard', sans-serif; }
 </style>
 </head>
-
 <body>
-<header>📅 솔라 스케줄</header>
 
+<header>📅 솔라 스케줄</header>
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
-<button id="modifyBtn">✎ 수정</button>
 
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
   <input id="eventTitle" placeholder="제목">
   <input id="eventDate" type="date">
+  <select id="eventType">
+    <option value="">기본</option>
+    <option value="축하">🎉 축하</option>
+    <option value="발매">💿 발매</option>
+    <option value="방송">📺 방송</option>
+    <option value="행사">📝 행사</option>
+  </select>
   <input id="eventLink" placeholder="링크 (선택)">
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
@@ -77,95 +161,88 @@ firebase.initializeApp({
 
 const db = firebase.firestore();
 let selectedEvent = null;
-
 const calendarEl = document.getElementById("calendar");
 const modal = document.getElementById("modal");
 const addBtn = document.getElementById("addBtn");
-const modifyBtn = document.getElementById("modifyBtn");
 const saveBtn = document.getElementById("saveBtn");
 const deleteBtn = document.getElementById("deleteBtn");
 
-// 모달 닫기
 modal.querySelector(".close-btn").onclick = () => modal.classList.remove("show");
-
-// 모바일 달력 높이 조정
-function adjustCalendarHeight(){
-  const headerHeight = document.querySelector('header').offsetHeight;
-  calendarEl.style.height = (window.innerHeight - headerHeight) + 'px';
-}
+function adjustCalendarHeight(){ calendarEl.style.height = (window.innerHeight - document.querySelector('header').offsetHeight) + 'px'; }
 window.addEventListener('resize', adjustCalendarHeight);
 window.addEventListener('load', adjustCalendarHeight);
 
-// 모달 초기화
 function openModal(event=null){
   selectedEvent = event;
   document.getElementById("eventTitle").value = event ? event.title : "";
   document.getElementById("eventDate").value = event ? event.startStr : "";
+  document.getElementById("eventType").value = event ? event.extendedProps.type||"" : "";
   document.getElementById("eventLink").value = event ? event.extendedProps.link||"" : "";
   deleteBtn.style.display = event ? "inline-block" : "none";
   modal.classList.add("show");
 }
 
-// 달력 렌더링
 (async()=>{
   const snap = await db.collection("schedules").get();
   const events = snap.docs.map(doc=>{
     const d = doc.data();
-    return { id: doc.id, title: d.title, start: d.start, link: d.link||"", backgroundColor:d.link?"#7c3aed":"", textColor:"#fff" };
+    return {
+      id: doc.id,
+      title: d.title,
+      start: d.start,
+      link: d.link||"",
+      type: d.type||"",
+      backgroundColor: d.type==="축하"?"#f59e0b":d.type==="발매"?"#10b981":d.type==="방송"?"#3b82f6":d.type==="행사"?"#8b5cf6":"#2563eb",
+      textColor:"#fff"
+    };
   });
 
   const cal = new FullCalendar.Calendar(calendarEl, {
     locale:"ko",
     showNonCurrentDates:false,
     events,
+    headerToolbar:{ left:'prev,next today', center:'title', right:'' },
+    dayHeaderFormat:{ weekday: 'short', day: 'numeric' },
     eventDidMount: info => {
       const today = new Date().toISOString().slice(0,10);
       if(info.event.startStr === today) info.el.classList.add("today");
     },
     eventContent: arg => {
+      const type = arg.event.extendedProps.type;
       const link = arg.event.extendedProps.link;
       let icon = "";
-      if(link){
-        if(link.includes("instagram")) icon = `<i class="fa-brands fa-instagram"></i>`;
-        else if(link.includes("twitter")||link.includes("x.com")) icon = `<i class="fa-brands fa-x-twitter"></i>`;
-        else if(link.includes("youtube")) icon = `<i class="fa-brands fa-youtube"></i>`;
-      }
-      return { html: icon ? `<div style="display:block;gap:2px;"><span>${icon}</span><span>${arg.event.title}</span></div>` : `<span>${arg.event.title}</span>` };
+      if(type==="축하") icon="🎉";
+      else if(type==="발매") icon="💿";
+      else if(type==="방송") icon="📺";
+      else if(type==="행사") icon="📝";
+      return { html: icon ? `<span>${icon} ${arg.event.title}</span>` : `<span>${arg.event.title}</span>` };
     },
     eventClick: info => {
       const link = info.event.extendedProps.link;
-      if(link) window.open(link,"_blank"); // 링크 있으면 새탭
-      else openModal(info.event); // 없으면 모달
+      if(link) window.open(link,"_blank");
+      else openModal(info.event);
     }
   });
 
   cal.render();
 
-  // 일정 추가 버튼
   addBtn.onclick = () => openModal(null);
 
-  // 수정 버튼
-  modifyBtn.onclick = () => {
-    if(selectedEvent) openModal(selectedEvent);
-    else alert("수정할 일정을 먼저 클릭하세요.");
-  };
-
-  // 저장 버튼 (새 일정 또는 수정)
   saveBtn.onclick = async () => {
     const title = document.getElementById("eventTitle").value.trim();
     const start = document.getElementById("eventDate").value;
+    const type = document.getElementById("eventType").value;
     const link = document.getElementById("eventLink").value.trim();
     if(!title || !start){ alert("제목과 날짜를 입력해주세요."); return; }
 
-    if(selectedEvent && selectedEvent.id){ // 수정
-      await db.collection("schedules").doc(selectedEvent.id).update({title,start,link});
-    }else{ // 새 일정
-      await db.collection("schedules").add({title,start,link});
+    if(selectedEvent && selectedEvent.id){
+      await db.collection("schedules").doc(selectedEvent.id).update({title,start,type,link});
+    } else{
+      await db.collection("schedules").add({title,start,type,link});
     }
     location.reload();
   };
 
-  // 삭제 버튼
   deleteBtn.onclick = async () => {
     if(!selectedEvent || !selectedEvent.id) return;
     if(confirm("정말 삭제하시겠습니까?")){
