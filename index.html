@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
-  <!-- Firebase SDK (script 방식) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -42,10 +42,10 @@
       color: white;
       font-size: 14px;
       cursor: pointer;
-  
     }
   </style>
 </head>
+
 <body>
 
 <header>📅 솔라 스케줄</header>
@@ -54,7 +54,7 @@
 
 <script>
   /************
-   * 1. Firebase 설정 (❗여기 꼭 수정)
+   * 1. Firebase 설정
    ************/
   const firebaseConfig = {
     apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -81,35 +81,46 @@
       initialView: "dayGridMonth",
       locale: "ko",
       dayHeaderFormat: { weekday: "short" },
-      events
+      events,
+
+      // ✅ 일정 클릭 시 링크 열기
+      eventClick: function(info) {
+        const link = info.event.extendedProps.link;
+        if (link) {
+          window.open(link, "_blank");
+        }
+      }
     });
 
     calendar.render();
   });
 
   /************
-   * 3. 관리자 로그인 (❗이메일/비번 수정)
+   * 3. 관리자 로그인
    ************/
-  auth.signInWithEmailAndPassword("yonggun0221@gmail.com", "woohoo0215!")
-    .then(() => {
-      document.getElementById("addBtn").style.display = "block";
-    })
-    .catch(() => {
-      console.log("viewer mode");
-    });
+  auth.signInWithEmailAndPassword(
+    "yonggun0221@gmail.com",
+    "woohoo0215!"
+  ).then(() => {
+    document.getElementById("addBtn").style.display = "block";
+  }).catch(() => {
+    console.log("viewer mode");
+  });
 
   /************
-   * 4. 일정 추가
+   * 4. 일정 추가 (링크 포함)
    ************/
   document.getElementById("addBtn").addEventListener("click", async () => {
     const title = prompt("일정 제목");
     const date = prompt("날짜 (YYYY-MM-DD)");
+    const link = prompt("링크 (유튜브 / 인스타 등, 없으면 비워도 됨)");
 
     if (!title || !date) return;
 
     await db.collection("schedules").add({
       title,
-      start: date
+      start: date,
+      link: link || ""
     });
 
     location.reload();
@@ -118,4 +129,3 @@
 
 </body>
 </html>
-
