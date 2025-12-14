@@ -29,19 +29,19 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; posit
   #calendar {
     padding:10px;
     max-width:100%;
-    height:calc(100vh - 100px); /* 제목 공간 확보 */
+    height:auto; /* 칸 길이 고정, 일정 추가로 길어지지 않음 */
   }
-  .fc-daygrid-day-frame{ min-height:110px; } /* 세로 칸 줄임 */
+  .fc-daygrid-day-frame{ min-height:80px; } /* 세로 칸 고정 */
   .fc-daygrid-day-bg{ background:none; }
   .fc-daygrid-day-number{ font-size:11px; margin-bottom:4px; }
   .fc-event, .fc-event-title, .fc-event-title span {
     display:block !important;
-    font-size:7pt !important;          /* 모바일 글씨 7포인트 */
+    font-size:6pt !important;          /* 모바일 글씨 6포인트 */
     white-space: normal !important;    /* 줄바꿈 허용 */
     line-height:1.2 !important;
     overflow-wrap: break-word !important;
     word-break: break-word !important;
-    padding:2px 4px !important;        /* 제목과 날짜/칸 여백 확보 */
+    padding:2px 4px !important;
     margin-bottom:2px !important;
   }
 }
@@ -106,7 +106,6 @@ const auth=firebase.auth();
 let isAdmin=false;
 let selectedEvent=null;
 
-// 로그인 상태
 auth.onAuthStateChanged(user=>{
   if(user){
     isAdmin=true;
@@ -129,11 +128,9 @@ loginBtn.onclick=()=>{
 };
 logoutBtn.onclick=()=>auth.signOut();
 
-// 모달 요소
 const adminModal=document.getElementById("adminModal");
 adminModal.querySelector(".close-btn").onclick=()=>adminModal.classList.remove("show");
 
-// 일정 추가
 addBtn.onclick=()=>{
   selectedEvent=null;
   document.getElementById("eventTitle").value="";
@@ -171,7 +168,6 @@ addBtn.onclick=()=>{
     eventClick:info=>{
       const e=info.event;
       if(isAdmin){
-        // 관리자: 수정/삭제
         selectedEvent=e;
         document.getElementById("eventTitle").value=e.title;
         document.getElementById("eventDate").value=e.startStr;
@@ -179,7 +175,6 @@ addBtn.onclick=()=>{
         document.getElementById("deleteBtn").style.display="inline-block";
         adminModal.classList.add("show");
       }else{
-        // 일반 사용자: 클릭 시 바로 링크 이동
         const link=e.extendedProps.link;
         if(link) window.open(link,"_blank");
       }
@@ -188,7 +183,6 @@ addBtn.onclick=()=>{
 
   cal.render();
 
-  // 저장 버튼
   document.getElementById("saveBtn").onclick=async()=>{
     const title=document.getElementById("eventTitle").value;
     const start=document.getElementById("eventDate").value;
@@ -202,7 +196,6 @@ addBtn.onclick=()=>{
     location.reload();
   };
 
-  // 삭제 버튼
   document.getElementById("deleteBtn").onclick=async()=>{
     if(selectedEvent && confirm("정말 삭제하시겠습니까?")){
       await db.collection("schedules").doc(selectedEvent.id).delete();
