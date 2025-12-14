@@ -114,9 +114,33 @@
       dayHeaderFormat: { weekday: "short" },
       events,
       eventClick: info => {
-        if (info.event.extendedProps.link) {
-          window.open(info.event.extendedProps.link, "_blank");
+        const link = info.event.extendedProps.link;
+        const id = info.event.id;
+
+        const action = confirm("이 일정 수정하려면 확인, 삭제하려면 취소 눌러줘");
+
+        if (action) {
+          // 수정
+          const newTitle = prompt("새 일정 제목", info.event.title);
+          const newDate = prompt("새 날짜 (YYYY-MM-DD)", info.event.startStr);
+          const newLink = prompt("새 SNS 링크 (선택)", link || "");
+
+          if (!newTitle || !newDate) return;
+
+          db.collection("schedules").doc(id).update({
+            title: newTitle,
+            start: newDate,
+            link: newLink
+          }).then(() => location.reload());
+        } else {
+          // 삭제
+          const ok = confirm("진짜로 삭제할까?");
+          if (!ok) return;
+
+          db.collection("schedules").doc(id).delete()
+            .then(() => location.reload());
         }
+      }
       }
     });
 
