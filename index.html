@@ -4,39 +4,34 @@
 <meta charset="UTF-8" />
 <title>솔라 스케줄</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
 body { margin:0; font-family:'Noto Sans',system-ui,sans-serif; background:#fdfdfd; }
 header { padding:16px; font-size:24px; font-weight:900; text-align:center; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.05); }
-#calendar { max-width:750px; margin:16px auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
-
-/* 이벤트 글씨 배경만 적용, 외부 테두리 제거 */
-.fc-event { background:none !important; border:none !important; box-shadow:none !important; }
-.fc-event-title, .fc-event-title span {
-  display:block !important;
-  font-size:12px !important;
-  line-height:1.2 !important;
-  overflow-wrap: break-word !important;
-  word-break: break-word !important;
-  padding:2px 4px !important;
-  margin-bottom:2px !important;
-}
-
+#calendar { max-width:750px; margin:16px auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); height:auto; }
+.fc-event-title { white-space: normal !important; line-height:1.2; font-family:'Noto Sans',sans-serif; background:none !important; border:none !important; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
 
 @media(max-width:600px){
   header { font-size:20px; padding-bottom:12px; }
   #calendar { max-width:98%; height:calc(80vh); margin:8px auto; }
+  .fc-daygrid-day-frame { min-height:auto; }
   .fc-event, .fc-event-title, .fc-event-title span {
+    display:block !important;
     font-size:5pt !important;
+    white-space: normal !important;
+    line-height:1.2 !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
     padding:2px 4px !important;
     margin-bottom:2px !important;
     background:none !important;
+    border:none !important;
   }
   .fc .fc-button { font-size:10px; padding:2px 6px; }
   .fc .fc-toolbar-title { font-size:14px; }
@@ -51,7 +46,6 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
 </head>
 <body>
 <header>📅 솔라 스케줄</header>
-
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
 
@@ -99,21 +93,16 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   headerToolbar: { left: 'title', center: '', right: 'prev,next today' },
   events: [],
   eventContent: arg => {
-    const link = arg.event.extendedProps.link;
+    const title = arg.event.title;
     let bgColor = '#aaa';
-    let textColor = '#fff';
 
-    if(link){
-      if(link.includes('instagram')) bgColor='#833AB4';
-      else if(link.includes('twitter') || link.includes('x.com')) bgColor='#1DA1F2';
-      else if(link.includes('youtube')) bgColor='#FF0000';
-    } else if(arg.event.title.toLowerCase().includes('뮤지컬')) bgColor='#EF4444';
-    else if(arg.event.title.toLowerCase().includes('축하')) bgColor='#FACC15';
-    else if(arg.event.title.toLowerCase().includes('발매')) bgColor='#10B981';
-    else if(arg.event.title.toLowerCase().includes('방송')) bgColor='#3B82F6';
-    else if(arg.event.title.toLowerCase().includes('기타')) bgColor='#8B5CF6';
+    if(title.toLowerCase().includes('뮤지컬')) bgColor='#EF4444';
+    else if(title.toLowerCase().includes('축하')) bgColor='#FACC15';
+    else if(title.toLowerCase().includes('발매')) bgColor='#10B981';
+    else if(title.toLowerCase().includes('방송')) bgColor='#3B82F6';
+    else if(title.toLowerCase().includes('기타')) bgColor='#8B5CF6';
 
-    return { html: `<div style='padding:2px 4px; background:${bgColor}; color:${textColor}; border-radius:4px;'>${arg.event.title}</div>` };
+    return { html: `<div style='display:block;gap:4px;padding:2px 4px;background:${bgColor};color:#fff;border-radius:4px;'>${title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
