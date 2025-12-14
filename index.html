@@ -15,90 +15,87 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
-body { margin:0; font-family:system-ui; background:#fafafa; }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #fafafa;
+}
+
 header {
-  padding:14px;
-  font-size:18px;
-  font-weight:700;
-  text-align:center;
-  position:relative;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  position: relative;
 }
-#calendar { max-width:900px; margin:auto; padding:10px; }
 
-button { cursor:pointer; }
-
-#loginBtn, #logoutBtn {
-  position:absolute;
-  right:16px;
-  top:14px;
-  font-size:12px;
+#calendar {
+  max-width: 900px;
+  margin: auto;
+  padding: 10px;
 }
+
+/* 이벤트 줄바꿈 */
+.fc-event-title {
+  white-space: normal !important;
+  line-height: 1.2;
+}
+
+/* 하단 상세 */
+#detail {
+  max-width: 900px;
+  margin: 16px auto;
+  padding: 16px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+
+#detail h3 { margin: 0 0 6px; }
+#detail a {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+#adminBtns { margin-top: 12px; display: none; }
 
 #addBtn {
-  position:fixed;
-  right:16px;
-  bottom:16px;
-  padding:14px 18px;
-  border-radius:999px;
-  background:black;
-  color:white;
-  border:none;
-  display:none;
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  background: black;
+  color: white;
+  border: none;
+  display: none;
 }
 
-/* 상세 카드 */
-#detail {
-  position:fixed;
-  left:0; right:0; bottom:-100%;
-  background:white;
-  padding:16px;
-  border-radius:16px 16px 0 0;
-  box-shadow:0 -4px 20px rgba(0,0,0,.15);
-  transition:.3s;
-}
-#detail.show { bottom:0; }
+/* 모바일 반응형 */
+@media (max-width: 600px) {
+  header { font-size: 16px; }
 
-#detail a {
-  display:inline-block;
-  margin-top:8px;
-  padding:8px 12px;
-  border-radius:8px;
-  background:#2563eb;
-  color:white;
-  text-decoration:none;
+  .fc-daygrid-day-frame { min-height: 90px; }
+  .fc-daygrid-day-number { font-size: 11px; }
+  .fc-event-title { font-size: 11px; }
 }
 
-#adminBtns { margin-top:12px; display:none; }
-
-/* 모달 */
-#modal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  align-items:center;
-  justify-content:center;
-}
-#modal .box {
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  width:90%;
-  max-width:320px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* 오늘 일정 애니메이션 */
+/* 오늘 일정 강조 */
 @keyframes pulse {
-  0%{transform:scale(1)}
-  50%{transform:scale(1.05)}
-  100%{transform:scale(1)}
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
+
 .fc-event.today {
-  animation:pulse 1.5s infinite;
-  box-shadow:0 0 0 3px rgba(59,130,246,.4);
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.4);
 }
 </style>
 </head>
@@ -107,146 +104,127 @@ button { cursor:pointer; }
 
 <header>
 📅 솔라 스케줄
-<button id="loginBtn">로그인</button>
-<button id="logoutBtn" style="display:none">로그아웃</button>
+<button id="loginBtn" style="position:absolute;right:16px;top:14px;">로그인</button>
+<button id="logoutBtn" style="position:absolute;right:16px;top:14px;display:none;">로그아웃</button>
 </header>
 
 <div id="calendar"></div>
-<button id="addBtn">＋ 일정 추가</button>
 
-<!-- 상세 -->
 <div id="detail">
-  <h3 id="dTitle"></h3>
+  <h3 id="dTitle">일정을 선택하세요</h3>
   <p id="dDate"></p>
-  <a id="dLink" target="_blank">SNS 바로가기</a>
+  <a id="dLink" target="_blank" style="display:none;">SNS 바로가기</a>
+
   <div id="adminBtns">
     <button id="editBtn">수정</button>
     <button id="delBtn">삭제</button>
   </div>
 </div>
 
-<!-- 추가 모달 -->
-<div id="modal">
-  <div class="box">
-    <input id="tInput" placeholder="일정 제목">
-    <input id="dInput" type="date">
-    <input id="lInput" placeholder="SNS 링크">
-    <button id="saveBtn">저장</button>
-  </div>
-</div>
+<button id="addBtn">＋ 일정 추가</button>
 
 <script>
 firebase.initializeApp({
-  apiKey:"AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
-  authDomain:"yong-schedule.firebaseapp.com",
-  projectId:"yong-schedule"
+  apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
+  authDomain: "yong-schedule.firebaseapp.com",
+  projectId: "yong-schedule"
 });
 
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-let isAdmin=false, selectedId=null;
+let isAdmin = false;
+let selectedId = null;
 
-/* 로그인 상태 감지 */
-auth.onAuthStateChanged(user=>{
-  if(user){
-    isAdmin=true;
-    addBtn.style.display="block";
-    logoutBtn.style.display="block";
-    loginBtn.style.display="none";
-  }else{
-    isAdmin=false;
-    addBtn.style.display="none";
-    logoutBtn.style.display="none";
-    loginBtn.style.display="block";
+/* 로그인 상태 */
+auth.onAuthStateChanged(user => {
+  if (user) {
+    isAdmin = true;
+    addBtn.style.display = "block";
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "block";
+  } else {
+    isAdmin = false;
+    addBtn.style.display = "none";
+    loginBtn.style.display = "block";
+    logoutBtn.style.display = "none";
+    adminBtns.style.display = "none";
   }
 });
 
-/* 로그인 */
-loginBtn.onclick=()=>{
-  const email=prompt("이메일");
-  const pw=prompt("비밀번호");
-  if(!email||!pw) return;
-  auth.signInWithEmailAndPassword(email,pw)
-    .catch(()=>alert("로그인 실패"));
+/* 로그인 / 로그아웃 */
+loginBtn.onclick = () => {
+  const e = prompt("이메일");
+  const p = prompt("비밀번호");
+  if (!e || !p) return;
+  auth.signInWithEmailAndPassword(e, p)
+    .catch(() => alert("로그인 실패"));
 };
-
-/* 로그아웃 */
-logoutBtn.onclick=()=>auth.signOut();
+logoutBtn.onclick = () => auth.signOut();
 
 /* 달력 */
-(async()=>{
-  const snap=await db.collection("schedules").get();
-  const events=snap.docs.map(doc=>{
-    const d=doc.data();
-    let icon="";
-    if(d.link?.includes("instagram")) icon="<i class='fa-brands fa-instagram'></i> ";
-    else if(d.link?.includes("twitter")||d.link?.includes("x.com")) icon="<i class='fa-brands fa-x-twitter'></i> ";
-    else if(d.link?.includes("youtube")) icon="<i class='fa-brands fa-youtube'></i> ";
-
+(async () => {
+  const snap = await db.collection("schedules").get();
+  const events = snap.docs.map(doc => {
+    const d = doc.data();
     return {
-      id:doc.id,
-      title:icon+d.title,
-      start:d.start,
-      link:d.link,
-      backgroundColor:d.link?"#7c3aed":"",
-      textColor:"#fff"
+      id: doc.id,
+      title: d.title,
+      start: d.start,
+      link: d.link || "",
+      backgroundColor: d.link ? "#7c3aed" : "",
+      textColor: "#fff"
     };
   });
 
-  const cal=new FullCalendar.Calendar(calendar,{
-    locale:"ko",
-    showNonCurrentDates:false,
+  const cal = new FullCalendar.Calendar(calendar, {
+    locale: "ko",
+    showNonCurrentDates: false,
     events,
-    eventDidMount:info=>{
-      const today=new Date().toISOString().slice(0,10);
-      if(info.event.startStr===today) info.el.classList.add("today");
+
+    /* 🔥 아이콘 렌더링 (링크 없으면 공간 자체 없음) */
+    eventContent: arg => {
+      const link = arg.event.extendedProps.link;
+      let icon = "";
+
+      if (link) {
+        if (link.includes("instagram")) icon = "<i class='fa-brands fa-instagram'></i>";
+        else if (link.includes("twitter") || link.includes("x.com")) icon = "<i class='fa-brands fa-x-twitter'></i>";
+        else if (link.includes("youtube")) icon = "<i class='fa-brands fa-youtube'></i>";
+      }
+
+      return {
+        html: icon
+          ? `<div style="display:flex;gap:4px;align-items:center;">${icon}<span>${arg.event.title}</span></div>`
+          : `<span>${arg.event.title}</span>`
+      };
     },
-    eventClick:info=>{
-      selectedId=info.event.id;
-      dTitle.innerHTML=info.event.title;
-      dDate.innerText=info.event.startStr;
 
-      if(info.event.extendedProps.link){
-        dLink.href=info.event.extendedProps.link;
-        dLink.style.display="inline-block";
-      }else dLink.style.display="none";
+    eventDidMount: info => {
+      const today = new Date().toISOString().slice(0, 10);
+      if (info.event.startStr === today) {
+        info.el.classList.add("today");
+      }
+    },
 
-      adminBtns.style.display=isAdmin?"block":"none";
-      detail.classList.add("show");
+    eventClick: info => {
+      selectedId = info.event.id;
+      dTitle.innerText = info.event.title;
+      dDate.innerText = "날짜: " + info.event.startStr;
+
+      if (info.event.extendedProps.link) {
+        dLink.href = info.event.extendedProps.link;
+        dLink.style.display = "inline-block";
+      } else {
+        dLink.style.display = "none";
+      }
+
+      adminBtns.style.display = isAdmin ? "block" : "none";
     }
   });
+
   cal.render();
 })();
-
-/* 수정 / 삭제 */
-editBtn.onclick=async()=>{
-  const t=prompt("제목");
-  const d=prompt("날짜 YYYY-MM-DD");
-  if(!t||!d) return;
-  await db.collection("schedules").doc(selectedId).update({title:t,start:d});
-  location.reload();
-};
-
-delBtn.onclick=async()=>{
-  if(!confirm("삭제할까?")) return;
-  await db.collection("schedules").doc(selectedId).delete();
-  location.reload();
-};
-
-/* 추가 */
-addBtn.onclick=()=>modal.style.display="flex";
-
-saveBtn.onclick=async()=>{
-  if(!tInput.value||!dInput.value) return;
-  await db.collection("schedules").add({
-    title:tInput.value,
-    start:dInput.value,
-    link:lInput.value,
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
-  });
-  location.reload();
-};
 </script>
 
 </body>
