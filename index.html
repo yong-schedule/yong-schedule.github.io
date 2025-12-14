@@ -27,11 +27,12 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; posit
   .fc-daygrid-day-frame{ min-height:140px; }
   .fc-daygrid-day-bg{ background:none; }
   .fc-daygrid-day-number{ font-size:11px; }
-  .fc-event-title{
-    font-size:12px;            /* 글씨 크기 조절 */
-    white-space: normal !important;  
-    line-height:1.2;          
-    overflow-wrap: break-word; /* 긴 단어도 줄바꿈 */
+  .fc-event-title, .fc-event-title span{
+    font-size:10px !important;         /* 모바일 글씨 10포인트 */
+    white-space: normal !important;     /* 줄바꿈 허용 */
+    line-height:1.2 !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
   }
 }
 
