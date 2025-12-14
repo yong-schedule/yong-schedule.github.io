@@ -20,10 +20,13 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:black; color:white; border:none; }
 .fc-event-title { white-space: normal !important; line-height:1.2; }
 
+/* 달력 칸 높이 조정 */
+#calendar .fc-daygrid-day-frame { min-height:80px; }
+
 @media(max-width:600px){
   header { font-size:28px; padding-bottom:16px; }
   #calendar { max-width:100%; height:calc(100vh - 60px); }
-  .fc-daygrid-day-frame { min-height:120px; }
+  .fc-daygrid-day-frame { min-height:60px; }
   .fc-daygrid-day-bg { background:none; }
   .fc-daygrid-day-number { font-size:11px; margin-bottom:4px; }
   .fc-event, .fc-event-title, .fc-event-title span {
