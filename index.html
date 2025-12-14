@@ -20,18 +20,20 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; posit
 #calendar { max-width:750px; margin:auto; padding:10px; }
 .fc-event-title { white-space: normal !important; line-height:1.2; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:black; color:white; border:none; display:none; }
+
 @media(max-width:600px){
   header{font-size:20px;}
-  .fc-daygrid-day-frame{min-height:120px;}
-  .fc-daygrid-day-bg{background:none;}
-  #calendar{padding:0 5px;}
-  .fc-daygrid-day-number{font-size:11px;}
-  .fc-event-title{font-size:11px;}
+  #calendar { padding:5px; max-width:100%; height:calc(100vh - 80px); }
+  .fc-daygrid-day-frame{ min-height:140px; }
+  .fc-daygrid-day-bg{ background:none; }
+  .fc-daygrid-day-number{ font-size:11px; }
+  .fc-event-title{ font-size:11px; }
 }
+
 @keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);} }
 .fc-event.today{ animation:pulse 1.5s infinite; box-shadow:0 0 0 3px rgba(59,130,246,.4); }
 
-/* 공통 모달 스타일 */
+/* 관리자 모달 스타일 */
 .modal {
   position: fixed;
   top:50%; left:50%;
@@ -52,9 +54,6 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; posit
 }
 .modal input, .modal textarea{width:100%; margin:6px 0; padding:6px; box-sizing:border-box;}
 .modal button{margin-top:8px; padding:6px 12px; cursor:pointer;}
-
-/* 미리보기 iframe 비율 최적화 */
-.preview-iframe{width:100%; aspect-ratio:16/9; border:none; border-radius:6px; margin-top:8px;}
 </style>
 </head>
 
@@ -77,12 +76,6 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; posit
   <input id="eventLink" placeholder="링크 (선택)">
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
-</div>
-
-<!-- 일반 사용자 미리보기 모달 -->
-<div id="previewModal" class="modal">
-  <button class="close-btn">&times;</button>
-  <div id="previewContent"></div>
 </div>
 
 <script>
@@ -122,10 +115,7 @@ logoutBtn.onclick=()=>auth.signOut();
 
 // 모달 요소
 const adminModal=document.getElementById("adminModal");
-const previewModal=document.getElementById("previewModal");
-const previewContent=document.getElementById("previewContent");
 adminModal.querySelector(".close-btn").onclick=()=>adminModal.classList.remove("show");
-previewModal.querySelector(".close-btn").onclick=()=>previewModal.classList.remove("show");
 
 // 일정 추가
 addBtn.onclick=()=>{
@@ -173,29 +163,9 @@ addBtn.onclick=()=>{
         document.getElementById("deleteBtn").style.display="inline-block";
         adminModal.classList.add("show");
       }else{
-        // 일반 사용자: 미리보기
-        const title=e.title;
+        // 일반 사용자: 클릭 시 바로 링크 이동
         const link=e.extendedProps.link;
-        let html=`<h3>${title}</h3>`;
-        if(link){
-          if(link.includes("youtube")){
-            const embed=link.replace("watch?v=","embed/");
-            html+=`<iframe class="preview-iframe" src="${embed}" allowfullscreen></iframe>`;
-          } else if(link.includes("instagram")){
-            html+=`<iframe class="preview-iframe" src="${link}/embed" allowfullscreen></iframe>`;
-          } else if(link.includes("twitter")||link.includes("x.com")){
-            html+=`<blockquote class="twitter-tweet"><a href="${link}"></a></blockquote>`;
-            if(!window.twttr){
-              const s=document.createElement("script");
-              s.src="https://platform.twitter.com/widgets.js";
-              document.body.appendChild(s);
-            }
-          } else {
-            html+=`<a href="${link}" target="_blank" style="color:#3b82f6;">링크 열기</a>`;
-          }
-        }
-        previewContent.innerHTML=html;
-        previewModal.classList.add("show");
+        if(link) window.open(link,"_blank");
       }
     }
   });
