@@ -20,6 +20,7 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:black; color:white; border:none; z-index:100; }
 .fc-event-title { white-space: normal !important; line-height:1.2; }
 
+/* 달력 오늘 이벤트 강조 */
 @keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);} }
 .fc-event.today{ animation:pulse 1.5s infinite; box-shadow:0 0 0 3px rgba(59,130,246,.4); }
 
@@ -38,6 +39,9 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; }
     margin-bottom:2px !important;
   }
 }
+
+/* 다른 달 날짜 숨김 (마지막 회색 줄 제거) */
+.fc-day-other { display:none !important; }
 
 /* 모달 스타일 */
 .modal { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%);
@@ -110,7 +114,7 @@ window.addEventListener('load', adjustCalendarHeight);
   const calendarEl = document.getElementById("calendar");
   const cal = new FullCalendar.Calendar(calendarEl, {
     locale: "ko",
-    showNonCurrentDates: false, // 마지막 회색 칸 제거
+    showNonCurrentDates: false, // 다른 달 날짜 숨김
     events,
     eventDidMount: info => {
       const today = new Date().toISOString().slice(0,10);
@@ -138,7 +142,9 @@ window.addEventListener('load', adjustCalendarHeight);
 
   cal.render();
 
-  document.getElementById("saveBtn").onclick = async () => {
+  // 모달 버튼 이벤트 등록
+  const saveBtn = document.getElementById("saveBtn");
+  saveBtn.onclick = async () => {
     const title = document.getElementById("eventTitle").value;
     const start = document.getElementById("eventDate").value;
     const link = document.getElementById("eventLink").value;
@@ -151,7 +157,8 @@ window.addEventListener('load', adjustCalendarHeight);
     location.reload();
   };
 
-  document.getElementById("deleteBtn").onclick = async () => {
+  const deleteBtn = document.getElementById("deleteBtn");
+  deleteBtn.onclick = async () => {
     if(selectedEvent && confirm("정말 삭제하시겠습니까?")){
       await db.collection("schedules").doc(selectedEvent.id).delete();
       location.reload();
