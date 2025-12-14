@@ -9,17 +9,29 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
 <style>
 body { margin:0; font-family:'Noto Sans',system-ui,sans-serif; background:#fdfdfd; }
 header { padding:16px; font-size:24px; font-weight:900; text-align:center; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.05); }
-#calendar { max-width:750px; margin:16px auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); height:auto; }
-.fc-event-title { white-space: normal !important; line-height:1.2; font-family:'Noto Sans',sans-serif; background:none !important; border:none !important; }
+#calendar {
+  max-width:750px;
+  margin:16px auto;
+  padding:10px;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+  height:auto;
+  min-height:400px; /* 최소 높이 유지 */
+}
+.fc-event-title { white-space: normal !important; line-height:1.2; font-family:'Noto Sans',sans-serif; background:none !important; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
 
 @media(max-width:600px){
   header { font-size:20px; padding-bottom:12px; }
-  #calendar { max-width:98%; height:calc(80vh); margin:8px auto; }
+  #calendar {
+      max-width:98%;
+      margin:8px auto;
+      height: calc(80vh - 50px); /* 모바일 화면 80% 높이, 버튼과 겹치지 않음 */
+  }
   .fc-daygrid-day-frame { min-height:auto; }
   .fc-event, .fc-event-title, .fc-event-title span {
     display:block !important;
@@ -31,7 +43,6 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
     padding:2px 4px !important;
     margin-bottom:2px !important;
     background:none !important;
-    border:none !important;
   }
   .fc .fc-button { font-size:10px; padding:2px 6px; }
   .fc .fc-toolbar-title { font-size:14px; }
@@ -48,7 +59,6 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
 <header>📅 솔라 스케줄</header>
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
-
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
@@ -58,7 +68,6 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
-
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -70,9 +79,7 @@ const db = firebase.firestore();
 const addBtn = document.getElementById('addBtn');
 const modal = document.getElementById('modal');
 let selectedEvent = null;
-
 modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
-
 addBtn.onclick = () => {
   selectedEvent = null;
   document.getElementById('eventTitle').value = '';
@@ -93,16 +100,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   headerToolbar: { left: 'title', center: '', right: 'prev,next today' },
   events: [],
   eventContent: arg => {
-    const title = arg.event.title;
-    let bgColor = '#aaa';
-
-    if(title.toLowerCase().includes('뮤지컬')) bgColor='#EF4444';
-    else if(title.toLowerCase().includes('축하')) bgColor='#FACC15';
-    else if(title.toLowerCase().includes('발매')) bgColor='#10B981';
-    else if(title.toLowerCase().includes('방송')) bgColor='#3B82F6';
-    else if(title.toLowerCase().includes('기타')) bgColor='#8B5CF6';
-
-    return { html: `<div style='display:block;gap:4px;padding:2px 4px;background:${bgColor};color:#fff;border-radius:4px;'>${title}</div>` };
+    return { html: `<div style='display:flex;align-items:center;gap:4px;padding:2px 4px;'>${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
