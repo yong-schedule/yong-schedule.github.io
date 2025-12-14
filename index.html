@@ -15,21 +15,15 @@
 body{margin:0;font-family:system-ui;background:#fafafa;}
 header{padding:16px;font-size:24px;font-weight:900;text-align:center;}
 #calendar{max-width:750px;margin:auto;padding:10px;}
-#addBtn{
-  position:fixed;right:16px;bottom:16px;
-  padding:14px 18px;border-radius:999px;
-  background:black;color:white;border:none;display:none;
-}
+#addBtn{position:fixed;right:16px;bottom:16px;padding:14px 18px;border-radius:999px;background:black;color:white;border:none;}
+
 .modal{
-  position:fixed;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  background:#fff;padding:16px;border-radius:8px;
-  max-width:90%;box-shadow:0 4px 12px rgba(0,0,0,.3);
-  display:none;z-index:9999;
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:#fff;padding:16px;border-radius:8px;max-width:90%;
+  box-shadow:0 4px 12px rgba(0,0,0,.3);display:none;z-index:9999;
 }
 .modal.show{display:block;}
 .modal input{width:100%;margin:6px 0;padding:6px;}
-.modal button{margin-top:8px;padding:6px 12px;}
 </style>
 </head>
 
@@ -39,119 +33,77 @@ header{padding:16px;font-size:24px;font-weight:900;text-align:center;}
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
 
-<!-- PIN 모달 -->
-<div id="pinModal" class="modal show">
-  <h3>관리자 PIN</h3>
-  <input id="pinInput" type="password" maxlength="4" placeholder="4자리 숫자">
-  <button id="pinBtn">확인</button>
-</div>
-
-<!-- 일정 모달 -->
-<div id="eventModal" class="modal">
+<div id="modal" class="modal">
   <h3>일정 등록 / 수정</h3>
-  <input id="eventTitle" placeholder="제목">
-  <input id="eventDate" type="date">
-  <input id="eventLink" placeholder="링크 (선택)">
-  <button id="saveBtn">저장</button>
-  <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
+  <input id="title" placeholder="제목">
+  <input id="date" type="date">
+  <input id="link" placeholder="링크 (선택)">
+  <button id="save">저장</button>
+  <button id="delete">삭제</button>
 </div>
 
 <script>
-/* ================= 설정 ================= */
-const ADMIN_PIN = "1234"; // ★ 여기만 바꾸면 됨
-/* ======================================= */
-
 firebase.initializeApp({
   apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
   projectId: "yong-schedule"
 });
 
 const db = firebase.firestore();
-
-let unlocked = false;
+const modal = document.getElementById("modal");
 let selectedEvent = null;
+let calendar;
 
-const pinModal = document.getElementById("pinModal");
-const eventModal = document.getElementById("eventModal");
-const addBtn = document.getElementById("addBtn");
-
-/* PIN 확인 */
-pinBtn.onclick = () => {
-  if(pinInput.value === ADMIN_PIN){
-    unlocked = true;
-    pinModal.classList.remove("show");
-    addBtn.style.display = "block";
-  }else{
-    alert("PIN 틀림");
-  }
-};
-
-/* 일정 추가 */
 addBtn.onclick = () => {
-  if(!unlocked) return alert("PIN 필요");
   selectedEvent = null;
-  eventTitle.value = "";
-  eventDate.value = "";
-  eventLink.value = "";
-  deleteBtn.style.display = "none";
-  eventModal.classList.add("show");
+  title.value = "";
+  date.value = "";
+  link.value = "";
+  modal.classList.add("show");
 };
 
-/* 캘린더 로드 */
 (async()=>{
   const snap = await db.collection("schedules").get();
-  const events = snap.docs.map(doc => ({
-    id: doc.id,
-    title: doc.data().title,
-    start: doc.data().start,
-    link: doc.data().link || ""
+  const events = snap.docs.map(d => ({
+    id: d.id,
+    title: d.data().title,
+    start: d.data().start,
+    link: d.data().link || ""
   }));
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
+  calendar = new FullCalendar.Calendar(calendarEl, {
     locale: "ko",
     events,
     eventClick: info => {
-      if(!unlocked){
-        if(info.event.extendedProps.link){
-          window.open(info.event.extendedProps.link, "_blank");
-        }
-        return;
-      }
       selectedEvent = info.event;
-      eventTitle.value = selectedEvent.title;
-      eventDate.value = selectedEvent.startStr;
-      eventLink.value = selectedEvent.extendedProps.link || "";
-      deleteBtn.style.display = "inline-block";
-      eventModal.classList.add("show");
+      title.value = selectedEvent.title;
+      date.value = selectedEvent.startStr;
+      link.value = selectedEvent.extendedProps.link || "";
+      modal.classList.add("show");
     }
   });
 
   calendar.render();
 })();
 
-/* 저장 */
-saveBtn.onclick = async () => {
-  if(!unlocked) return alert("PIN 필요");
-  if(!eventTitle.value || !eventDate.value) return alert("제목, 날짜 필수");
+save.onclick = async () => {
+  if (!title.value || !date.value) return alert("제목, 날짜 필수");
 
   const data = {
-    title: eventTitle.value,
-    start: eventDate.value,
-    link: eventLink.value
+    title: title.value,
+    start: date.value,
+    link: link.value
   };
 
-  if(selectedEvent){
+  if (selectedEvent) {
     await db.collection("schedules").doc(selectedEvent.id).update(data);
-  }else{
+  } else {
     await db.collection("schedules").add(data);
   }
   location.reload();
 };
 
-/* 삭제 */
-deleteBtn.onclick = async () => {
-  if(!unlocked) return;
-  if(selectedEvent && confirm("삭제할까?")){
+delete.onclick = async () => {
+  if (selectedEvent && confirm("삭제할까?")) {
     await db.collection("schedules").doc(selectedEvent.id).delete();
     location.reload();
   }
