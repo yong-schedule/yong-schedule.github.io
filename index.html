@@ -26,6 +26,7 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
     word-break: break-word !important;
     padding:2px 4px !important;
     margin-bottom:2px !important;
+    background:none !important;
   }
   .fc .fc-button { font-size:10px; padding:2px 6px; }
   .fc .fc-toolbar-title { font-size:14px; }
@@ -39,7 +40,7 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
 </style></head><body>
 <header>📅 솔라 스케줄</header>
 <div id="calendar"></div>
-<button id="addBtn">＋ 일정 추가</button><!-- 모달 --><div id="modal" class="modal">
+<button id="addBtn">＋ 일정 추가</button><div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
   <input id="eventTitle" placeholder="일정 제목">
@@ -58,9 +59,7 @@ const db = firebase.firestore();
 const addBtn = document.getElementById('addBtn');
 const modal = document.getElementById('modal');
 let selectedEvent = null;
-
 modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
-
 addBtn.onclick = () => {
   selectedEvent = null;
   document.getElementById('eventTitle').value = '';
@@ -76,24 +75,19 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   dayHeaderFormat: { weekday: 'short' },
   showNonCurrentDates: false,
   height: 'auto',
-  fixedWeekCount: true, // 5줄로 고정
+  fixedWeekCount: true,
   firstDay:1,
-  headerToolbar: {
-    left: 'title',
-    center: '',
-    right: 'prev,next today'
-  },
+  headerToolbar: { left: 'title', center: '', right: 'prev,next today' },
   events: [],
   eventContent: arg => {
     const link = arg.event.extendedProps.link;
-    const title = arg.event.title.toLowerCase();
     let icon = '';
-    let bgColor = '#7c3aed';
-    if(title.includes('instagram')) icon = `<i class='fa-brands fa-instagram'></i>`;
-    else if(title.includes('twitter') || title.includes('x.com')) icon = `<i class='fa-brands fa-x-twitter'></i>`;
-    else if(title.includes('youtube')) icon = `<i class='fa-brands fa-youtube'></i>`;
-    else if(title.includes('뮤지컬') || title.includes('musical')) { icon = '💃'; bgColor='#ef4444'; }
-    return { html: `<div style='display:block; gap:2px; background-color:${bgColor}; color:#fff; border-radius:4px; padding:2px;'>${icon} ${arg.event.title}</div>` };
+    if(link){
+      if(link.includes('instagram')) icon = `<i class='fa-brands fa-instagram'></i>`;
+      else if(link.includes('twitter') || link.includes('x.com')) icon = `<i class='fa-brands fa-x-twitter'></i>`;
+      else if(link.includes('youtube')) icon = `<i class='fa-brands fa-youtube'></i>`;
+    }
+    return { html: `<div style='display:block; gap:2px; padding:2px;'>${icon} ${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
@@ -122,12 +116,8 @@ document.getElementById('saveBtn').onclick = async () => {
   const link = document.getElementById('eventLink').value;
   if(!title || !start) return alert('제목과 날짜를 입력해주세요.');
   const data = { title, start, link };
-
-  if(selectedEvent){
-    await db.collection('schedules').doc(selectedEvent.id).update(data);
-  } else {
-    await db.collection('schedules').add(data);
-  }
+  if(selectedEvent){ await db.collection('schedules').doc(selectedEvent.id).update(data); }
+  else{ await db.collection('schedules').add(data); }
   location.reload();
 };
 
