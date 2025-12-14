@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>솔라 스케줄</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- FullCalendar -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fafafa;
+    }
+
+    header {
+      padding: 16px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    #calendar {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>📅 솔라 스케줄</header>
+<div id="calendar"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+      locale: "ko",
+      dayHeaderFormat: { weekday: "short" },
+
+      events: [
+        {
+          title: "유튜브 업로드",
+          start: "2025-12-20",
+          url: "https://youtube.com"
+        },
+        {
+          title: "방송 출연",
+          start: "2025-12-25"
+        }
+      ],
+
+      eventClick: function (info) {
+        if (info.event.url) {
+          info.jsEvent.preventDefault();
+          window.open(info.event.url, "_blank");
+        }
+      }
+    });
+
+    calendar.render();
+  });
+</script>
+
+</body>
+</html>
