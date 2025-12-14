@@ -17,33 +17,19 @@
 body { margin:0; font-family:system-ui, sans-serif; background:#fafafa; }
 header { padding:16px; font-size:24px; font-weight:900; text-align:center; }
 #calendar { max-width:750px; margin:auto; padding:10px; min-height:500px; }
-#addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:black; color:white; border:none; }
+#addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:black; color:white; border:none; z-index:100; }
 .fc-event-title { white-space: normal !important; line-height:1.2; }
 
-/* 달력 칸 높이 조정 */
-#calendar .fc-daygrid-day-frame { min-height:80px; }
-
+/* 모바일 */
 @media(max-width:600px){
   header { font-size:28px; padding-bottom:16px; }
   #calendar { max-width:100%; height:calc(100vh - 60px); }
-  .fc-daygrid-day-frame { min-height:60px; }
-  .fc-daygrid-day-bg { background:none; }
-  .fc-daygrid-day-number { font-size:11px; margin-bottom:4px; }
-  .fc-event, .fc-event-title, .fc-event-title span {
-    display:block !important;
-    font-size:5pt !important;
-    white-space: normal !important;
-    line-height:1.2 !important;
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
-    padding:2px 4px !important;
-    margin-bottom:2px !important;
-  }
 }
 
 @keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);} }
 .fc-event.today{ animation:pulse 1.5s infinite; box-shadow:0 0 0 3px rgba(59,130,246,.4); }
 
+/* 모달 스타일 */
 .modal { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%);
   background:#fff; padding:16px; border-radius:8px; max-width:90%; max-height:80%; overflow-y:auto;
   box-shadow:0 4px 12px rgba(0,0,0,0.3); display:none; z-index:9999; }
@@ -114,7 +100,7 @@ window.addEventListener('load', adjustCalendarHeight);
   const calendarEl = document.getElementById("calendar");
   const cal = new FullCalendar.Calendar(calendarEl, {
     locale: "ko",
-    showNonCurrentDates: false,
+    showNonCurrentDates: false, // 마지막 회색 칸 제거
     events,
     eventDidMount: info => {
       const today = new Date().toISOString().slice(0,10);
