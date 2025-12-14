@@ -12,26 +12,13 @@
 <style>
 body { margin:0; font-family:'Noto Sans',system-ui,sans-serif; background:#fdfdfd; }
 header { padding:16px; font-size:24px; font-weight:900; text-align:center; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.05); }
-#calendar {
-  max-width:750px;
-  margin:16px auto;
-  padding:10px;
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 6px rgba(0,0,0,.05);
-  height:auto;
-  min-height:400px; /* 최소 높이 유지 */
-}
+#calendar { max-width:750px; margin:16px auto 100px auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
 .fc-event-title { white-space: normal !important; line-height:1.2; font-family:'Noto Sans',sans-serif; background:none !important; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
 
 @media(max-width:600px){
   header { font-size:20px; padding-bottom:12px; }
-  #calendar {
-      max-width:98%;
-      margin:8px auto;
-      height: calc(80vh - 50px); /* 모바일 화면 80% 높이, 버튼과 겹치지 않음 */
-  }
+  #calendar { max-width:98%; height:calc(80vh); margin:8px auto; }
   .fc-daygrid-day-frame { min-height:auto; }
   .fc-event, .fc-event-title, .fc-event-title span {
     display:block !important;
@@ -59,6 +46,7 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
 <header>📅 솔라 스케줄</header>
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
+
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
@@ -68,6 +56,7 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
+
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -80,6 +69,7 @@ const addBtn = document.getElementById('addBtn');
 const modal = document.getElementById('modal');
 let selectedEvent = null;
 modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
+
 addBtn.onclick = () => {
   selectedEvent = null;
   document.getElementById('eventTitle').value = '';
@@ -100,7 +90,18 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   headerToolbar: { left: 'title', center: '', right: 'prev,next today' },
   events: [],
   eventContent: arg => {
-    return { html: `<div style='display:flex;align-items:center;gap:4px;padding:2px 4px;'>${arg.event.title}</div>` };
+    const title = arg.event.title;
+    const link = arg.event.extendedProps.link;
+    let bgColor='#aaa', textColor='#fff', icon='';
+
+    if(link) { icon='🌐'; bgColor='#8B5CF6'; } // SNS 이벤트 보라
+    else if(title.toLowerCase().includes('뮤지컬')) { icon='💃'; bgColor='#EF4444'; }
+    else if(title.toLowerCase().includes('축하')) { icon='🎉'; bgColor='#F97316'; } // 주황
+    else if(title.toLowerCase().includes('발매')) { icon='🆕'; bgColor='#10B981'; }
+    else if(title.toLowerCase().includes('방송')) { icon='📺'; bgColor='#3B82F6'; }
+    else if(title.toLowerCase().includes('기타')) { icon='🎵'; bgColor='#000000'; } // 검정
+
+    return { html: `<div style='display:flex;align-items:center;gap:4px;padding:2px 4px;background:${bgColor};color:${textColor};border-radius:4px;'>${icon} ${title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
