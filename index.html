@@ -23,16 +23,19 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; posit
 
 @media(max-width:600px){
   header{font-size:20px;}
-  #calendar { padding:5px; max-width:100%; height:calc(100vh - 80px); }
-  .fc-daygrid-day-frame{ min-height:140px; }
+  #calendar { padding:10px; max-width:100%; height:calc(100vh - 80px); }
+  .fc-daygrid-day-frame{ min-height:150px; }
   .fc-daygrid-day-bg{ background:none; }
-  .fc-daygrid-day-number{ font-size:11px; }
-  .fc-event-title, .fc-event-title span{
-    font-size:10px !important;         /* 모바일 글씨 10포인트 */
+  .fc-daygrid-day-number{ font-size:11px; margin-bottom:4px; }
+  .fc-event, .fc-event-title, .fc-event-title span {
+    display:block !important;            /* flex 제거, 줄바꿈 가능 */
+    font-size:5pt !important;           /* 모바일 글씨 5포인트 */
     white-space: normal !important;     /* 줄바꿈 허용 */
     line-height:1.2 !important;
     overflow-wrap: break-word !important;
     word-break: break-word !important;
+    padding:2px 4px !important;         /* 제목과 날짜/칸 여백 확보 */
+    margin-bottom:2px !important;
   }
 }
 
@@ -156,7 +159,7 @@ addBtn.onclick=()=>{
         else if(link.includes("twitter")||link.includes("x.com")) icon=`<i class="fa-brands fa-x-twitter"></i>`;
         else if(link.includes("youtube")) icon=`<i class="fa-brands fa-youtube"></i>`;
       }
-      return { html: icon?`<div style="display:flex;gap:4px;align-items:center;">${icon}<span>${arg.event.title}</span></div>`:`<span>${arg.event.title}</span>` };
+      return { html: icon?`<div style="display:block;gap:2px;"><span>${icon}</span><span>${arg.event.title}</span></div>`:`<span>${arg.event.title}</span>` };
     },
     eventClick:info=>{
       const e=info.event;
