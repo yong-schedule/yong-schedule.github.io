@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
-  <!-- Firebase SDK (script 방식) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -43,7 +43,10 @@
       font-size: 14px;
       cursor: pointer;
       display: none;
+      z-index: 10000;
     }
+
+    /* 🔥 핵심 수정 포인트 */
     #modal {
       display: none;
       position: fixed;
@@ -51,7 +54,7 @@
       background: rgba(0,0,0,.4);
       align-items: center;
       justify-content: center;
-      z-index: 9999; /* ★ 추가: 달력 위로 올림 */
+      z-index: 9999;
     }
     #modal .box {
       background: white;
@@ -62,6 +65,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      pointer-events: auto;
     }
     input, button {
       padding: 10px;
@@ -85,9 +89,7 @@
 </div>
 
 <script>
-  /************
-   * 1. Firebase 설정 (기존 코드 그대로 사용)
-   ************/
+  /* 1. Firebase */
   const firebaseConfig = {
     apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
     authDomain: "yong-schedule.firebaseapp.com",
@@ -100,14 +102,15 @@
 
   let calendar;
 
-  /************
-   * 2. 달력 + 데이터 불러오기
-   ************/
+  /* 2. 달력 로드 */
   document.addEventListener("DOMContentLoaded", async () => {
     const calendarEl = document.getElementById("calendar");
-
     const snapshot = await db.collection("schedules").get();
-    const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const events = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: "dayGridMonth",
@@ -115,16 +118,15 @@
       dayHeaderFormat: { weekday: "short" },
       events,
       eventClick: info => {
-        const link = info.event.extendedProps.link;
         const id = info.event.id;
+        const link = info.event.extendedProps.link;
 
-        const action = confirm("이 일정 수정하려면 확인, 삭제하려면 취소 눌러줘");
+        const action = confirm("수정하려면 확인, 삭제하려면 취소");
 
         if (action) {
-          // 수정
-          const newTitle = prompt("새 일정 제목", info.event.title);
+          const newTitle = prompt("새 제목", info.event.title);
           const newDate = prompt("새 날짜 (YYYY-MM-DD)", info.event.startStr);
-          const newLink = prompt("새 SNS 링크 (선택)", link || "");
+          const newLink = prompt("새 SNS 링크", link || "");
 
           if (!newTitle || !newDate) return;
 
@@ -134,35 +136,25 @@
             link: newLink
           }).then(() => location.reload());
         } else {
-          // 삭제
-          const ok = confirm("진짜로 삭제할까?");
-          if (!ok) return;
-
+          if (!confirm("진짜 삭제할까?")) return;
           db.collection("schedules").doc(id).delete()
             .then(() => location.reload());
         }
-      }
       }
     });
 
     calendar.render();
   });
 
-  /************
-   * 3. 관리자 자동 로그인 (기존 이메일/비번 그대로)
-   ************/
+  /* 3. 관리자 로그인 */
   auth.signInWithEmailAndPassword(
     "yonggun0221@gmail.com",
     "woohoo0215!"
   ).then(() => {
     document.getElementById("addBtn").style.display = "block";
-  }).catch(() => {
-    console.log("viewer mode");
   });
 
-  /************
-   * 4. 일정 추가 (모달 방식)
-   ************/
+  /* 4. 일정 추가 */
   const modal = document.getElementById("modal");
 
   document.getElementById("addBtn").onclick = () => {
@@ -170,9 +162,9 @@
   };
 
   document.getElementById("saveBtn").onclick = async () => {
-    const title = document.getElementById("titleInput").value;
-    const date = document.getElementById("dateInput").value;
-    const link = document.getElementById("linkInput").value;
+    const title = titleInput.value;
+    const date = dateInput.value;
+    const link = linkInput.value;
 
     if (!title || !date) return alert("제목이랑 날짜는 필수야");
 
@@ -185,7 +177,7 @@
     location.reload();
   };
 
-  // 엔터키 눌러도 창 안 닫히게 막기
+  /* 엔터키 방지 */
   document.getElementById("formBox").addEventListener("keydown", e => {
     if (e.key === "Enter") e.preventDefault();
   });
