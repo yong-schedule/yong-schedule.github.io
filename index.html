@@ -15,10 +15,10 @@
 
 <style>
 body { margin:0; font-family:system-ui, sans-serif; background:#fafafa; }
-header { padding:16px; font-size:24px; font-weight:900; text-align:center; position:relative; }
+header { padding:16px; font-size:24px; font-weight:900; text-align:center; }
 #calendar { max-width:750px; margin:auto; padding:10px; min-height:500px; }
-.fc-event-title { white-space: normal !important; line-height:1.2; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:14px 18px; border-radius:999px; background:black; color:white; border:none; }
+.fc-event-title { white-space: normal !important; line-height:1.2; }
 
 @media(max-width:600px){
   header { font-size:28px; padding-bottom:16px; }
@@ -52,18 +52,15 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; posit
 </head>
 
 <body>
-<header>
-📅 솔라 스케줄
-</header>
+<header>📅 솔라 스케줄</header>
 
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
 
-<!-- 일정 모달 -->
-<div id="adminModal" class="modal">
+<div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
-  <input id="eventTitle" placeholder="일정 제목">
+  <input id="eventTitle" placeholder="제목">
   <input id="eventDate" type="date">
   <input id="eventLink" placeholder="링크 (선택)">
   <button id="saveBtn">저장</button>
@@ -80,10 +77,10 @@ const db = firebase.firestore();
 let selectedEvent = null;
 
 const addBtn = document.getElementById("addBtn");
-const adminModal = document.getElementById("adminModal");
+const modal = document.getElementById("modal");
 
 // 모달 닫기
-adminModal.querySelector(".close-btn").onclick = () => adminModal.classList.remove("show");
+modal.querySelector(".close-btn").onclick = () => modal.classList.remove("show");
 
 // 일정 추가 버튼
 addBtn.onclick = () => {
@@ -92,10 +89,10 @@ addBtn.onclick = () => {
   document.getElementById("eventDate").value = "";
   document.getElementById("eventLink").value = "";
   document.getElementById("deleteBtn").style.display = "none";
-  adminModal.classList.add("show");
+  modal.classList.add("show");
 };
 
-// 모바일 달력 높이
+// 모바일 달력 높이 조정
 function adjustCalendarHeight(){
   const headerHeight = document.querySelector('header').offsetHeight;
   const calendarEl = document.getElementById('calendar');
@@ -136,7 +133,7 @@ window.addEventListener('load', adjustCalendarHeight);
       document.getElementById("eventDate").value = selectedEvent.startStr;
       document.getElementById("eventLink").value = selectedEvent.extendedProps.link||"";
       document.getElementById("deleteBtn").style.display = "inline-block";
-      adminModal.classList.add("show");
+      modal.classList.add("show");
     }
   });
 
@@ -161,7 +158,6 @@ window.addEventListener('load', adjustCalendarHeight);
       location.reload();
     }
   };
-
 })();
 </script>
 
