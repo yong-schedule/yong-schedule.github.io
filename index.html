@@ -17,7 +17,7 @@
   <style>
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, sans-serif;
       background: #fafafa;
     }
     header {
@@ -46,7 +46,7 @@
       z-index: 10000;
     }
 
-    /* 🔥 핵심 수정 포인트 */
+    /* 🔥 핵심 */
     #modal {
       display: none;
       position: fixed;
@@ -65,8 +65,13 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      pointer-events: auto;
     }
+
+    body.modal-open #calendar {
+      pointer-events: none;
+      filter: blur(1px);
+    }
+
     input, button {
       padding: 10px;
       font-size: 14px;
@@ -89,30 +94,26 @@
 </div>
 
 <script>
-  /* 1. Firebase */
-  const firebaseConfig = {
+  /* Firebase */
+  firebase.initializeApp({
     apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
     authDomain: "yong-schedule.firebaseapp.com",
     projectId: "yong-schedule"
-  };
+  });
 
-  firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
-
   let calendar;
 
-  /* 2. 달력 로드 */
+  /* 달력 */
   document.addEventListener("DOMContentLoaded", async () => {
-    const calendarEl = document.getElementById("calendar");
     const snapshot = await db.collection("schedules").get();
-
     const events = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
 
-    calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(document.getElementById("calendar"), {
       initialView: "dayGridMonth",
       locale: "ko",
       dayHeaderFormat: { weekday: "short" },
@@ -121,19 +122,19 @@
         const id = info.event.id;
         const link = info.event.extendedProps.link;
 
-        const action = confirm("수정하려면 확인, 삭제하려면 취소");
+        const isEdit = confirm("수정 = 확인 / 삭제 = 취소");
 
-        if (action) {
-          const newTitle = prompt("새 제목", info.event.title);
-          const newDate = prompt("새 날짜 (YYYY-MM-DD)", info.event.startStr);
-          const newLink = prompt("새 SNS 링크", link || "");
+        if (isEdit) {
+          const t = prompt("제목", info.event.title);
+          const d = prompt("날짜 (YYYY-MM-DD)", info.event.startStr);
+          const l = prompt("링크", link || "");
 
-          if (!newTitle || !newDate) return;
+          if (!t || !d) return;
 
           db.collection("schedules").doc(id).update({
-            title: newTitle,
-            start: newDate,
-            link: newLink
+            title: t,
+            start: d,
+            link: l
           }).then(() => location.reload());
         } else {
           if (!confirm("진짜 삭제할까?")) return;
@@ -146,7 +147,7 @@
     calendar.render();
   });
 
-  /* 3. 관리자 로그인 */
+  /* 관리자 로그인 */
   auth.signInWithEmailAndPassword(
     "yonggun0221@gmail.com",
     "woohoo0215!"
@@ -154,31 +155,31 @@
     document.getElementById("addBtn").style.display = "block";
   });
 
-  /* 4. 일정 추가 */
+  /* 일정 추가 */
   const modal = document.getElementById("modal");
 
-  document.getElementById("addBtn").onclick = () => {
+  addBtn.onclick = () => {
     modal.style.display = "flex";
+    document.body.classList.add("modal-open");
   };
 
-  document.getElementById("saveBtn").onclick = async () => {
-    const title = titleInput.value;
-    const date = dateInput.value;
-    const link = linkInput.value;
-
-    if (!title || !date) return alert("제목이랑 날짜는 필수야");
+  saveBtn.onclick = async () => {
+    if (!titleInput.value || !dateInput.value) {
+      alert("제목 / 날짜 필수");
+      return;
+    }
 
     await db.collection("schedules").add({
-      title,
-      start: date,
-      link
+      title: titleInput.value,
+      start: dateInput.value,
+      link: linkInput.value
     });
 
+    document.body.classList.remove("modal-open");
     location.reload();
   };
 
-  /* 엔터키 방지 */
-  document.getElementById("formBox").addEventListener("keydown", e => {
+  formBox.addEventListener("keydown", e => {
     if (e.key === "Enter") e.preventDefault();
   });
 </script>
