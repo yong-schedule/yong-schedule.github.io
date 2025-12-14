@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (script 방식) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -42,19 +42,50 @@
       color: white;
       font-size: 14px;
       cursor: pointer;
+      display: none;
+    }
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      align-items: center;
+      justify-content: center;
+    }
+    #modal .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 14px;
     }
   </style>
 </head>
-
 <body>
 
 <header>📅 솔라 스케줄</header>
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
 
+<div id="modal">
+  <div class="box">
+    <input id="titleInput" placeholder="일정 제목" />
+    <input id="dateInput" type="date" />
+    <input id="linkInput" placeholder="SNS 링크 (선택)" />
+    <button id="saveBtn">저장</button>
+  </div>
+</div>
+
 <script>
   /************
-   * 1. Firebase 설정
+   * 1. Firebase 설정 (기존 코드 그대로 사용)
    ************/
   const firebaseConfig = {
     apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -75,19 +106,16 @@
     const calendarEl = document.getElementById("calendar");
 
     const snapshot = await db.collection("schedules").get();
-    const events = snapshot.docs.map(doc => doc.data());
+    const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: "dayGridMonth",
       locale: "ko",
       dayHeaderFormat: { weekday: "short" },
       events,
-
-      // ✅ 일정 클릭 시 링크 열기
-      eventClick: function(info) {
-        const link = info.event.extendedProps.link;
-        if (link) {
-          window.open(link, "_blank");
+      eventClick: info => {
+        if (info.event.extendedProps.link) {
+          window.open(info.event.extendedProps.link, "_blank");
         }
       }
     });
@@ -96,7 +124,7 @@
   });
 
   /************
-   * 3. 관리자 로그인
+   * 3. 관리자 자동 로그인 (기존 이메일/비번 그대로)
    ************/
   auth.signInWithEmailAndPassword(
     "yonggun0221@gmail.com",
@@ -108,23 +136,29 @@
   });
 
   /************
-   * 4. 일정 추가 (링크 포함)
+   * 4. 일정 추가 (모달 방식)
    ************/
-  document.getElementById("addBtn").addEventListener("click", async () => {
-    const title = prompt("일정 제목");
-    const date = prompt("날짜 (YYYY-MM-DD)");
-    const link = prompt("링크 (유튜브 / 인스타 등, 없으면 비워도 됨)");
+  const modal = document.getElementById("modal");
 
-    if (!title || !date) return;
+  document.getElementById("addBtn").onclick = () => {
+    modal.style.display = "flex";
+  };
+
+  document.getElementById("saveBtn").onclick = async () => {
+    const title = document.getElementById("titleInput").value;
+    const date = document.getElementById("dateInput").value;
+    const link = document.getElementById("linkInput").value;
+
+    if (!title || !date) return alert("제목이랑 날짜는 필수야");
 
     await db.collection("schedules").add({
       title,
       start: date,
-      link: link || ""
+      link
     });
 
     location.reload();
-  });
+  };
 </script>
 
 </body>
