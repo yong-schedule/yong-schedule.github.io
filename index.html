@@ -26,7 +26,6 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
     word-break: break-word !important;
     padding:2px 4px !important;
     margin-bottom:2px !important;
-    background:none !important;
   }
   .fc .fc-button { font-size:10px; padding:2px 6px; }
   .fc .fc-toolbar-title { font-size:14px; }
@@ -82,12 +81,27 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   eventContent: arg => {
     const link = arg.event.extendedProps.link;
     let icon = '';
+    let bgColor = '#aaa';
+    let textColor = '#fff';
+
+    // 아이콘과 색상 설정
     if(link){
-      if(link.includes('instagram')) icon = `<i class='fa-brands fa-instagram'></i>`;
-      else if(link.includes('twitter') || link.includes('x.com')) icon = `<i class='fa-brands fa-x-twitter'></i>`;
-      else if(link.includes('youtube')) icon = `<i class='fa-brands fa-youtube'></i>`;
+      if(link.includes('instagram')) { icon = `<i class='fa-brands fa-instagram'></i>`; bgColor='#833AB4'; }
+      else if(link.includes('twitter') || link.includes('x.com')) { icon = `<i class='fa-brands fa-x-twitter'></i>`; bgColor='#1DA1F2'; }
+      else if(link.includes('youtube')) { icon = `<i class='fa-brands fa-youtube'></i>`; bgColor='#FF0000'; }
+    } else if(arg.event.title.toLowerCase().includes('뮤지컬')) {
+      icon = '💃'; bgColor='#EF4444';
+    } else if(arg.event.title.toLowerCase().includes('축하')) {
+      icon = '🎉'; bgColor='#FACC15';
+    } else if(arg.event.title.toLowerCase().includes('발매')) {
+      icon = '🆕'; bgColor='#10B981';
+    } else if(arg.event.title.toLowerCase().includes('방송')) {
+      icon = '📺'; bgColor='#3B82F6';
+    } else if(arg.event.title.toLowerCase().includes('기타')) {
+      icon = '🎵'; bgColor='#8B5CF6';
     }
-    return { html: `<div style='display:block; gap:2px; padding:2px;'>${icon} ${arg.event.title}</div>` };
+
+    return { html: `<div style='display:flex;align-items:center;gap:4px;padding:2px 4px;background:${bgColor};color:${textColor};border-radius:4px;'>${icon} ${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
