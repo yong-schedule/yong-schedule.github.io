@@ -39,7 +39,7 @@ header{
 }
 .event-legend div{
   padding:2px 6px;
-  border-radius:2px;
+  border-radius:4px;
   color:#fff;
   font-weight:700;
 }
@@ -49,10 +49,18 @@ header{
   max-width:900px;
   margin:0 auto;
   padding:0 10px;
-  padding-right:18px;                
   box-sizing:border-box;
-  max-height:calc(100vh - 260px);    
+  max-height:calc(100vh - 260px);
   overflow-y:auto;
+}
+
+/* PC에서 달력 오른쪽 칸 스크롤바 침범 방지 */
+.calendar-wrap .fc-scroller {
+  overflow-x: hidden;
+}
+.calendar-wrap #calendar .fc-scrollgrid-section-liquid {
+  padding-right: 18px; /* 스크롤바 공간 확보 */
+  box-sizing: content-box;
 }
 
 #calendar{
@@ -62,19 +70,10 @@ header{
   padding:10px;
 }
 
-/* 이벤트 파란 테두리 완전 제거 */
-.fc-event,
-.fc-event a,
-.fc-event div,
-.fc-event * {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-    background-clip: padding-box !important;
-}
-
 .fc-event{
+  border:none!important;
   box-shadow:none!important;
+  border-radius:2px!important; /* 이벤트 배경색 모서리 2px */
 }
 .fc .fc-toolbar-title{
   font-size:16px;
@@ -116,6 +115,16 @@ header{
     font-size:10px;
     padding:2px 6px;
   }
+}
+
+/* 파란 테두리(포커스) 완전 제거 */
+*:focus{
+  outline:none!important;
+  box-shadow:none!important;
+}
+.fc *:focus{
+  outline:none!important;
+  box-shadow:none!important;
 }
 
 /* 모달 */
@@ -221,7 +230,7 @@ let selectedEvent=null;
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   locale:'ko',
   firstDay:1,
-  fixedWeekCount:false,
+  fixedWeekCount:true,
   height:'auto',
   dayMinHeight:120,
   headerToolbar:{
@@ -329,8 +338,3 @@ deleteBtn.onclick=async()=>{
 
 </body>
 </html>
-
-
-
-
-
