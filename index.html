@@ -21,17 +21,16 @@ header {
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:50px;
+    margin-top:50px; /* PC에서 아래로 위치 */
 }
 #calendar { 
     max-width:900px; 
-    margin:0 auto; 
+    margin:50px auto 0 auto; /* PC 헤더~달력 간격 */
     padding:10px; 
     background:#fff; 
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
-    margin-top:50px;
 }
 .fc-event-title { 
     white-space: normal !important; 
@@ -85,6 +84,43 @@ header {
     color:#fff; 
     font-weight:700; 
 }
+@media(max-width:600px){
+    header { 
+        font-size:20px; 
+        margin-top:32px; 
+    }
+    #calendar { 
+        max-width:98%; 
+        height:auto; 
+        margin:0 auto; 
+        padding:10px; 
+        padding-bottom:10px; 
+    }
+    .fc-daygrid-event { 
+        margin:1px 0 !important; 
+    }
+    .fc-event, .fc-event-title, .fc-event-title span{
+        display:block !important;
+        padding-top:1px !important;    
+        padding-bottom:1px !important; 
+        padding-left:3px !important;  
+        padding-right:3px !important; 
+        margin:1px 0 !important;     
+        background:none !important;
+        word-break: break-word;
+    }
+    #calendar .fc-daygrid-day {
+        min-height:140px; 
+    }
+    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
+    .fc .fc-toolbar-title { 
+        font-size:14px; 
+    }
+    .fc .fc-button { 
+        font-size:10px; 
+        padding:2px 6px; 
+    }
+}
 .modal { 
     position: fixed; 
     top:50%; 
@@ -124,42 +160,11 @@ header {
     cursor:pointer; 
 }
 #footerLabel {
-    position:fixed;
+    position:absolute;
+    text-align:center;
     font-size:10pt;
     color:#aaa;
-    text-align:center;
-}
-@media(max-width:600px){
-    header { 
-        font-size:20px; 
-        margin-top:32px;
-    }
-    #calendar { 
-        max-width:98%; 
-        height:auto; 
-        margin:0 auto; 
-        padding:10px; 
-        padding-bottom:10px; 
-    }
-    .fc-daygrid-event { 
-        margin:1px 0 !important; 
-    }
-    .fc-event, .fc-event-title, .fc-event-title span{
-        display:block !important;
-        padding-top:1px !important;    
-        padding-bottom:1px !important; 
-        padding-left:3px !important;  
-        padding-right:3px !important; 
-        margin:1px 0 !important;     
-        background:none !important;
-        word-break: break-word;
-    }
-    #calendar .fc-daygrid-day {
-        min-height:140px; 
-    }
-    .fc-daygrid-day-number { font-size:6pt !important; }
-    .fc .fc-toolbar-title { font-size:14px; }
-    .fc .fc-button { font-size:10px; padding:2px 6px; }
+    width:100%;
 }
 </style>
 </head>
@@ -204,6 +209,7 @@ modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show')
 
 const calendarEl = document.getElementById('calendar');
 const footerLabel = document.getElementById('footerLabel');
+
 const calendar = new FullCalendar.Calendar(calendarEl, {
   locale: 'ko',
   dayHeaderFormat: { weekday: 'short' },
@@ -234,7 +240,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   events: [],
   eventContent: arg => {
     let fontSize = '6pt';
-    if(arg.event.title.length >= 6) fontSize='5pt';
+    if(arg.event.title.length >= 6 && window.innerWidth <= 600) fontSize='5pt';
     const type = arg.event.extendedProps.type;
     const bgColorMap = {
         '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
@@ -259,20 +265,15 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
 });
 calendar.render();
 
-// 반응형으로 DC SOLAR 위치 업데이트
-function updateFooterPosition() {
-    const calRect = calendarEl.getBoundingClientRect();
-    const topOffset = window.innerWidth <= 600 ? 10 : 10;
-    let footerTop = calRect.bottom + topOffset + window.scrollY;
-    const minTop = window.innerWidth > 600 ? 50 : 0; // 최소 top 확보
-    footerTop = Math.max(footerTop, minTop);
-    footerLabel.style.top = footerTop + 'px';
+// DC SOLAR 위치 반응형
+function updateFooterPosition(){
+    const rect = calendarEl.getBoundingClientRect();
+    footerLabel.style.top = window.scrollY + rect.bottom + 10 + 'px';
 }
 window.addEventListener('resize', updateFooterPosition);
 window.addEventListener('scroll', updateFooterPosition);
 updateFooterPosition();
 
-// DB 이벤트 불러오기
 (async () => {
   const snap = await db.collection('schedules').get();
   const events = snap.docs.map(doc => ({
