@@ -48,23 +48,14 @@ header{
 .calendar-wrap{
   max-width:900px;
   margin:0 auto;
-  padding:0 10px;
   box-sizing:border-box;
-  max-height:calc(100vh - 260px);
+  max-height:calc(100vh - 260px); /* 스크롤 기준 */
   overflow-y:auto;
-}
-
-/* PC에서 달력 오른쪽 칸 스크롤바 침범 방지 */
-.calendar-wrap .fc-scroller {
-  overflow-x: hidden;
-}
-.calendar-wrap #calendar .fc-scrollgrid-section-liquid {
-  padding-right: 18px; /* 스크롤바 공간 확보 */
-  box-sizing: content-box;
+  scrollbar-gutter: stable; /* 스크롤바 폭 확보 */
+  background:#fff; /* 달력 배경 끝까지 확장 */
 }
 
 #calendar{
-  background:#fff;
   border-radius:8px;
   box-shadow:0 2px 6px rgba(0,0,0,.05);
   padding:10px;
@@ -73,7 +64,7 @@ header{
 .fc-event{
   border:none!important;
   box-shadow:none!important;
-  border-radius:2px!important; /* 이벤트 배경색 모서리 2px */
+  border-radius:2px !important; /* 이벤트 둥근 테두리 최소화 */
 }
 .fc .fc-toolbar-title{
   font-size:16px;
@@ -280,7 +271,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
         padding:1px 3px;
         background:${bgColor};
         color:#fff;
-        border-radius:2px;
+        border-radius:2px !important;
         font-size:${fontSize};
         word-break:break-word;
         white-space:normal;
