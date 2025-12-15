@@ -4,16 +4,12 @@
 <meta charset="UTF-8" />
 <title>솔라 스케줄</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
 <style>
 body{margin:0;font-family:'Roboto', system-ui, sans-serif;background:#fdfdfd;}
 header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
@@ -39,55 +35,32 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
 }
 *:focus{outline:none!important;box-shadow:none!important;}
 .fc *:focus{outline:none!important;box-shadow:none!important;}
-/* 모달 기본 스타일 */
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  padding: 16px 16px;
-  border-radius: 8px;
-  max-width: 95%;
-  max-height: 80%;
-  overflow-y: auto;
-  display: none;
-  z-index: 9999; /* 항상 FullCalendar 위 */
+.modal{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#fff;
+  padding:16px 16px; /* 좌우 패딩 균일 */
+  border-radius:8px;
+  max-width:90%;
+  max-height:80%;
+  overflow-y:auto;
+  display:none;
+  z-index:9999;
 }
-
-.modal.show { display: block; }
-
-/* 내부 요소만 폭 조정 */
-.modal input,
-.modal select,
-.modal h3,
-.modal button {
-  box-sizing: border-box;
-  width: 100%;
-}
-
-/* 모바일 대응 */
-@media(max-width:600px){
-  .modal { max-height: 90%; }
-}
-
-
-
 .modal.show{ display:block; }
 .modal .close-btn{position:absolute;top:8px;right:8px;border:none;background:none;font-size:18px;cursor:pointer;}
 .modal input,.modal select{width:100%;margin:6px 0;padding:6px;}
 #footerLabel{position:fixed;bottom:30px;left:0;width:100%;text-align:center;font-size:9pt;color:#aaa;z-index:1000;}
 </style>
 </head>
-
 <body>
 <header>📅 솔라 스케줄</header>
 <div class="event-legend" id="legend"></div>
-
 <div class="calendar-wrap">
   <div id="calendar"></div>
 </div>
-
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
@@ -108,9 +81,7 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:#fff;">삭제</button>
 </div>
-
 <div id="footerLabel">✨ DC SOLAR GALLERY ✨</div>
-
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -118,18 +89,22 @@ firebase.initializeApp({
   projectId:"yong-schedule"
 });
 const db = firebase.firestore();
-
+/* 범례 + 색상 */
 const legendData={
-  '공식':'#EF4444','뮤지컬':'#fc95cc','축하':'#F97316','발매':'#10B981',
-  '방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#FACC15','기타':'#474a49'
+  '공식':'#EF4444',
+  '뮤지컬':'#fc95cc',
+  '축하':'#F97316',
+  '발매':'#10B981',
+  '방송':'#3B82F6',
+  'SNS':'#8B5CF6',
+  '솔라시도':'#FACC15',
+  '기타':'#474a49'
 };
 document.getElementById('legend').innerHTML =
   Object.entries(legendData).map(([k,v])=>`<div style="background:${v}">${k}</div>`).join('');
-
 const modal=document.getElementById('modal');
 modal.querySelector('.close-btn').onclick=()=>modal.classList.remove('show');
 let selectedEvent=null;
-
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   locale:'ko',
   firstDay:1,
@@ -164,8 +139,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   }
 });
 calendar.render();
-
-/* ✅ 여기만 교체: 클릭/롱프레스 처리 */
+/* 클릭/더블클릭/롱프레스 처리 */
 calendar.on('eventDidMount', info => {
   const el = info.el;
   const e = info.event;
@@ -207,28 +181,22 @@ calendar.on('eventDidMount', info => {
   });
 });
 
-
 /* Firestore 불러오기 */
 (async()=>{
-  const snap = await db.collection('schedules').get();
+  const snap=await db.collection('schedules').get();
   calendar.addEventSource(snap.docs.map(d=>({id:d.id,...d.data()})));
 })();
-
 /* 저장 */
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
   const data={title:eventTitle.value,start:eventDate.value,link:eventLink.value,type:eventType.value};
-  if(selectedEvent){
-    await db.collection('schedules').doc(selectedEvent.id).update(data);
-    calendar.getEventById(selectedEvent.id).remove();
-    calendar.addEvent({id:selectedEvent.id,...data});
-  }else{
+  if(selectedEvent) await db.collection('schedules').doc(selectedEvent.id).update(data);
+  else{
     const r=await db.collection('schedules').add(data);
     calendar.addEvent({id:r.id,...data});
   }
   modal.classList.remove('show');
 };
-
 /* 삭제 */
 deleteBtn.onclick=async()=>{
   if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
@@ -240,8 +208,3 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
-
-
-
-
-
