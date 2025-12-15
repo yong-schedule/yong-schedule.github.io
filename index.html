@@ -21,7 +21,7 @@ header {
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:50px; /* PC에서 위치 */
+    margin-top:60px; /* PC에서 조금 아래로 */
 }
 #calendar { 
     max-width:900px; 
@@ -31,7 +31,7 @@ header {
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
-    margin-top:50px; /* PC 달력 위치 */
+    margin-top:50px; /* PC에서 헤더+범례와 달력 간격 */
 }
 .fc-event-title { 
     white-space: normal !important; 
@@ -76,8 +76,7 @@ header {
     flex-wrap:wrap; 
     gap:6px; 
     justify-content:center; 
-    margin-top:4px; /* 달력과 가까워지도록 조정 */
-    margin-bottom:10px; 
+    margin:20px 0; 
     font-size:12px; 
 }
 .event-legend div { 
@@ -89,7 +88,7 @@ header {
 @media(max-width:600px){
     header { 
         font-size:20px; 
-        margin-top:62px; /* 모바일 전체 아래로 10px 추가 */
+        margin-top:62px; 
     }
     #calendar { 
         max-width:98%; 
@@ -97,6 +96,7 @@ header {
         margin:0 auto; 
         padding:10px; 
         padding-bottom:10px; 
+        margin-top:10px; /* 범례와 달력 간격 줄임 */
     }
     .fc-daygrid-event { 
         margin:1px 0 !important; 
@@ -110,11 +110,12 @@ header {
         margin:1px 0 !important;     
         background:none !important;
         word-break: break-word;
+        font-size:6pt !important;
     }
     #calendar .fc-daygrid-day {
         min-height:140px; 
     }
-    .fc-daygrid-day-number { font-size:6pt !important; } 
+    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
     .fc .fc-toolbar-title { 
         font-size:14px; 
     }
@@ -163,7 +164,6 @@ header {
 }
 #footerLabel {
     position:fixed;
-    bottom:30px; /* 달력 끝 기준 모바일 30px */
     width:100%;
     text-align:center;
     font-size:10pt;
@@ -241,7 +241,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   events: [],
   eventContent: arg => {
     let fontSize = '6pt';
-    if(arg.event.title.length >= 6) fontSize='5pt';
+    if(arg.event.title.length >= 6) fontSize='5pt'; // 6글자 이상만 5pt
     const type = arg.event.extendedProps.type;
     const bgColorMap = {
         '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
@@ -318,18 +318,29 @@ document.getElementById('deleteBtn').onclick = async () => {
   });
 })();
 
-// 모바일에서 DC SOLAR 반응형 위치
-const footerLabel = document.getElementById('footerLabel');
-function adjustFooter() {
-    const calendarRect = calendarEl.getBoundingClientRect();
+// 모바일에서 달력 길이에 따라 DC SOLAR GALLERY 위치 자동 조정
+function adjustFooterMobile() {
+    const footer = document.getElementById('footerLabel');
+    const calendarEl = document.getElementById('calendar');
     if(window.innerWidth <= 600){
-        footerLabel.style.bottom = (window.innerHeight - calendarRect.bottom + 30) + 'px';
+        const calendarRect = calendarEl.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const calendarBottom = calendarRect.bottom + scrollTop;
+        footer.style.bottom = 'auto';
+        footer.style.position = 'absolute';
+        footer.style.top = (calendarBottom + 30) + 'px'; // 달력 끝에서 30px 아래
     } else {
-        footerLabel.style.bottom = '30px';
+        footer.style.position = 'fixed';
+        footer.style.bottom = '100px';
     }
 }
-window.addEventListener('resize', adjustFooter);
-adjustFooter();
+
+// 초기 위치 조정
+adjustFooterMobile();
+
+// 리사이즈시 위치 재조정
+window.addEventListener('resize', adjustFooterMobile);
+window.addEventListener('scroll', adjustFooterMobile);
 </script>
 </body>
 </html>
