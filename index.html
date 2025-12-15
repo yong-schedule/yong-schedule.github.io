@@ -49,10 +49,16 @@ header{
   max-width:900px;
   margin:0 auto;
   padding:0 10px;
-  padding-right:40px;                /* ✅ 스크롤바 더 오른쪽 */
   box-sizing:border-box;
-  max-height:calc(100vh - 260px);    /* 스크롤 기준 */
+  max-height:calc(100vh - 260px);
   overflow-y:auto;
+}
+
+/* PC에서만 스크롤 보정 */
+@media(min-width:601px){
+  .calendar-wrap{
+    padding-right:50px;   /* 스크롤바 완충 공간 */
+  }
 }
 
 #calendar{
@@ -62,6 +68,7 @@ header{
   padding:10px;
 }
 
+/* FullCalendar */
 .fc-event{
   border:none!important;
   box-shadow:none!important;
@@ -108,7 +115,7 @@ header{
   }
 }
 
-/* 파란 테두리 완전 제거 */
+/* 포커스 파란 테두리 완전 제거 */
 *:focus{
   outline:none!important;
   box-shadow:none!important;
@@ -204,7 +211,7 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-/* 범례 생성 */
+/* 범례 */
 const legendData={
   '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6',
   'SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EC4899','기타':'#000'
