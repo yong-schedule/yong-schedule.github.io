@@ -21,7 +21,7 @@ header {
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:50px; /* PC 기본 위치 */
+    margin-top:50px; /* PC 기본 */
 }
 #calendar { 
     max-width:900px; 
@@ -30,8 +30,7 @@ header {
     background:#fff; 
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
-    padding-bottom:10px; 
-    margin-top:50px; /* PC에서 솔라스케줄과 달력 사이 */
+    margin-top:50px; /* PC 헤더와 달력 간격 */
 }
 .fc-event-title { 
     white-space: normal !important; 
@@ -85,6 +84,48 @@ header {
     color:#fff; 
     font-weight:700; 
 }
+#footerLabel{
+    position:absolute;
+    width:100%;
+    text-align:center;
+    font-size:10pt;
+    color:#aaa;
+}
+@media(max-width:600px){
+    header { 
+        font-size:20px; 
+        margin-top:32px; 
+    }
+    #calendar { 
+        max-width:98%; 
+        height:auto; 
+        margin:0 auto; 
+        padding:10px; 
+        padding-bottom:10px; 
+        margin-top:42px; /* 모바일 솔라스케줄과 달력 간격 */
+    }
+    .fc-daygrid-event { 
+        margin:1px 0 !important; 
+    }
+    .fc-event, .fc-event-title, .fc-event-title span{
+        display:block !important;
+        padding:1px 3px !important;    
+        margin:1px 0 !important;     
+        background:none !important;
+        word-break: break-word;
+    }
+    #calendar .fc-daygrid-day {
+        min-height:140px; 
+    }
+    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
+    .fc .fc-toolbar-title { 
+        font-size:14px; 
+    }
+    .fc .fc-button { 
+        font-size:10px; 
+        padding:2px 6px; 
+    }
+}
 .modal { 
     position: fixed; 
     top:50%; 
@@ -122,42 +163,6 @@ header {
     margin-top:8px; 
     padding:6px 12px; 
     cursor:pointer; 
-}
-#footerLabel{
-    position:fixed;
-    width:100%;
-    text-align:center;
-    font-size:10pt;
-    color:#aaa;
-}
-@media(max-width:600px){
-    header { 
-        font-size:20px; 
-        margin-top:32px; 
-    }
-    #calendar { 
-        max-width:98%; 
-        height:auto; 
-        margin:0 auto; 
-        padding:10px; 
-        padding-bottom:10px; 
-    }
-    .fc-daygrid-event { 
-        margin:1px 0 !important; /* 모바일 일정 간격 1px 유지 */
-    }
-    .fc-event, .fc-event-title, .fc-event-title span{
-        display:block !important;
-        padding:1px 3px !important;  /* 위아래 1px, 좌우 3px */
-        margin:1px 0 !important;     
-        background:none !important;
-        word-break: break-word;
-    }
-    #calendar .fc-daygrid-day {
-        min-height:140px; 
-    }
-    .fc-daygrid-day-number { font-size:6pt !important; } /* 모바일 날짜 글씨 6pt */
-    .fc .fc-toolbar-title { font-size:14px; }
-    .fc .fc-button { font-size:10px; padding:2px 6px; }
 }
 </style>
 </head>
@@ -231,7 +236,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   events: [],
   eventContent: arg => {
     let fontSize = '6pt';
-    if(window.innerWidth <= 600 && arg.event.title.length >= 6) fontSize='5pt';
+    if(arg.event.title.length >= 6) fontSize='5pt';
     const type = arg.event.extendedProps.type;
     const bgColorMap = {
         '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
@@ -308,7 +313,7 @@ document.getElementById('deleteBtn').onclick = async () => {
   });
 })();
 
-// 반응형 footer 위치
+// footer 위치 조정 (모바일 달력 길이 반영)
 function adjustFooter() {
   const calendarEl = document.getElementById('calendar');
   const footerEl = document.getElementById('footerLabel');
@@ -316,13 +321,16 @@ function adjustFooter() {
   const scrollTop = window.scrollY || window.pageYOffset;
   
   if(window.innerWidth <= 600){
-    footerEl.style.top = `${rect.top + scrollTop + calendarEl.offsetHeight + 30}px`;
+    // 모바일: 달력 끝 + 30px + 추가 10px
+    footerEl.style.top = `${rect.top + scrollTop + calendarEl.offsetHeight + 40}px`;
   } else {
+    // PC: 달력 끝 + 20px
     footerEl.style.top = `${rect.top + scrollTop + calendarEl.offsetHeight + 20}px`;
   }
 }
 window.addEventListener('load', adjustFooter);
 window.addEventListener('resize', adjustFooter);
+window.addEventListener('scroll', adjustFooter);
 </script>
 </body>
 </html>
