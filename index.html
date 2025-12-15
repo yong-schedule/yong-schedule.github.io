@@ -54,10 +54,11 @@ header{
   overflow-y:auto;
 }
 
-/* PC에서만 스크롤 보정 */
+/* PC에서만 스크롤바 공간 확보 */
 @media(min-width:601px){
   .calendar-wrap{
     padding-right:50px;   /* 스크롤바 완충 공간 */
+    scrollbar-gutter: stable; /* 스크롤 발생 여부와 상관없이 오른쪽 공간 확보 */
   }
 }
 
