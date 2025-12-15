@@ -146,43 +146,30 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
 calendar.render();
 
 /* ✅ 여기만 교체: 클릭/롱프레스 처리 */
+calendar.on('eventClick', info => {
+  // 클릭 → 모달
+  selectedEvent = info.event;
+  eventTitle.value = info.event.title;
+  eventDate.value = info.event.startStr;
+  eventLink.value = info.event.extendedProps.link || '';
+  eventType.value = info.event.extendedProps.type || '';
+  deleteBtn.style.display='inline-block';
+  modal.classList.add('show');
+});
+
 calendar.on('eventDidMount', info => {
   const el = info.el;
-  const e = info.event;
-  const link = e.extendedProps.link;
+  const link = info.event.extendedProps.link;
+  if(!link) return;
+
   let pressTimer = null;
-  let startTime = 0;
+  const longPress = () => window.open(link,'_blank'); // 롱프레스 → 링크
 
-  const openModal = () => {
-    selectedEvent = e;
-    eventTitle.value = e.title;
-    eventDate.value = e.startStr;
-    eventLink.value = e.extendedProps.link || '';
-    eventType.value = e.extendedProps.type || '';
-    deleteBtn.style.display='inline-block';
-    modal.classList.add('show');
-  };
+  el.addEventListener('touchstart', () => { pressTimer = setTimeout(longPress, 600); });
+  el.addEventListener('touchend', () => { clearTimeout(pressTimer); });
 
-  const startPress = (ev) => {
-    ev.preventDefault();
-    startTime = ev.timeStamp;
-    pressTimer = setTimeout(() => openModal(), 600); // 0.6초 이상 누르면 모달
-  };
-
-  const endPress = (ev) => {
-    clearTimeout(pressTimer);
-    if(ev.timeStamp - startTime < 600 && link){ // 짧게 누르면 링크 열기
-      window.open(link,'_blank');
-    }
-  };
-
-  // 모바일
-  el.addEventListener('touchstart', startPress);
-  el.addEventListener('touchend', endPress);
-
-  // PC
-  el.addEventListener('mousedown', startPress);
-  el.addEventListener('mouseup', endPress);
+  el.addEventListener('mousedown', () => { pressTimer = setTimeout(longPress, 600); });
+  el.addEventListener('mouseup', () => { clearTimeout(pressTimer); });
 });
 
 /* Firestore 불러오기 */
@@ -217,3 +204,4 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
