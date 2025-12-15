@@ -21,7 +21,7 @@ header {
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:60px; /* PC에서 아래로 위치 */
+    margin-top:50px; /* PC 기본 위치 */
 }
 #calendar { 
     max-width:900px; 
@@ -30,7 +30,8 @@ header {
     background:#fff; 
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
-    margin-top:50px; /* PC에서 헤더와 달력 간격 */
+    padding-bottom:10px; 
+    margin-top:50px; /* PC에서 솔라스케줄과 달력 사이 */
 }
 .fc-event-title { 
     white-space: normal !important; 
@@ -84,40 +85,6 @@ header {
     color:#fff; 
     font-weight:700; 
 }
-@media(max-width:600px){
-    header { 
-        font-size:20px; 
-        margin-top:62px; 
-    }
-    #calendar { 
-        max-width:98%; 
-        height:auto; 
-        margin:0 auto; 
-        padding:10px; 
-        padding-bottom:10px; 
-    }
-    .fc-daygrid-event { 
-        margin:1px 0 !important; 
-    }
-    .fc-event, .fc-event-title, .fc-event-title span{
-        display:block !important;
-        padding:1px 3px !important;    
-        margin:1px 0 !important;     
-        background:none !important;
-        word-break: break-word;
-    }
-    #calendar .fc-daygrid-day {
-        min-height:140px; 
-    }
-    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
-    .fc .fc-toolbar-title { 
-        font-size:14px; 
-    }
-    .fc .fc-button { 
-        font-size:10px; 
-        padding:2px 6px; 
-    }
-}
 .modal { 
     position: fixed; 
     top:50%; 
@@ -156,13 +123,41 @@ header {
     padding:6px 12px; 
     cursor:pointer; 
 }
-#footerLabel {
+#footerLabel{
     position:fixed;
-    bottom:100px;
     width:100%;
     text-align:center;
     font-size:10pt;
     color:#aaa;
+}
+@media(max-width:600px){
+    header { 
+        font-size:20px; 
+        margin-top:32px; 
+    }
+    #calendar { 
+        max-width:98%; 
+        height:auto; 
+        margin:0 auto; 
+        padding:10px; 
+        padding-bottom:10px; 
+    }
+    .fc-daygrid-event { 
+        margin:1px 0 !important; /* 모바일 일정 간격 1px 유지 */
+    }
+    .fc-event, .fc-event-title, .fc-event-title span{
+        display:block !important;
+        padding:1px 3px !important;  /* 위아래 1px, 좌우 3px */
+        margin:1px 0 !important;     
+        background:none !important;
+        word-break: break-word;
+    }
+    #calendar .fc-daygrid-day {
+        min-height:140px; 
+    }
+    .fc-daygrid-day-number { font-size:6pt !important; } /* 모바일 날짜 글씨 6pt */
+    .fc .fc-toolbar-title { font-size:14px; }
+    .fc .fc-button { font-size:10px; padding:2px 6px; }
 }
 </style>
 </head>
@@ -236,7 +231,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   events: [],
   eventContent: arg => {
     let fontSize = '6pt';
-    if(arg.event.title.length >= 6) fontSize='5pt'; // 6글자 이상만 줄이기
+    if(window.innerWidth <= 600 && arg.event.title.length >= 6) fontSize='5pt';
     const type = arg.event.extendedProps.type;
     const bgColorMap = {
         '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
@@ -283,7 +278,7 @@ document.getElementById('saveBtn').onclick = async () => {
   if (selectedEvent) {
     await db.collection('schedules').doc(selectedEvent.id).update(data);
   } else {
-    await db.collection('schedules').doc(selectedEvent.id).add(data);
+    await db.collection('schedules').add(data);
   }
   location.reload();
 };
@@ -312,7 +307,22 @@ document.getElementById('deleteBtn').onclick = async () => {
     legendEl.appendChild(div);
   });
 })();
+
+// 반응형 footer 위치
+function adjustFooter() {
+  const calendarEl = document.getElementById('calendar');
+  const footerEl = document.getElementById('footerLabel');
+  const rect = calendarEl.getBoundingClientRect();
+  const scrollTop = window.scrollY || window.pageYOffset;
+  
+  if(window.innerWidth <= 600){
+    footerEl.style.top = `${rect.top + scrollTop + calendarEl.offsetHeight + 30}px`;
+  } else {
+    footerEl.style.top = `${rect.top + scrollTop + calendarEl.offsetHeight + 20}px`;
+  }
+}
+window.addEventListener('load', adjustFooter);
+window.addEventListener('resize', adjustFooter);
 </script>
 </body>
 </html>
-
