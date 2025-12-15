@@ -85,10 +85,6 @@ header{
   color:#fff;
   border:none;
 }
-.fc .fc-button:focus,
-.fc .fc-button:active{
-  background:#000;
-}
 
 /* PC 날짜 폰트 */
 .fc-daygrid-day-number{
@@ -116,14 +112,15 @@ header{
   }
 }
 
-/* 포커스 파란 테두리 완전 제거 */
-*:focus{
-  outline:none!important;
-  box-shadow:none!important;
-}
-.fc *:focus{
-  outline:none!important;
-  box-shadow:none!important;
+/* 포커스 파란 테두리 완전 제거 (모든 엘리먼트 포함) */
+*,
+*::before,
+*::after,
+.fc *,
+.fc *::before,
+.fc *::after {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* 모달 */
