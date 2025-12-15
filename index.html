@@ -22,7 +22,7 @@ header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
 .fc .fc-button:active, .fc .fc-button:focus { background:#000; color:#fff; }
 .event-legend { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:20px 0; font-size:12px; }
 .event-legend div { padding:2px 6px; border-radius:4px; color:#fff; font-weight:700; }
-.event-icon { font-size:10px; color: rgba(255,255,255,0.9); }
+.event-icon { font-size:5px; color: rgba(255,255,255,0.9); } /* 아이콘 크기 반절 */
 @media(max-width:600px){
   header { font-size:20px; margin-top:32px; }
   #calendar { max-width:98%; height:auto; margin:0 auto; padding:10px; padding-bottom:10px; }
@@ -139,9 +139,10 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
       word-break:break-word;
       white-space: normal;
       overflow-wrap: break-word;
-    ">${arg.event.title} ${iconHTML}</div>` };
+    ">${iconHTML} ${arg.event.title}</div>` }; // 아이콘 글씨 앞 배치
   },
   eventClick: info => {
+    // 일반 클릭 → 모달
     const e = info.event;
     selectedEvent = e;
     document.getElementById('eventTitle').value = e.title;
@@ -152,10 +153,21 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     modal.classList.add('show');
   },
   eventDidMount: info => {
-    if(info.event.extendedProps.link){
-      info.el.addEventListener('dblclick', () => {
-        window.open(info.event.extendedProps.link,'_blank');
-      });
+    const link = info.event.extendedProps.link;
+    if(link){
+      let pressTimer;
+      const openLink = () => { window.open(link,'_blank'); };
+      const isTouchDevice = 'ontouchstart' in window;
+
+      if(isTouchDevice){
+        // 모바일: 길게 누르면 링크만
+        info.el.addEventListener('touchstart', e => { pressTimer = setTimeout(openLink,600); });
+        info.el.addEventListener('touchend', e => { clearTimeout(pressTimer); });
+        info.el.addEventListener('touchmove', e => { clearTimeout(pressTimer); });
+      } else {
+        // PC: 더블 클릭 시 링크
+        info.el.addEventListener('dblclick', openLink);
+      }
     }
   }
 });
