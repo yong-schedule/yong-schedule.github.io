@@ -15,15 +15,13 @@ body {
     margin:0; 
     font-family:'Roboto', system-ui, sans-serif; 
     background:#fdfdfd; 
-}
-#mainContainer {
-    margin-top:200px; /* PC용 전체 여백 */
+    position:relative;
 }
 header { 
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:0; 
+    margin-top:60px; /* PC에서 아래로 위치 */
 }
 #calendar { 
     max-width:900px; 
@@ -32,7 +30,7 @@ header {
     background:#fff; 
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
-    padding-bottom:10px; 
+    margin-top:60px; /* PC에서 헤더와 달력 간격 */
 }
 .fc-event-title { 
     white-space: normal !important; 
@@ -87,12 +85,9 @@ header {
     font-weight:700; 
 }
 @media(max-width:600px){
-    #mainContainer {
-        margin-top:50px; /* 모바일 전체 아래 여백 */
-    }
     header { 
         font-size:20px; 
-        margin-top:0; 
+        margin-top:62px; 
     }
     #calendar { 
         max-width:98%; 
@@ -101,30 +96,20 @@ header {
         padding:10px; 
         padding-bottom:10px; 
     }
-    /* 모바일 이벤트 간 세로 margin 유지, 내부 padding 3px, 글씨 크기 조정 */
     .fc-daygrid-event { 
         margin:1px 0 !important; 
     }
     .fc-event, .fc-event-title, .fc-event-title span{
         display:block !important;
-        font-size:6pt !important; /* 기본 글씨 */
-        padding:3px !important; /* 좌우 3px */
+        padding:1px 3px !important;    
         margin:1px 0 !important;     
         background:none !important;
-        word-break:break-word;
+        word-break: break-word;
     }
-    /* 글자수 6자 이상이면 5pt */
-    .fc-event-title span {
-        font-size:6pt;
-    }
-    .fc-event-title span[data-length]:not([data-length=""]){
-        font-size: calc(var(--fc-text-length) >= 6 ? 5pt : 6pt);
-    }
-
-    /* 모바일 날짜칸 최소 높이 확보 */
     #calendar .fc-daygrid-day {
-        min-height:140px;
+        min-height:140px; 
     }
+    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
     .fc .fc-toolbar-title { 
         font-size:14px; 
     }
@@ -171,25 +156,21 @@ header {
     padding:6px 12px; 
     cursor:pointer; 
 }
-
-/* 하단 DC SOLAR GALLERY */
-#footerText {
-    position: fixed;
+#footerLabel {
+    position:fixed;
     bottom:100px;
     width:100%;
     text-align:center;
     font-size:10pt;
-    font-weight:700;
-    color:#999;
+    color:#aaa;
 }
 </style>
 </head>
 <body>
-<div id="mainContainer">
 <header>📅 솔라 스케줄</header>
+
 <div class="event-legend" id="legend"></div>
 <div id="calendar"></div>
-</div>
 
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
@@ -210,7 +191,7 @@ header {
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
 
-<div id="footerText">✨ DC SOLAR GALLERY ✨</div>
+<div id="footerLabel">✨ DC SOLAR GALLERY ✨</div>
 
 <script>
 firebase.initializeApp({
@@ -231,6 +212,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   showNonCurrentDates: false,
   fixedWeekCount: true,
   firstDay: 1,
+  dayMinHeight: window.innerWidth > 600 ? 120 : 140,
   height: 'auto',
   headerToolbar: {
     left: 'title',
@@ -253,18 +235,15 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   },
   events: [],
   eventContent: arg => {
+    let fontSize = '6pt';
+    if(arg.event.title.length >= 6) fontSize='5pt'; // 6글자 이상만 줄이기
     const type = arg.event.extendedProps.type;
-    const link = arg.event.extendedProps.link;
-    let bgColor = '#aaa', textColor = '#fff';
-    switch (type) {
-      case '뮤지컬': bgColor = '#EF4444'; break;
-      case '축하': bgColor = '#F97316'; break;
-      case '발매': bgColor = '#10B981'; break;
-      case '방송': bgColor = '#3B82F6'; break;
-      case '기타': bgColor = '#000000'; break;
-      case 'SNS': bgColor = '#8B5CF6'; break;
-    }
-    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:3px;background:${bgColor};color:${textColor};border-radius:4px;margin:0 2px;'>${arg.event.title}</div>` };
+    const bgColorMap = {
+        '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
+        '방송':'#3B82F6','기타':'#000','SNS':'#8B5CF6'
+    };
+    const bgColor = bgColorMap[type] || '#aaa';
+    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:4px;font-size:${fontSize};word-break:break-word;'>${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
@@ -304,7 +283,7 @@ document.getElementById('saveBtn').onclick = async () => {
   if (selectedEvent) {
     await db.collection('schedules').doc(selectedEvent.id).update(data);
   } else {
-    await db.collection('schedules').add(data);
+    await db.collection('schedules').doc(selectedEvent.id).add(data);
   }
   location.reload();
 };
