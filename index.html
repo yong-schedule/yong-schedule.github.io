@@ -221,7 +221,7 @@ let selectedEvent=null;
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   locale:'ko',
   firstDay:1,
-  fixedWeekCount:true,
+  fixedWeekCount:false,
   height:'auto',
   dayMinHeight:120,
   headerToolbar:{
@@ -329,5 +329,6 @@ deleteBtn.onclick=async()=>{
 
 </body>
 </html>
+
 
 
