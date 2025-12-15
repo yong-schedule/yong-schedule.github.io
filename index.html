@@ -31,21 +31,13 @@ header {
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
 }
-.fc-event-title { 
-    white-space: normal !important; 
-    font-family:'Roboto', sans-serif; 
-    background:none !important; 
-}
-.fc-event {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
 .fc-event, 
 .fc-event:focus, 
 .fc-event:active, 
-.fc-event:hover {
-    outline: none !important;
+.fc-event:hover, 
+.fc-event:focus-visible {
+    outline: none !important;   /* 파란 테두리 완전 제거 */
+    border: none !important;    
     box-shadow: none !important;
 }
 .fc .fc-toolbar-title { 
@@ -77,12 +69,6 @@ header {
     color:#fff; 
     font-weight:700; 
 }
-
-/* PC 날짜칸 최소 높이 */
-#calendar .fc-daygrid-day {
-    min-height: 120px;
-}
-
 @media(max-width:600px){
     header { 
         font-size:20px; 
@@ -95,21 +81,8 @@ header {
         padding:10px; 
         padding-bottom:10px; 
     }
-    /* 모바일 날짜칸 높이 자동 확장, 최소 140px */
     #calendar .fc-daygrid-day {
-        min-height: 140px;
-    }
-    .fc-daygrid-event { 
-        margin:1px 0 !important; 
-    }
-    /* 모바일 이벤트 좌우 margin 2px, 세로 margin 1px, padding 제거 */
-    .fc-event, .fc-event-title, .fc-event-title span{
-        display:block !important;
-        font-size:6pt !important;
-        padding-top:0 !important;    
-        padding-bottom:0 !important; 
-        margin:1px 2px !important;     
-        background:none !important;
+        min-height:140px; /* 모바일 최소 높이 */
     }
     .fc .fc-toolbar-title { 
         font-size:14px; 
@@ -222,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('deleteBtn').style.display = 'none';
           modal.classList.add('show');
         },
-        themeIcon: '',
       }
     },
     events: [],
@@ -239,7 +211,15 @@ document.addEventListener('DOMContentLoaded', () => {
         case 'SNS': bgColor = '#8B5CF6'; break;
         default: bgColor = '#aaa';
       }
-      return { html: `<div style='display:flex;align-items:center;gap:2px;margin:1px 2px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
+      return { 
+        html: `<div style='display:flex;align-items:center;gap:2px;
+                          margin:1px 2px; /* 좌우 2px 여백 */
+                          padding:0; 
+                          background:${bgColor};
+                          color:${textColor};
+                          border-radius:4px;
+                          box-sizing:border-box;'>${arg.event.title}</div>` 
+      };
     },
     eventClick: info => {
       const e = info.event;
@@ -291,7 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 범례 항상 표시
   (function showLegend() {
     const legendEl = document.getElementById('legend');
     const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '기타'];
