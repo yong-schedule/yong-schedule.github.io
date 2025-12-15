@@ -21,7 +21,7 @@ header {
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:60px; /* PC에서 조금 아래로 */
+    margin-top:60px; /* PC/모바일 공통 기본 위치 */
 }
 #calendar { 
     max-width:900px; 
@@ -31,7 +31,7 @@ header {
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
-    margin-top:50px; /* PC에서 헤더+범례와 달력 간격 */
+    margin-top:50px; /* 범례~달력 간격 */
 }
 .fc-event-title { 
     white-space: normal !important; 
@@ -96,7 +96,7 @@ header {
         margin:0 auto; 
         padding:10px; 
         padding-bottom:10px; 
-        margin-top:10px; /* 범례와 달력 간격 줄임 */
+        margin-top:10px; /* 범례~달력 간격 조정 */
     }
     .fc-daygrid-event { 
         margin:1px 0 !important; 
@@ -115,7 +115,7 @@ header {
     #calendar .fc-daygrid-day {
         min-height:140px; 
     }
-    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
+    .fc-daygrid-day-number { font-size:6pt !important; }
     .fc .fc-toolbar-title { 
         font-size:14px; 
     }
@@ -163,7 +163,7 @@ header {
     cursor:pointer; 
 }
 #footerLabel {
-    position:fixed;
+    position:absolute;
     width:100%;
     text-align:center;
     font-size:10pt;
@@ -241,7 +241,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   events: [],
   eventContent: arg => {
     let fontSize = '6pt';
-    if(arg.event.title.length >= 6) fontSize='5pt'; // 6글자 이상만 5pt
+    if(arg.event.title.length >= 6) fontSize='5pt';
     const type = arg.event.extendedProps.type;
     const bgColorMap = {
         '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
@@ -288,7 +288,7 @@ document.getElementById('saveBtn').onclick = async () => {
   if (selectedEvent) {
     await db.collection('schedules').doc(selectedEvent.id).update(data);
   } else {
-    await db.collection('schedules').add(data);
+    await db.collection('schedules').doc(selectedEvent.id).add(data);
   }
   location.reload();
 };
@@ -318,29 +318,18 @@ document.getElementById('deleteBtn').onclick = async () => {
   });
 })();
 
-// 모바일에서 달력 길이에 따라 DC SOLAR GALLERY 위치 자동 조정
-function adjustFooterMobile() {
+// DC SOLAR GALLERY 위치 반응형 조정 (모바일+PC)
+function adjustFooter() {
     const footer = document.getElementById('footerLabel');
     const calendarEl = document.getElementById('calendar');
-    if(window.innerWidth <= 600){
-        const calendarRect = calendarEl.getBoundingClientRect();
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const calendarBottom = calendarRect.bottom + scrollTop;
-        footer.style.bottom = 'auto';
-        footer.style.position = 'absolute';
-        footer.style.top = (calendarBottom + 30) + 'px'; // 달력 끝에서 30px 아래
-    } else {
-        footer.style.position = 'fixed';
-        footer.style.bottom = '100px';
-    }
+    const rect = calendarEl.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const calendarBottom = rect.bottom + scrollTop;
+    footer.style.top = (calendarBottom + 20) + 'px'; // 달력 끝에서 20px 아래
 }
-
-// 초기 위치 조정
-adjustFooterMobile();
-
-// 리사이즈시 위치 재조정
-window.addEventListener('resize', adjustFooterMobile);
-window.addEventListener('scroll', adjustFooterMobile);
+adjustFooter();
+window.addEventListener('resize', adjustFooter);
+window.addEventListener('scroll', adjustFooter);
 </script>
 </body>
 </html>
