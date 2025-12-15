@@ -201,13 +201,13 @@ header{
   <input id="eventLink" placeholder="링크 (선택)">
   <select id="eventType">
     <option value="">종류 선택</option>
+    <option value="공식">공식</option>
     <option value="뮤지컬">뮤지컬</option>
     <option value="축하">축하</option>
     <option value="발매">발매</option>
     <option value="방송">방송</option>
     <option value="SNS">SNS</option>
     <option value="솔라시도">솔라시도</option>
-    <option value="공식">공식</option>
     <option value="기타">기타</option>
   </select>
   <button id="saveBtn">저장</button>
@@ -226,8 +226,8 @@ const db = firebase.firestore();
 
 /* 범례 생성 */
 const legendData={
-  '뮤지컬':'#EC4899','축하':'#F97316','발매':'#10B981','방송':'#3B82F6',
-  'SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EF4444','기타':'#474a49'
+  '공식':'#EF4444','뮤지컬':'#EC4899','축하':'#F97316','발매':'#10B981','방송':'#3B82F6',
+  'SNS':'#8B5CF6','솔라시도':'#FACC15','기타':'#474a49'
 };
 document.getElementById('legend').innerHTML =
   Object.entries(legendData)
@@ -349,6 +349,7 @@ deleteBtn.onclick=async()=>{
 
 </body>
 </html>
+
 
 
 
