@@ -46,35 +46,31 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
   left: 50%;
   transform: translate(-50%, -50%);
   background: #fff;
-  padding: 16px 16px;       /* 기존 그대로 */
+  padding: 16px 16px;
   border-radius: 8px;
-  max-width: 95%;           /* 기존 90% → 조금 넓힘 */
+  max-width: 95%;
   max-height: 80%;
   overflow-y: auto;
-  display: none;            /* 기본은 숨김 */
-  z-index: 9999;
+  display: none;
+  z-index: 9999; /* 항상 FullCalendar 위 */
 }
 
 .modal.show { display: block; }
 
-/* 모달 내부 요소 폭 조정 */
-.modal > * {
-  box-sizing: border-box;   /* 내부 컨텐츠가 모달 폭을 넘지 않도록 */
+/* 내부 요소만 폭 조정 */
+.modal input,
+.modal select,
+.modal h3,
+.modal button {
+  box-sizing: border-box;
   width: 100%;
 }
 
-.modal input,
-.modal select {
-  width: 100%;              /* input/select 폭 조정 */
-  box-sizing: border-box;    /* padding 포함 폭 계산 */
+/* 모바일 대응 */
+@media(max-width:600px){
+  .modal { max-height: 90%; }
 }
 
-/* 모바일 반응형 */
-@media(max-width:600px){
-  .modal {
-    max-height: 90%;        /* 화면이 좁을 때 높이 확보 */
-  }
-}
 
 
 .modal.show{ display:block; }
@@ -244,6 +240,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
