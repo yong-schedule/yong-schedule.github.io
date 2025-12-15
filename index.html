@@ -62,21 +62,30 @@ header{
   padding:10px;
 }
 
+/* 이벤트 박스 */
 .fc-event{
   border:none!important;
   box-shadow:none!important;
   outline:none!important;
+  background-clip: padding-box !important;
 }
-
-/* 이벤트 안 모든 요소, 모바일·PC 모두 */
 .fc-event, .fc-event * {
-  outline: none !important;
-  box-shadow: none !important;
+  outline:none!important;
+  box-shadow:none!important;
+  border:none!important;
   -webkit-tap-highlight-color: transparent !important;
-  border: none !important;
   background-clip: padding-box !important;
 }
 
+/* 전체 이벤트 둥근 모서리 빈 영역까지 제거 */
+.fc-event-main-frame, .fc-event-main, .fc-event-title, .fc-event-title * {
+  border:none!important;
+  outline:none!important;
+  box-shadow:none!important;
+  background-clip: padding-box!important;
+}
+
+/* 툴바 */
 .fc .fc-toolbar-title{
   font-size:16px;
   font-weight:700;
