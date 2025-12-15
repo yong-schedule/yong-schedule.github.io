@@ -22,6 +22,7 @@ header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
 .fc .fc-button:active, .fc .fc-button:focus { background:#000; color:#fff; }
 .event-legend { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:20px 0; font-size:12px; }
 .event-legend div { padding:2px 6px; border-radius:4px; color:#fff; font-weight:700; }
+.event-icon { font-size:5px; color: rgba(255,255,255,0.9); }
 @media(max-width:600px){
   header { font-size:20px; margin-top:32px; }
   #calendar { max-width:98%; height:auto; margin:0 auto; padding:10px; padding-bottom:10px; }
@@ -44,7 +45,6 @@ header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
 <header>📅 솔라 스케줄</header>
 <div class="event-legend" id="legend"></div>
 <div id="calendar"></div>
-
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
@@ -64,7 +64,6 @@ header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
-
 <div id="footerLabel">✨ DC SOLAR GALLERY ✨</div>
 
 <script>
@@ -94,12 +93,12 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     customAddBtn: { 
       text: '＋ 일정 추가', 
       click: () => { 
-        selectedEvent = null;
-        document.getElementById('eventTitle').value = '';
-        document.getElementById('eventDate').value = '';
-        document.getElementById('eventLink').value = '';
-        document.getElementById('eventType').value = '';
-        document.getElementById('deleteBtn').style.display = 'none';
+        selectedEvent = null; 
+        document.getElementById('eventTitle').value = ''; 
+        document.getElementById('eventDate').value = ''; 
+        document.getElementById('eventLink').value = ''; 
+        document.getElementById('eventType').value = ''; 
+        document.getElementById('deleteBtn').style.display = 'none'; 
         modal.classList.add('show'); 
       } 
     } 
@@ -108,15 +107,16 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   eventContent: arg => {
     const type = arg.event.extendedProps.type;
     const bgColorMap = { 
-      '뮤지컬':'#EF4444', '축하':'#F97316', '발매':'#10B981', '방송':'#3B82F6',
-      'SNS':'#8B5CF6', '솔라시도':'#FACC15', '기타':'#000'
+      '뮤지컬':'#EF4444',
+      '축하':'#F97316',
+      '발매':'#10B981',
+      '방송':'#3B82F6',
+      'SNS':'#8B5CF6',
+      '솔라시도':'#FACC15',
+      '기타':'#000'
     };
     const bgColor = bgColorMap[type] || '#aaa';
-    return { html: `<div style="
-      display:flex; align-items:center; gap:2px; padding:1px 3px;
-      background:${bgColor}; color:#fff; border-radius:4px;
-      font-size:6pt; word-break:break-word; white-space:normal; overflow-wrap:break-word;
-    ">${arg.event.title}</div>` };
+    return { html: `<div style="padding:2px 4px; background:${bgColor}; color:#fff; border-radius:4px; font-size:6pt;">${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
@@ -140,6 +140,7 @@ window.addEventListener('resize', updateFooterPosition);
 window.addEventListener('scroll', updateFooterPosition);
 updateFooterPosition();
 
+// Firestore에서 일정 불러오기
 (async () => {
   const snap = await db.collection('schedules').get();
   const events = snap.docs.map(doc => ({
@@ -152,7 +153,7 @@ updateFooterPosition();
   calendar.addEventSource(events);
 })();
 
-// 저장 버튼 (신규/수정 둘 다)
+// 저장 버튼
 document.getElementById('saveBtn').onclick = async () => {
   const title = document.getElementById('eventTitle').value;
   const start = document.getElementById('eventDate').value;
@@ -165,17 +166,20 @@ document.getElementById('saveBtn').onclick = async () => {
 
   try {
     if (selectedEvent) {
+      // 수정
       await db.collection('schedules').doc(selectedEvent.id).update(data);
     } else {
+      // 새로 추가
       await db.collection('schedules').add(data);
     }
     location.reload();
-  } catch (error) {
-    console.error(error);
-    alert('일정을 저장하는데 문제가 발생했습니다.');
+  } catch (err) {
+    console.error(err);
+    alert('저장 중 오류가 발생했습니다.');
   }
 };
 
+// 삭제 버튼
 document.getElementById('deleteBtn').onclick = async () => {
   if (selectedEvent && confirm('정말 삭제하시겠습니까?')) {
     await db.collection('schedules').doc(selectedEvent.id).delete();
@@ -187,7 +191,15 @@ document.getElementById('deleteBtn').onclick = async () => {
 (function showLegend() {
   const legendEl = document.getElementById('legend');
   const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '솔라시도', '기타'];
-  const colors = { '뮤지컬': '#EF4444', '축하': '#F97316', '발매': '#10B981', '방송': '#3B82F6', 'SNS':'#8B5CF6', '솔라시도':'#FACC15', '기타': '#000000' };
+  const colors = { 
+    '뮤지컬': '#EF4444',
+    '축하': '#F97316',
+    '발매': '#10B981',
+    '방송': '#3B82F6',
+    'SNS':'#8B5CF6',
+    '솔라시도':'#FACC15',
+    '기타': '#000000'
+  };
   legendEl.innerHTML = '';
   types.forEach(t => {
     const div = document.createElement('div');
