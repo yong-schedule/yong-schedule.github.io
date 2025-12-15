@@ -54,6 +54,13 @@ header {
     outline: none !important;
     box-shadow: none !important;
 }
+.fc-event, 
+.fc-event:focus, 
+.fc-event:active, 
+.fc-event:hover {
+    outline: none !important;
+    box-shadow: none !important;
+}
 .fc .fc-toolbar-title { 
     font-size:16px; 
     font-weight:700; 
@@ -95,21 +102,21 @@ header {
         padding:10px; 
         padding-bottom:10px; 
     }
-    /* 모바일 이벤트 간 세로 padding 제거, 좌우 2px 유지 */
     .fc-daygrid-event { 
         margin:1px 0 !important; 
     }
+    /* 모바일 이벤트 좌우 margin 2px, 세로 margin 1px, padding 제거 */
     .fc-event, .fc-event-title, .fc-event-title span{
         display:block !important;
         font-size:6pt !important;
         padding-top:0 !important;    
         padding-bottom:0 !important; 
-        margin:1px 0 !important;     
+        margin:1px 2px !important;     
         background:none !important;
     }
     /* 모바일 날짜칸 최소 높이 확보 */
     #calendar .fc-daygrid-day {
-        min-height:140px; /* 충분한 여유 */
+        min-height:140px;
     }
     .fc .fc-toolbar-title { 
         font-size:14px; 
@@ -174,140 +181,4 @@ header {
   <select id="eventType">
     <option value="">종류 선택</option>
     <option value="뮤지컬">뮤지컬</option>
-    <option value="축하">축하</option>
-    <option value="발매">발매</option>
-    <option value="방송">방송</option>
-    <option value="기타">기타</option>
-    <option value="SNS">SNS</option>
-  </select>
-  <button id="saveBtn">저장</button>
-  <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
-</div>
-
-<script>
-firebase.initializeApp({
-  apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
-  authDomain: "yong-schedule.firebaseapp.com",
-  projectId: "yong-schedule"
-});
-const db = firebase.firestore();
-
-const modal = document.getElementById('modal');
-let selectedEvent = null;
-modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
-
-const calendarEl = document.getElementById('calendar');
-const calendar = new FullCalendar.Calendar(calendarEl, {
-  locale: 'ko',
-  dayHeaderFormat: { weekday: 'short' },
-  showNonCurrentDates: false,
-  fixedWeekCount: true,
-  firstDay: 1,
-  dayMinHeight: window.innerWidth > 600 ? 110 : 140, // PC:110, 모바일:140
-  height: 'auto',
-  headerToolbar: {
-    left: 'title',
-    center: '',
-    right: 'prev,next today customAddBtn'
-  },
-  customButtons: {
-    customAddBtn: {
-      text: '＋ 일정 추가',
-      click: () => {
-        selectedEvent = null;
-        document.getElementById('eventTitle').value = '';
-        document.getElementById('eventDate').value = '';
-        document.getElementById('eventLink').value = '';
-        document.getElementById('eventType').value = '';
-        document.getElementById('deleteBtn').style.display = 'none';
-        modal.classList.add('show');
-      },
-      themeIcon: '',
-    }
-  },
-  events: [],
-  eventContent: arg => {
-    const type = arg.event.extendedProps.type;
-    const link = arg.event.extendedProps.link;
-    let bgColor = '#aaa', textColor = '#fff';
-    switch (type) {
-      case '뮤지컬': bgColor = '#EF4444'; break;
-      case '축하': bgColor = '#F97316'; break;
-      case '발매': bgColor = '#10B981'; break;
-      case '방송': bgColor = '#3B82F6'; break;
-      case '기타': bgColor = '#000000'; break;
-      case 'SNS': bgColor = '#8B5CF6'; break;
-      default: bgColor = '#aaa';
-    }
-    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:0 2px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
-  },
-  eventClick: info => {
-    const e = info.event;
-    if (e.extendedProps.link) window.open(e.extendedProps.link, '_blank');
-    else {
-      selectedEvent = e;
-      document.getElementById('eventTitle').value = e.title;
-      document.getElementById('eventDate').value = e.startStr;
-      document.getElementById('eventLink').value = e.extendedProps.link || '';
-      document.getElementById('eventType').value = e.extendedProps.type || '';
-      document.getElementById('deleteBtn').style.display = 'inline-block';
-      modal.classList.add('show');
-    }
-  }
-});
-calendar.render();
-
-(async () => {
-  const snap = await db.collection('schedules').get();
-  const events = snap.docs.map(doc => ({
-    id: doc.id,
-    title: doc.data().title,
-    start: doc.data().start,
-    link: doc.data().link || '',
-    type: doc.data().type || ''
-  }));
-  calendar.addEventSource(events);
-})();
-
-document.getElementById('saveBtn').onclick = async () => {
-  const title = document.getElementById('eventTitle').value;
-  const start = document.getElementById('eventDate').value;
-  const link = document.getElementById('eventLink').value;
-  const type = document.getElementById('eventType').value;
-  if (!title || !start) return alert('제목과 날짜를 입력해주세요.');
-  const data = { title, start, link, type };
-  if (selectedEvent) {
-    await db.collection('schedules').doc(selectedEvent.id).update(data);
-  } else {
-    await db.collection('schedules').add(data);
-  }
-  location.reload();
-};
-
-document.getElementById('deleteBtn').onclick = async () => {
-  if (selectedEvent && confirm('정말 삭제하시겠습니까?')) {
-    await db.collection('schedules').doc(selectedEvent.id).delete();
-    location.reload();
-  }
-};
-
-// 범례 항상 표시
-(function showLegend() {
-  const legendEl = document.getElementById('legend');
-  const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '기타'];
-  const colors = { '뮤지컬': '#EF4444', '축하': '#F97316', '발매': '#10B981', '방송': '#3B82F6', 'SNS': '#8B5CF6', '기타': '#000000' };
-  legendEl.innerHTML = '';
-  types.forEach(t => {
-    const div = document.createElement('div');
-    div.textContent = t;
-    div.style.backgroundColor = colors[t];
-    div.style.padding = '2px 6px';
-    div.style.color = '#fff';
-    div.style.borderRadius = '4px';
-    div.style.fontWeight = '700';
-    legendEl.appendChild(div);
-  });
-})();
-</script>
-</body>
-</html>
+    <option val
