@@ -11,29 +11,32 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 body { margin:0; font-family:'Noto Sans',system-ui,sans-serif; background:#fdfdfd; }
-header { padding:16px 0 24px 0; font-size:24px; font-weight:900; text-align:center; margin-bottom:8px; }
-#calendar { max-width:750px; margin:0 auto 0 auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
-.fc-event-title { white-space: normal !important; line-height:1.2; font-family:'Noto Sans',sans-serif; background:none !important; }
-#addBtn { position:fixed; right:16px; bottom:16px; padding:12px 16px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
+header { font-size:24px; font-weight:900; text-align:center; margin:16px 0 24px 0; } /* 흰 박스 제거, 글씨만 */
+#calendar { max-width:750px; margin:0 auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
+#legend { display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-bottom:8px; font-size:12px; }
+.legend-item { display:flex; align-items:center; gap:4px; }
+.legend-color { width:12px; height:12px; border-radius:3px; display:inline-block; }
+
+#addBtn { position:fixed; right:16px; bottom:16px; padding:10px 14px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
 
 @media(max-width:600px){
-  header { font-size:20px; padding-bottom:32px; }
-  #calendar { max-width:98%; height:calc(72vh); margin:16px auto 0 auto; }
+  header { font-size:20px; margin:16px 0 28px 0; }
+  #calendar { max-width:98%; height:calc(80vh); margin:0 auto; }
   .fc-daygrid-day-frame { min-height:auto; }
   .fc-event, .fc-event-title, .fc-event-title span {
     display:block !important;
     font-size:6pt !important;
-    white-space: normal !important;
+    padding:3px !important; /* 이벤트 배경 여백 */
     line-height:1.2 !important;
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
-    padding:1px 3px !important;
-    margin-bottom:1px !important;
     background:none !important;
+    border:none !important; /* 파란 테두리 제거 */
+    white-space: normal !important;
+    word-break: break-word !important;
+    margin:1px 0 !important; /* 이벤트 간격 */
   }
-  #addBtn { padding:10px 14px; }
   .fc .fc-button { font-size:10px; padding:2px 6px; background:#000; color:#fff; border:none; }
   .fc .fc-toolbar-title { font-size:14px; }
+  #addBtn { padding:8px 12px; bottom:16px; right:16px; }
 }
 
 .modal { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; padding:16px; border-radius:8px; max-width:90%; max-height:80%; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:none; z-index:9999; }
@@ -44,7 +47,17 @@ header { padding:16px 0 24px 0; font-size:24px; font-weight:900; text-align:cent
 </style>
 </head>
 <body>
+
 <header>📅 솔라 스케줄</header>
+
+<div id="legend">
+  <div class="legend-item"><span class="legend-color" style="background:#EF4444;"></span>뮤지컬</div>
+  <div class="legend-item"><span class="legend-color" style="background:#F97316;"></span>축하</div>
+  <div class="legend-item"><span class="legend-color" style="background:#10B981;"></span>발매</div>
+  <div class="legend-item"><span class="legend-color" style="background:#3B82F6;"></span>방송</div>
+  <div class="legend-item"><span class="legend-color" style="background:#000000;"></span>기타</div>
+  <div class="legend-item"><span class="legend-color" style="background:#8B5CF6;"></span>SNS</div>
+</div>
 
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
