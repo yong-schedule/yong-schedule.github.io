@@ -31,16 +31,16 @@ header {
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
 }
-/* 이벤트 스타일 - 패딩 제거, 여백, 글씨 크기 고정, 파란 테두리 제거 */
-.fc-event, .fc-event-title, .fc-event-title span,
-.fc-event:focus, .fc-event:active, .fc-event:focus-visible {
-    padding: 0 !important;
-    margin: 1px 2px !important;  /* 세로 1px, 좌우 2px */
-    outline: 0 !important;
-    border: 0 !important;
+.fc-event-title { 
+    white-space: normal !important; 
+    font-family:'Roboto', sans-serif; 
+    background:none !important; 
+}
+.fc-event {
+    border: none !important;
+    outline: none !important;
     box-shadow: none !important;
-    font-size: 11px !important;
-    display: block !important;
+    padding:0 !important; /* 이벤트 내부 패딩 제거 */
 }
 .fc .fc-toolbar-title { 
     font-size:16px; 
@@ -71,7 +71,6 @@ header {
     color:#fff; 
     font-weight:700; 
 }
-/* 모바일 설정 */
 @media(max-width:600px){
     header { 
         font-size:20px; 
@@ -84,8 +83,20 @@ header {
         padding:10px; 
         padding-bottom:10px; 
     }
-    #calendar .fc-daygrid-day {
-        min-height:140px; /* 모바일 최소 높이 */
+    .fc-daygrid-event { 
+        margin:1px 0 !important; 
+    }
+    .fc-event, .fc-event-title, .fc-event-title span{
+        display:block !important;
+        font-size:6pt !important; /* 모바일 기본 글씨 6pt */
+        padding-top:0 !important;    
+        padding-bottom:0 !important; 
+        margin:1px 0 !important;     
+        background:none !important;
+        word-break: break-word; /* 4글자 이상 줄바꿈 */
+    }
+    .fc-daygrid-day-number {
+        font-size:6pt !important; /* 날짜 글씨 6pt */
     }
     .fc .fc-toolbar-title { 
         font-size:14px; 
@@ -94,9 +105,8 @@ header {
         font-size:10px; 
         padding:2px 6px; 
     }
-    /* 모바일 날짜 숫자 크기 6pt */
-    .fc-daygrid-day-number {
-        font-size:6pt !important;
+    #calendar .fc-daygrid-day {
+        min-height:140px;
     }
 }
 .modal { 
@@ -137,6 +147,18 @@ header {
     padding:6px 12px; 
     cursor:pointer; 
 }
+/* 하단 친근 표시 */
+#footerText {
+    position: fixed;
+    bottom: 100px;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    color: #555;
+    pointer-events: none;
+    font-weight: 700;
+    z-index: 500;
+}
 </style>
 </head>
 <body>
@@ -164,6 +186,9 @@ header {
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
 
+<!-- 하단 친근 표시 -->
+<div id="footerText">✨ DC SOLAR GALLERY ✨</div>
+
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -172,130 +197,121 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('modal');
-  let selectedEvent = null;
-  modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
+const modal = document.getElementById('modal');
+let selectedEvent = null;
+modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
 
-  const calendarEl = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    locale: 'ko',
-    dayHeaderFormat: { weekday: 'short' },
-    showNonCurrentDates: false,
-    fixedWeekCount: true,
-    firstDay: 1,
-    height: 'auto',
-    headerToolbar: {
-      left: 'title',
-      center: '',
-      right: 'prev,next today customAddBtn'
-    },
-    customButtons: {
-      customAddBtn: {
-        text: '＋ 일정 추가',
-        click: () => {
-          selectedEvent = null;
-          document.getElementById('eventTitle').value = '';
-          document.getElementById('eventDate').value = '';
-          document.getElementById('eventLink').value = '';
-          document.getElementById('eventType').value = '';
-          document.getElementById('deleteBtn').style.display = 'none';
-          modal.classList.add('show');
-        },
-      }
-    },
-    events: [],
-    eventContent: arg => {
-      const type = arg.event.extendedProps.type;
-      const link = arg.event.extendedProps.link;
-      let bgColor = '#aaa', textColor = '#fff';
-      switch (type) {
-        case '뮤지컬': bgColor = '#EF4444'; break;
-        case '축하': bgColor = '#F97316'; break;
-        case '발매': bgColor = '#10B981'; break;
-        case '방송': bgColor = '#3B82F6'; break;
-        case '기타': bgColor = '#000000'; break;
-        case 'SNS': bgColor = '#8B5CF6'; break;
-        default: bgColor = '#aaa';
-      }
-      return { 
-        html: `<div style='display:flex;align-items:center;gap:2px;
-                          margin:1px 2px;
-                          padding:0;
-                          font-size:11px;
-                          background:${bgColor};
-                          color:${textColor};
-                          border-radius:4px;
-                          box-sizing:border-box;'>${arg.event.title}</div>` 
-      };
-    },
-    eventClick: info => {
-      const e = info.event;
-      if (e.extendedProps.link) window.open(e.extendedProps.link, '_blank');
-      else {
-        selectedEvent = e;
-        document.getElementById('eventTitle').value = e.title;
-        document.getElementById('eventDate').value = e.startStr;
-        document.getElementById('eventLink').value = e.extendedProps.link || '';
-        document.getElementById('eventType').value = e.extendedProps.type || '';
-        document.getElementById('deleteBtn').style.display = 'inline-block';
+const calendarEl = document.getElementById('calendar');
+const calendar = new FullCalendar.Calendar(calendarEl, {
+  locale: 'ko',
+  dayHeaderFormat: { weekday: 'short' },
+  showNonCurrentDates: false,
+  fixedWeekCount: true,
+  firstDay: 1,
+  dayMinHeight: window.innerWidth > 600 ? 120 : 140, // PC:120, 모바일:140
+  height: 'auto',
+  headerToolbar: {
+    left: 'title',
+    center: '',
+    right: 'prev,next today customAddBtn'
+  },
+  customButtons: {
+    customAddBtn: {
+      text: '＋ 일정 추가',
+      click: () => {
+        selectedEvent = null;
+        document.getElementById('eventTitle').value = '';
+        document.getElementById('eventDate').value = '';
+        document.getElementById('eventLink').value = '';
+        document.getElementById('eventType').value = '';
+        document.getElementById('deleteBtn').style.display = 'none';
         modal.classList.add('show');
       }
     }
-  });
-  calendar.render();
-
-  (async () => {
-    const snap = await db.collection('schedules').get();
-    const events = snap.docs.map(doc => ({
-      id: doc.id,
-      title: doc.data().title,
-      start: doc.data().start,
-      link: doc.data().link || '',
-      type: doc.data().type || ''
-    }));
-    calendar.addEventSource(events);
-  })();
-
-  document.getElementById('saveBtn').onclick = async () => {
-    const title = document.getElementById('eventTitle').value;
-    const start = document.getElementById('eventDate').value;
-    const link = document.getElementById('eventLink').value;
-    const type = document.getElementById('eventType').value;
-    if (!title || !start) return alert('제목과 날짜를 입력해주세요.');
-    const data = { title, start, link, type };
-    if (selectedEvent) {
-      await db.collection('schedules').doc(selectedEvent.id).update(data);
-    } else {
-      await db.collection('schedules').add(data);
+  },
+  events: [],
+  eventContent: arg => {
+    const type = arg.event.extendedProps.type;
+    const link = arg.event.extendedProps.link;
+    let bgColor = '#aaa', textColor = '#fff';
+    switch (type) {
+      case '뮤지컬': bgColor = '#EF4444'; break;
+      case '축하': bgColor = '#F97316'; break;
+      case '발매': bgColor = '#10B981'; break;
+      case '방송': bgColor = '#3B82F6'; break;
+      case '기타': bgColor = '#000000'; break;
+      case 'SNS': bgColor = '#8B5CF6'; break;
+      default: bgColor = '#aaa';
     }
-    location.reload();
-  };
-
-  document.getElementById('deleteBtn').onclick = async () => {
-    if (selectedEvent && confirm('정말 삭제하시겠습니까?')) {
-      await db.collection('schedules').doc(selectedEvent.id).delete();
-      location.reload();
+    return { html: `<div style='display:flex;align-items:center;gap:2px;margin:2px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
+  },
+  eventClick: info => {
+    const e = info.event;
+    if (e.extendedProps.link) window.open(e.extendedProps.link, '_blank');
+    else {
+      selectedEvent = e;
+      document.getElementById('eventTitle').value = e.title;
+      document.getElementById('eventDate').value = e.startStr;
+      document.getElementById('eventLink').value = e.extendedProps.link || '';
+      document.getElementById('eventType').value = e.extendedProps.type || '';
+      document.getElementById('deleteBtn').style.display = 'inline-block';
+      modal.classList.add('show');
     }
-  };
-
-  (function showLegend() {
-    const legendEl = document.getElementById('legend');
-    const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '기타'];
-    const colors = { '뮤지컬': '#EF4444', '축하': '#F97316', '발매': '#10B981', '방송': '#3B82F6', 'SNS': '#8B5CF6', '기타': '#000000' };
-    legendEl.innerHTML = '';
-    types.forEach(t => {
-      const div = document.createElement('div');
-      div.textContent = t;
-      div.style.backgroundColor = colors[t];
-      div.style.padding = '2px 6px';
-      div.style.color = '#fff';
-      div.style.borderRadius = '4px';
-      div.style.fontWeight = '700';
-      legendEl.appendChild(div);
-    });
-  })();
+  }
 });
+calendar.render();
+
+(async () => {
+  const snap = await db.collection('schedules').get();
+  const events = snap.docs.map(doc => ({
+    id: doc.id,
+    title: doc.data().title,
+    start: doc.data().start,
+    link: doc.data().link || '',
+    type: doc.data().type || ''
+  }));
+  calendar.addEventSource(events);
+})();
+
+document.getElementById('saveBtn').onclick = async () => {
+  const title = document.getElementById('eventTitle').value;
+  const start = document.getElementById('eventDate').value;
+  const link = document.getElementById('eventLink').value;
+  const type = document.getElementById('eventType').value;
+  if (!title || !start) return alert('제목과 날짜를 입력해주세요.');
+  const data = { title, start, link, type };
+  if (selectedEvent) {
+    await db.collection('schedules').doc(selectedEvent.id).update(data);
+  } else {
+    await db.collection('schedules').add(data);
+  }
+  location.reload();
+};
+
+document.getElementById('deleteBtn').onclick = async () => {
+  if (selectedEvent && confirm('정말 삭제하시겠습니까?')) {
+    await db.collection('schedules').doc(selectedEvent.id).delete();
+    location.reload();
+  }
+};
+
+// 범례 항상 표시
+(function showLegend() {
+  const legendEl = document.getElementById('legend');
+  const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '기타'];
+  const colors = { '뮤지컬': '#EF4444', '축하': '#F97316', '발매': '#10B981', '방송': '#3B82F6', 'SNS': '#8B5CF6', '기타': '#000000' };
+  legendEl.innerHTML = '';
+  types.forEach(t => {
+    const div = document.createElement('div');
+    div.textContent = t;
+    div.style.backgroundColor = colors[t];
+    div.style.padding = '2px 6px';
+    div.style.color = '#fff';
+    div.style.borderRadius = '4px';
+    div.style.fontWeight = '700';
+    legendEl.appendChild(div);
+  });
+})();
 </script>
 </body>
 </html>
