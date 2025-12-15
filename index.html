@@ -49,17 +49,10 @@ header{
   max-width:900px;
   margin:0 auto;
   padding:0 10px;
+  padding-right:18px; /* PC 스크롤바 여유 */
   box-sizing:border-box;
-  max-height:calc(100vh - 260px);
+  max-height:calc(100vh - 260px); /* 스크롤 기준 */
   overflow-y:auto;
-}
-
-/* PC에서만 스크롤바 공간 확보 */
-@media(min-width:601px){
-  .calendar-wrap{
-    padding-right:50px;   /* 스크롤바 완충 공간 */
-    scrollbar-gutter: stable;
-  }
 }
 
 #calendar{
@@ -69,11 +62,21 @@ header{
   padding:10px;
 }
 
-/* FullCalendar */
-.fc-event{
-  border:none!important;
-  box-shadow:none!important;
+/* 이벤트 기본 스타일 제거 */
+.fc-event,
+.fc-event * {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+  background-clip: padding-box;
 }
+
+/* PC 날짜 폰트 */
+.fc-daygrid-day-number{
+  font-size:10pt;
+}
+
+/* PC 툴바 */
 .fc .fc-toolbar-title{
   font-size:16px;
   font-weight:700;
@@ -85,10 +88,9 @@ header{
   color:#fff;
   border:none;
 }
-
-/* PC 날짜 폰트 */
-.fc-daygrid-day-number{
-  font-size:10pt;
+.fc .fc-button:focus,
+.fc .fc-button:active{
+  background:#000;
 }
 
 /* 모바일 */
@@ -110,27 +112,6 @@ header{
     font-size:10px;
     padding:2px 6px;
   }
-}
-
-/* 포커스 파란 테두리 완전 제거 (모바일/PC 모든 이벤트 포함) */
-*,
-*::before,
-*::after,
-.fc *,
-.fc *::before,
-.fc *::after,
-.fc-event,
-.fc-event * {
-  outline: none !important;
-  box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent; /* 모바일/크롬 포커스 제거 */
-}
-.fc-event:focus,
-.fc-event:focus-visible,
-.fc-event *:focus,
-.fc-event *:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
 }
 
 /* 모달 */
@@ -219,7 +200,7 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-/* 범례 */
+/* 범례 생성 */
 const legendData={
   '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6',
   'SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EC4899','기타':'#000'
