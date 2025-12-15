@@ -204,8 +204,8 @@ document.getElementById('deleteBtn').onclick = async () => {
 // 범례 표시
 (function showLegend() {
   const legendEl = document.getElementById('legend');
-  const types = ['뮤지컬','축하','발매','방송','SNS','솔라시도','기타'];
-  const colors = { '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#FACC15','기타':'#000000' };
+  const types = ['뮤지컬','축하','발매','방송','SNS','솔라시도','공식','기타'];
+  const colors = { '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EC4899','기타':'#000000' };
   legendEl.innerHTML = '';
   types.forEach(t => {
     const div = document.createElement('div');
@@ -221,4 +221,5 @@ document.getElementById('deleteBtn').onclick = async () => {
 </script>
 </body>
 </html>
+
 
