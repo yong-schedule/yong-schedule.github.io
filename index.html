@@ -49,9 +49,9 @@ header{
   max-width:900px;
   margin:0 auto;
   padding:0 10px;
-  padding-right:18px;                /* PC 스크롤바 여유 */
+  padding-right:18px;                
   box-sizing:border-box;
-  max-height:calc(100vh - 260px);    /* 스크롤 기준 */
+  max-height:calc(100vh - 260px);    
   overflow-y:auto;
 }
 
@@ -64,15 +64,12 @@ header{
 
 /* 이벤트 파란 테두리 완전 제거 */
 .fc-event,
-.fc-event *,
-.fc-event-main-frame,
-.fc-event-main,
-.fc-event-title,
-.fc-event-title * {
-    border: none !important;
+.fc-event a,
+.fc-event div,
+.fc-event * {
     outline: none !important;
     box-shadow: none !important;
-    -webkit-tap-highlight-color: transparent !important;
+    border: none !important;
     background-clip: padding-box !important;
 }
 
