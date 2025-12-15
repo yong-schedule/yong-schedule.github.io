@@ -11,32 +11,33 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 body { margin:0; font-family:'Noto Sans',system-ui,sans-serif; background:#fdfdfd; }
-header { font-size:24px; font-weight:900; text-align:center; margin:16px 0 24px 0; } /* 흰 박스 제거, 글씨만 */
-#calendar { max-width:750px; margin:0 auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
-#legend { display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-bottom:8px; font-size:12px; }
-.legend-item { display:flex; align-items:center; gap:4px; }
-.legend-color { width:12px; height:12px; border-radius:3px; display:inline-block; }
+header { font-size:24px; font-weight:900; text-align:center; margin-top:12px; }
+#calendar { max-width:750px; margin:16px auto 0 auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
+.fc-event-title { white-space: normal !important; line-height:1.2; font-family:'Noto Sans',sans-serif; background:none !important; }
+#addBtn { position:fixed; right:16px; bottom:16px; padding:12px 16px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
 
-#addBtn { position:fixed; right:16px; bottom:16px; padding:10px 14px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
+.fc .fc-toolbar-title { font-size:16px; font-weight:700; }
+.fc .fc-button { background:#000; color:#fff; border:none; }
+.fc .fc-button:hover { background:#333; color:#fff; }
+.fc .fc-button-primary { background:#000; color:#fff; }
+
+#legend { display:flex; justify-content:center; gap:8px; margin-top:6px; flex-wrap:wrap; font-size:10px; }
+.legend-item { display:flex; align-items:center; gap:4px; padding:2px 4px; border-radius:4px; color:#fff; font-weight:600; }
 
 @media(max-width:600px){
-  header { font-size:20px; margin:16px 0 28px 0; }
-  #calendar { max-width:98%; height:calc(80vh); margin:0 auto; }
-  .fc-daygrid-day-frame { min-height:auto; }
+  header { font-size:20px; margin-top:20px; }
+  #calendar { max-width:98%; height:calc(80vh); margin:8px auto; padding-bottom:10px; } /* 하단 여백 10px */
+  .fc .fc-toolbar-title { font-size:14px; }
+  .fc .fc-button { font-size:10px; padding:2px 6px; }
   .fc-event, .fc-event-title, .fc-event-title span {
     display:block !important;
     font-size:6pt !important;
-    padding:3px !important; /* 이벤트 배경 여백 */
-    line-height:1.2 !important;
-    background:none !important;
-    border:none !important; /* 파란 테두리 제거 */
     white-space: normal !important;
-    word-break: break-word !important;
-    margin:1px 0 !important; /* 이벤트 간격 */
+    line-height:1.2 !important;
+    padding:3px !important;
+    margin:1px !important;
+    background:none !important;
   }
-  .fc .fc-button { font-size:10px; padding:2px 6px; background:#000; color:#fff; border:none; }
-  .fc .fc-toolbar-title { font-size:14px; }
-  #addBtn { padding:8px 12px; bottom:16px; right:16px; }
 }
 
 .modal { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; padding:16px; border-radius:8px; max-width:90%; max-height:80%; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:none; z-index:9999; }
@@ -47,18 +48,9 @@ header { font-size:24px; font-weight:900; text-align:center; margin:16px 0 24px 
 </style>
 </head>
 <body>
-
 <header>📅 솔라 스케줄</header>
 
-<div id="legend">
-  <div class="legend-item"><span class="legend-color" style="background:#EF4444;"></span>뮤지컬</div>
-  <div class="legend-item"><span class="legend-color" style="background:#F97316;"></span>축하</div>
-  <div class="legend-item"><span class="legend-color" style="background:#10B981;"></span>발매</div>
-  <div class="legend-item"><span class="legend-color" style="background:#3B82F6;"></span>방송</div>
-  <div class="legend-item"><span class="legend-color" style="background:#000000;"></span>기타</div>
-  <div class="legend-item"><span class="legend-color" style="background:#8B5CF6;"></span>SNS</div>
-</div>
-
+<div id="legend"></div>
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
 
@@ -74,8 +66,8 @@ header { font-size:24px; font-weight:900; text-align:center; margin:16px 0 24px 
     <option value="축하">축하</option>
     <option value="발매">발매</option>
     <option value="방송">방송</option>
-    <option value="기타">기타</option>
     <option value="SNS">SNS</option>
+    <option value="기타">기타</option>
   </select>
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
@@ -87,12 +79,10 @@ firebase.initializeApp({
   authDomain: "yong-schedule.firebaseapp.com",
   projectId: "yong-schedule"
 });
-
 const db = firebase.firestore();
 const addBtn = document.getElementById('addBtn');
 const modal = document.getElementById('modal');
 let selectedEvent = null;
-
 modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
 
 addBtn.onclick = () => {
@@ -105,7 +95,19 @@ addBtn.onclick = () => {
   modal.classList.add('show');
 };
 
+const legendEl = document.getElementById('legend');
 const calendarEl = document.getElementById('calendar');
+const eventColors = { '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6','SNS':'#8B5CF6','기타':'#000000' };
+
+// 범례 렌더
+for(const [k,v] of Object.entries(eventColors)){
+  const div = document.createElement('div');
+  div.className='legend-item';
+  div.style.background=v;
+  div.innerText=k;
+  legendEl.appendChild(div);
+}
+
 const calendar = new FullCalendar.Calendar(calendarEl, {
   locale: 'ko',
   dayHeaderFormat: { weekday: 'short' },
@@ -117,20 +119,9 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   events: [],
   eventContent: arg => {
     const type = arg.event.extendedProps.type;
-    const link = arg.event.extendedProps.link;
-    let bgColor='#aaa', textColor='#fff';
-
-    switch(type){
-      case '뮤지컬': bgColor='#EF4444'; break;
-      case '축하': bgColor='#F97316'; break;
-      case '발매': bgColor='#10B981'; break;
-      case '방송': bgColor='#3B82F6'; break;
-      case '기타': bgColor='#000000'; break;
-      case 'SNS': bgColor='#8B5CF6'; break;
-      default: bgColor='#aaa';
-    }
-
-    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
+    const bgColor = eventColors[type] || '#aaa';
+    const textColor='#fff';
+    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:3px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
@@ -165,9 +156,7 @@ document.getElementById('saveBtn').onclick = async () => {
   const start = document.getElementById('eventDate').value;
   const link = document.getElementById('eventLink').value;
   const type = document.getElementById('eventType').value;
-
   if(!title || !start) return alert('제목과 날짜를 입력해주세요.');
-
   const data = { title, start, link, type };
   if(selectedEvent){
     await db.collection('schedules').doc(selectedEvent.id).update(data);
