@@ -325,7 +325,7 @@ function adjustFooter() {
     const rect = calendarEl.getBoundingClientRect();
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const calendarBottom = rect.bottom + scrollTop;
-    footer.style.top = (calendarBottom + 20) + 'px'; // 달력 끝에서 20px 아래
+    footer.style.top = (calendarBottom + 10) + 'px'; // 달력 끝에서 10px 아래
 }
 adjustFooter();
 window.addEventListener('resize', adjustFooter);
@@ -333,3 +333,4 @@ window.addEventListener('scroll', adjustFooter);
 </script>
 </body>
 </html>
+
