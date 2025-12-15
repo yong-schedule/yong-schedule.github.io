@@ -4,87 +4,47 @@
 <meta charset="UTF-8" />
 <title>솔라 스케줄</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<!-- ✅ stylesheet로 수정 -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-body { margin:0; font-family:'Roboto', system-ui, sans-serif; background:#fdfdfd; }
+body { margin:0; font-family:'Roboto', system-ui, sans-serif; background:#fdfdfd; position:relative; }
 header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
-
-#calendar {
-  max-width:900px;
-  margin:50px auto 0;
-  padding:10px;
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 2px 6px rgba(0,0,0,.05);
-}
-
-.fc-event { border:none !important; box-shadow:none !important; }
+#calendar { max-width:900px; margin:50px auto 0 auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); padding-bottom:10px; }
+.fc-event-title { white-space: normal !important; font-family:'Roboto', sans-serif; background:none !important; }
+.fc-event { border: none !important; outline: none !important; box-shadow: none !important; }
 .fc .fc-toolbar-title { font-size:16px; font-weight:700; }
 .fc .fc-button { font-size:12px; padding:4px 8px; background:#000; color:#fff; border:none; }
-
-.event-legend {
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
-  justify-content:center;
-  margin:20px 0;
-  font-size:12px;
-}
-
-.event-icon { font-size:4pt; color:rgba(255,255,255,0.9); }
-
+.fc .fc-button:active, .fc .fc-button:focus { background:#000; color:#fff; }
+.event-legend { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:20px 0; font-size:12px; }
+.event-legend div { padding:2px 6px; border-radius:4px; color:#fff; font-weight:700; }
+.event-icon { font-size:4pt; color: rgba(255,255,255,0.9); }
 @media(max-width:600px){
   header { font-size:20px; margin-top:32px; }
-  #calendar { max-width:98%; margin:0 auto; }
+  #calendar { max-width:98%; height:auto; margin:0 auto; padding:10px; padding-bottom:10px; }
+  .fc-daygrid-event { margin:1px 0 !important; }
+  .fc-event, .fc-event-title, .fc-event-title span{
+    display:block !important; padding:1px 3px !important; margin:1px 0 !important;
+    background:none !important; word-break: break-word; white-space: normal; overflow-wrap: break-word;
+  }
   #calendar .fc-daygrid-day { min-height:140px; }
   .fc-daygrid-day-number { font-size:6pt !important; }
+  .fc .fc-toolbar-title { font-size:14px; }
+  .fc .fc-button { font-size:10px; padding:2px 6px; }
 }
-
-.modal {
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:#fff;
-  padding:16px;
-  border-radius:8px;
-  max-width:90%;
-  max-height:80%;
-  overflow-y:auto;
-  box-shadow:0 4px 12px rgba(0,0,0,0.3);
-  display:none;
-  z-index:9999;
-}
+.modal { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; padding:16px; border-radius:8px; max-width:90%; max-height:80%; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:none; z-index:9999; }
 .modal.show { display:block; }
-
-#footerLabel {
-  position:fixed;
-  bottom:10px;
-  left:0;
-  width:100%;
-  text-align:center;
-  font-size:10pt;
-  color:#aaa;
-}
-
-@media (min-width:601px) and (max-height:700px){
-  #footerLabel { display:none; }
-}
+.modal .close-btn { position:absolute; top:8px; right:8px; border:none; background:none; font-size:18px; cursor:pointer; }
+.modal input, .modal select { width:100%; margin:6px 0; padding:6px; box-sizing:border-box; }
+.modal button { margin-top:8px; padding:6px 12px; cursor:pointer; }
+#footerLabel { position: fixed; bottom: 30px; left: 0; width: 100%; text-align:center; font-size:10pt; color:#aaa; z-index:1000; }
 </style>
 </head>
-
 <body>
 <header>📅 솔라 스케줄</header>
-
 <div class="event-legend" id="legend"></div>
 <div id="calendar"></div>
 
@@ -96,17 +56,17 @@ header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
   <input id="eventLink" placeholder="링크 (선택)">
   <select id="eventType">
     <option value="">종류 선택</option>
-    <option>뮤지컬</option>
-    <option>축하</option>
-    <option>발매</option>
-    <option>방송</option>
-    <option>SNS</option>
-    <option>솔라시도</option>
-    <option>공식</option>
-    <option>기타</option>
+    <option value="뮤지컬">뮤지컬</option>
+    <option value="축하">축하</option>
+    <option value="발매">발매</option>
+    <option value="방송">방송</option>
+    <option value="SNS">SNS</option>
+    <option value="솔라시도">솔라시도</option>
+    <option value="공식">공식</option>
+    <option value="기타">기타</option>
   </select>
   <button id="saveBtn">저장</button>
-  <button id="deleteBtn" style="background:#ef4444;color:#fff;">삭제</button>
+  <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
 
 <div id="footerLabel">✨ DC SOLAR GALLERY ✨</div>
@@ -118,48 +78,149 @@ firebase.initializeApp({
   projectId: "yong-schedule"
 });
 const db = firebase.firestore();
+const modal = document.getElementById('modal');
+let selectedEvent = null;
+modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
 
-const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-  locale:'ko',
-  firstDay:1,
-  height:'auto',
+const calendarEl = document.getElementById('calendar');
+
+const calendar = new FullCalendar.Calendar(calendarEl, {
+  locale: 'ko',
+  dayHeaderFormat: { weekday: 'short' },
+  showNonCurrentDates: false,
+  fixedWeekCount: true,
+  firstDay: 1,
   dayMinHeight: window.innerWidth > 600 ? 120 : 140,
-  headerToolbar:{ left:'title', right:'prev,next today' },
+  height: 'auto',
+  headerToolbar: { left: 'title', center: '', right: 'prev,next today customAddBtn' },
+  customButtons: { 
+    customAddBtn: { 
+      text: '＋ 일정 추가', 
+      click: () => { 
+        selectedEvent = null; 
+        document.getElementById('eventTitle').value = ''; 
+        document.getElementById('eventDate').value = ''; 
+        document.getElementById('eventLink').value = ''; 
+        document.getElementById('eventType').value = ''; 
+        document.getElementById('deleteBtn').style.display = 'none'; 
+        modal.classList.add('show'); 
+      } 
+    } 
+  },
+  events: [],
   eventContent: arg => {
-    const colors = {
-      뮤지컬:'#EF4444', 축하:'#F97316', 발매:'#10B981', 방송:'#3B82F6',
-      SNS:'#8B5CF6', 솔라시도:'#FACC15', 공식:'#EC4899', 기타:'#000'
+    const type = arg.event.extendedProps.type;
+    const link = arg.event.extendedProps.link;
+    const bgColorMap = { 
+      '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6',
+      'SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EC4899','기타':'#000'
     };
-    const size = window.innerWidth <= 600 ? '5pt' : '8pt';
-    return {
-      html:`<div style="
-        background:${colors[arg.event.extendedProps.type] || '#aaa'};
-        color:#fff; border-radius:4px; padding:1px 3px;
-        font-size:${size};
-      ">${arg.event.title}</div>`
-    };
+    const bgColor = bgColorMap[type] || '#aaa';
+
+    let iconHTML = '';
+    if(link){
+      if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
+      else if(link.includes('youtube')) iconHTML = '<i class="fab fa-youtube event-icon"></i>';
+      else iconHTML = '<i class="fas fa-link event-icon"></i>';
+    }
+
+    let fontSize;
+    if(window.innerWidth <= 600){ // 모바일
+      fontSize = '5pt';
+      if(arg.event.title.length >= 6) fontSize = '4pt';
+    } else { // PC
+      fontSize = '8pt';
+    }
+
+    return { html: `<div style="
+      display:flex; align-items:center; gap:2px; padding:1px 3px;
+      background:${bgColor}; color:#fff; border-radius:4px;
+      font-size:${fontSize}; word-break:break-word; white-space:normal; overflow-wrap:break-word;
+    ">${iconHTML} ${arg.event.title}</div>` };
+  },
+  eventClick: info => {
+    const e = info.event;
+    selectedEvent = e;
+    document.getElementById('eventTitle').value = e.title;
+    document.getElementById('eventDate').value = e.startStr;
+    document.getElementById('eventLink').value = e.extendedProps.link || '';
+    document.getElementById('eventType').value = e.extendedProps.type || '';
+    document.getElementById('deleteBtn').style.display = 'inline-block';
+    modal.classList.add('show');
+  },
+  eventDidMount: info => {
+    const link = info.event.extendedProps.link;
+    if(link){
+      let pressTimer;
+      const openLink = () => { window.open(link,'_blank'); };
+      const isTouchDevice = 'ontouchstart' in window;
+      if(isTouchDevice){
+        info.el.addEventListener('touchstart', e => { pressTimer = setTimeout(openLink,600); });
+        info.el.addEventListener('touchend', e => { clearTimeout(pressTimer); });
+        info.el.addEventListener('touchmove', e => { clearTimeout(pressTimer); });
+      } else {
+        info.el.addEventListener('dblclick', openLink);
+      }
+    }
   }
 });
 calendar.render();
 
-// ✅ 범례 (문법 에러 완전 제거)
-(function(){
-  const legend = document.getElementById('legend');
-  const colors = {
-    뮤지컬:'#EF4444', 축하:'#F97316', 발매:'#10B981', 방송:'#3B82F6',
-    SNS:'#8B5CF6', 솔라시도:'#FACC15', 공식:'#EC4899', 기타:'#000'
-  };
-  Object.keys(colors).forEach(t=>{
-    const div=document.createElement('div');
-    div.textContent=t;
-    div.style.backgroundColor=colors[t];
-    div.style.color='#fff';
-    div.style.padding='2px 6px';
-    div.style.borderRadius='4px';
-    div.style.fontWeight='700';
-    legend.appendChild(div);
+// Firestore에서 일정 불러오기
+(async () => {
+  const snap = await db.collection('schedules').get();
+  const events = snap.docs.map(doc => ({
+    id: doc.id, title: doc.data().title, start: doc.data().start,
+    link: doc.data().link || '', type: doc.data().type || ''
+  }));
+  calendar.addEventSource(events);
+})();
+
+// 저장 버튼
+document.getElementById('saveBtn').onclick = async () => {
+  const title = document.getElementById('eventTitle').value;
+  const start = document.getElementById('eventDate').value;
+  const link = document.getElementById('eventLink').value;
+  const type = document.getElementById('eventType').value;
+  if (!title || !start) return alert('제목과 날짜를 입력해주세요.');
+  const data = { title, start, link, type };
+  if (selectedEvent) {
+    await db.collection('schedules').doc(selectedEvent.id).update(data);
+  } else {
+    const docRef = await db.collection('schedules').add(data);
+    calendar.addEvent({ id: docRef.id, ...data });
+  }
+  modal.classList.remove('show');
+};
+
+// 삭제 버튼
+document.getElementById('deleteBtn').onclick = async () => {
+  if (selectedEvent && confirm('정말 삭제하시겠습니까?')) {
+    await db.collection('schedules').doc(selectedEvent.id).delete();
+    calendar.getEventById(selectedEvent.id).remove();
+    modal.classList.remove('show');
+  }
+};
+
+// 범례 표시
+(function showLegend() {
+  const legendEl = document.getElementById('legend');
+  const types = ['뮤지컬','축하','발매','방송','SNS','솔라시도','공식','기타'];
+  const colors = { '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EC4899','기타':'#000000' };
+  legendEl.innerHTML = '';
+  types.forEach(t => {
+    const div = document.createElement('div');
+    div.textContent = t;
+    div.style.backgroundColor = colors[t];
+    div.style.padding = '2px 6px';
+    div.style.color = '#fff';
+    div.style.borderRadius = '4px';
+    div.style.fontWeight = '700';
+    legendEl.appendChild(div);
   });
 })();
 </script>
 </body>
 </html>
+
+
