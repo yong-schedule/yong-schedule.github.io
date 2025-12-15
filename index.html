@@ -44,14 +44,14 @@ header{
   font-weight:700;
 }
 
-/* 스크롤 래퍼 */
+/* 캘린더 스크롤 래퍼 */
 .calendar-wrap{
   max-width:900px;
   margin:0 auto;
   padding:0 10px;
-  padding-right:18px;          /* PC 스크롤바 여유 */
+  padding-right:18px;                /* PC 스크롤바 여유 */
   box-sizing:border-box;
-  max-height:calc(100vh - 260px);
+  max-height:calc(100vh - 260px);    /* 스크롤 기준 */
   overflow-y:auto;
 }
 
@@ -108,6 +108,16 @@ header{
   }
 }
 
+/* 파란 테두리(포커스) 완전 제거 */
+*:focus{
+  outline:none!important;
+  box-shadow:none!important;
+}
+.fc *:focus{
+  outline:none!important;
+  box-shadow:none!important;
+}
+
 /* 모달 */
 .modal{
   position:fixed;
@@ -140,7 +150,7 @@ header{
   padding:6px;
 }
 
-/* 하단 */
+/* 하단 고정 */
 #footerLabel{
   position:fixed;
   bottom:30px;
@@ -194,7 +204,7 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-/* 범례 생성 (모바일 복구) */
+/* 범례 생성 */
 const legendData={
   '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6',
   'SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EC4899','기타':'#000'
@@ -236,9 +246,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   eventContent: arg => {
     const type = arg.event.extendedProps.type;
     const link = arg.event.extendedProps.link;
-
-    const bgColorMap = legendData;
-    const bgColor = bgColorMap[type] || '#aaa';
+    const bgColor = legendData[type] || '#aaa';
 
     let iconHTML = '';
     if(link){
@@ -256,7 +264,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     }
 
     return {
-      html: `<div style="
+      html:`<div style="
         display:flex;
         align-items:center;
         gap:2px;
@@ -293,7 +301,7 @@ calendar.render();
 
 /* 저장 */
 saveBtn.onclick=async()=>{
-  if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜 입력');
+  if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
   const data={
     title:eventTitle.value,
     start:eventDate.value,
@@ -311,7 +319,7 @@ saveBtn.onclick=async()=>{
 
 /* 삭제 */
 deleteBtn.onclick=async()=>{
-  if(selectedEvent&&confirm('삭제할까?')){
+  if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
     await db.collection('schedules').doc(selectedEvent.id).delete();
     calendar.getEventById(selectedEvent.id).remove();
     modal.classList.remove('show');
