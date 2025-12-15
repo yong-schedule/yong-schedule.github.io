@@ -62,21 +62,21 @@ header{
   padding:10px;
 }
 
-/* 이벤트 기본 스타일 제거 */
-.fc-event,
-.fc-event * {
+.fc-event{
+  border:none!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+
+/* 이벤트 안 모든 요소, 모바일·PC 모두 */
+.fc-event, .fc-event * {
   outline: none !important;
   box-shadow: none !important;
-  -webkit-tap-highlight-color: transparent;
-  background-clip: padding-box;
+  -webkit-tap-highlight-color: transparent !important;
+  border: none !important;
+  background-clip: padding-box !important;
 }
 
-/* PC 날짜 폰트 */
-.fc-daygrid-day-number{
-  font-size:10pt;
-}
-
-/* PC 툴바 */
 .fc .fc-toolbar-title{
   font-size:16px;
   font-weight:700;
@@ -91,6 +91,11 @@ header{
 .fc .fc-button:focus,
 .fc .fc-button:active{
   background:#000;
+}
+
+/* PC 날짜 폰트 */
+.fc-daygrid-day-number{
+  font-size:10pt;
 }
 
 /* 모바일 */
