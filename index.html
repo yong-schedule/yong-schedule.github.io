@@ -21,7 +21,6 @@ body{
   background:#fdfdfd;
 }
 
-/* 헤더 */
 header{
   font-size:24px;
   font-weight:900;
@@ -45,16 +44,17 @@ header{
   font-weight:700;
 }
 
-/* 캘린더 래퍼 (스크롤 핵심) */
+/* 스크롤 래퍼 */
 .calendar-wrap{
   max-width:900px;
   margin:0 auto;
   padding:0 10px;
+  padding-right:18px;          /* PC 스크롤바 여유 */
+  box-sizing:border-box;
   max-height:calc(100vh - 260px);
   overflow-y:auto;
 }
 
-/* 캘린더 */
 #calendar{
   background:#fff;
   border-radius:8px;
@@ -62,8 +62,14 @@ header{
   padding:10px;
 }
 
-.fc-event{ border:none!important; box-shadow:none!important; }
-.fc .fc-toolbar-title{ font-size:16px; font-weight:700; }
+.fc-event{
+  border:none!important;
+  box-shadow:none!important;
+}
+.fc .fc-toolbar-title{
+  font-size:16px;
+  font-weight:700;
+}
 .fc .fc-button{
   font-size:12px;
   padding:4px 8px;
@@ -72,23 +78,41 @@ header{
   border:none;
 }
 .fc .fc-button:focus,
-.fc .fc-button:active{ background:#000; }
+.fc .fc-button:active{
+  background:#000;
+}
+
+/* PC 날짜 폰트 */
+.fc-daygrid-day-number{
+  font-size:10pt;
+}
 
 /* 모바일 */
 @media(max-width:600px){
-  header{ font-size:20px; margin-top:32px; }
+  header{
+    font-size:20px;
+    margin-top:32px;
+  }
   .calendar-wrap{
     max-height:calc(100vh - 260px);
   }
-  .fc-daygrid-day-number{ font-size:6pt!important; }
-  .fc .fc-toolbar-title{ font-size:14px; }
-  .fc .fc-button{ font-size:10px; padding:2px 6px; }
+  .fc-daygrid-day-number{
+    font-size:6pt!important;
+  }
+  .fc .fc-toolbar-title{
+    font-size:14px;
+  }
+  .fc .fc-button{
+    font-size:10px;
+    padding:2px 6px;
+  }
 }
 
 /* 모달 */
 .modal{
   position:fixed;
-  top:50%; left:50%;
+  top:50%;
+  left:50%;
   transform:translate(-50%,-50%);
   background:#fff;
   padding:16px;
@@ -102,19 +126,21 @@ header{
 .modal.show{ display:block; }
 .modal .close-btn{
   position:absolute;
-  top:8px; right:8px;
+  top:8px;
+  right:8px;
   border:none;
   background:none;
   font-size:18px;
   cursor:pointer;
 }
-.modal input, .modal select{
+.modal input,
+.modal select{
   width:100%;
   margin:6px 0;
   padding:6px;
 }
 
-/* 하단 고정 */
+/* 하단 */
 #footerLabel{
   position:fixed;
   bottom:30px;
@@ -131,7 +157,6 @@ header{
 <body>
 
 <header>📅 솔라 스케줄</header>
-
 <div class="event-legend" id="legend"></div>
 
 <div class="calendar-wrap">
@@ -169,14 +194,15 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-/* 범례 생성 (모바일 안 보이던 원인 해결) */
+/* 범례 생성 (모바일 복구) */
 const legendData={
   '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981','방송':'#3B82F6',
   'SNS':'#8B5CF6','솔라시도':'#FACC15','공식':'#EC4899','기타':'#000'
 };
-const legend=document.getElementById('legend');
-legend.innerHTML=Object.entries(legendData)
-  .map(([k,v])=>`<div style="background:${v}">${k}</div>`).join('');
+document.getElementById('legend').innerHTML =
+  Object.entries(legendData)
+    .map(([k,v])=>`<div style="background:${v}">${k}</div>`)
+    .join('');
 
 const modal=document.getElementById('modal');
 modal.querySelector('.close-btn').onclick=()=>modal.classList.remove('show');
@@ -207,20 +233,51 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     }
   },
   events:[],
-  eventContent:arg=>{
-    const c=legendData[arg.event.extendedProps.type]||'#aaa';
-    return{html:`<div style="background:${c};color:#fff;
-      border-radius:4px;padding:2px 4px;font-size:8pt">
-      ${arg.event.title}</div>`};
+  eventContent: arg => {
+    const type = arg.event.extendedProps.type;
+    const link = arg.event.extendedProps.link;
+
+    const bgColorMap = legendData;
+    const bgColor = bgColorMap[type] || '#aaa';
+
+    let iconHTML = '';
+    if(link){
+      if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
+      else if(link.includes('youtube')) iconHTML = '<i class="fab fa-youtube event-icon"></i>';
+      else iconHTML = '<i class="fas fa-link event-icon"></i>';
+    }
+
+    let fontSize;
+    if(window.innerWidth <= 600){
+      fontSize = '5pt';
+      if(arg.event.title.length >= 6) fontSize = '4pt';
+    }else{
+      fontSize = '8pt';
+    }
+
+    return {
+      html: `<div style="
+        display:flex;
+        align-items:center;
+        gap:2px;
+        padding:1px 3px;
+        background:${bgColor};
+        color:#fff;
+        border-radius:4px;
+        font-size:${fontSize};
+        word-break:break-word;
+        white-space:normal;
+      ">${iconHTML} ${arg.event.title}</div>`
+    };
   },
-  eventClick:info=>{
-    const e=info.event;
-    selectedEvent=e;
-    eventTitle.value=e.title;
-    eventDate.value=e.startStr;
-    eventLink.value=e.extendedProps.link||'';
-    eventType.value=e.extendedProps.type||'';
-    deleteBtn.style.display='inline-block';
+  eventClick: info => {
+    const e = info.event;
+    selectedEvent = e;
+    eventTitle.value = e.title;
+    eventDate.value = e.startStr;
+    eventLink.value = e.extendedProps.link || '';
+    eventType.value = e.extendedProps.type || '';
+    deleteBtn.style.display = 'inline-block';
     modal.classList.add('show');
   }
 });
@@ -236,7 +293,7 @@ calendar.render();
 
 /* 저장 */
 saveBtn.onclick=async()=>{
-  if(!eventTitle.value||!eventDate.value) return alert('제목/날짜 필요');
+  if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜 입력');
   const data={
     title:eventTitle.value,
     start:eventDate.value,
@@ -261,5 +318,6 @@ deleteBtn.onclick=async()=>{
   }
 };
 </script>
+
 </body>
 </html>
