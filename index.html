@@ -139,10 +139,9 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
       word-break:break-word;
       white-space: normal;
       overflow-wrap: break-word;
-    ">${iconHTML} ${arg.event.title}</div>` }; // 아이콘 글씨 앞 배치
+    ">${iconHTML} ${arg.event.title}</div>` };
   },
   eventClick: info => {
-    // 일반 클릭 → 모달
     const e = info.event;
     selectedEvent = e;
     document.getElementById('eventTitle').value = e.title;
@@ -160,12 +159,10 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
       const isTouchDevice = 'ontouchstart' in window;
 
       if(isTouchDevice){
-        // 모바일: 길게 누르면 링크만
         info.el.addEventListener('touchstart', e => { pressTimer = setTimeout(openLink,600); });
         info.el.addEventListener('touchend', e => { clearTimeout(pressTimer); });
         info.el.addEventListener('touchmove', e => { clearTimeout(pressTimer); });
       } else {
-        // PC: 더블 클릭 시 링크
         info.el.addEventListener('dblclick', openLink);
       }
     }
@@ -173,6 +170,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
 });
 calendar.render();
 
+// 달력 끝 기준 DC SOLAR GALLERY 위치
 function updateFooterPosition(){
   const rect = calendarEl.getBoundingClientRect();
   footerLabel.style.top = window.scrollY + rect.bottom + 10 + 'px';
@@ -203,7 +201,7 @@ document.getElementById('saveBtn').onclick = async () => {
   if (selectedEvent) {
     await db.collection('schedules').doc(selectedEvent.id).update(data);
   } else {
-    await db.collection('schedules').add(data);
+    await db.collection('schedules').doc(selectedEvent.id).add(data);
   }
   location.reload();
 };
@@ -215,7 +213,7 @@ document.getElementById('deleteBtn').onclick = async () => {
   }
 };
 
-// 범례 항상 표시
+// 범례 표시
 (function showLegend() {
   const legendEl = document.getElementById('legend');
   const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '솔라시도', '기타'];
