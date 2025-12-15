@@ -157,51 +157,44 @@ calendar.on('eventDidMount', info => {
   const el = info.el;
   const e = info.event;
   const link = e.extendedProps.link;
-  let longPress=false, touchTimer=null, clickTimer=null;
+  let pressTimer = null;
+  let startTime = 0;
 
-  // 모바일 롱프레스
-  el.addEventListener('touchstart', ()=>{
-    longPress=false;
-    touchTimer=setTimeout(()=>{
-      longPress=true;
-      if(link) window.open(link,'_blank');
-    },600);
-  });
-  el.addEventListener('touchend', ()=>{
-    clearTimeout(touchTimer);
-    if(!longPress){
-      selectedEvent = e;
-      eventTitle.value = e.title;
-      eventDate.value = e.startStr;
-      eventLink.value = e.extendedProps.link || '';
-      eventType.value = e.extendedProps.type || '';
-      deleteBtn.style.display='inline-block';
-      modal.classList.add('show');
+  const openModal = () => {
+    selectedEvent = e;
+    eventTitle.value = e.title;
+    eventDate.value = e.startStr;
+    eventLink.value = e.extendedProps.link || '';
+    eventType.value = e.extendedProps.type || '';
+    deleteBtn.style.display='inline-block';
+    modal.classList.add('show');
+  };
+
+  // 롱프레스 시작
+  const startPress = (ev) => {
+    ev.preventDefault();
+    startTime = ev.timeStamp;
+    pressTimer = setTimeout(() => openModal(), 600); // 0.6초 이상 누르면 모달
+  };
+
+  // 롱프레스 끝
+  const endPress = (ev) => {
+    clearTimeout(pressTimer);
+    const duration = ev.timeStamp - startTime;
+    if(duration < 600 && link){ // 짧게 누르면 링크 열기
+      window.open(link,'_blank');
     }
-  });
+  };
 
-  // PC 더블클릭
-  el.addEventListener('dblclick', ()=>{
-    if(link) window.open(link,'_blank');
-    clearTimeout(clickTimer);
-  });
+  // 모바일
+  el.addEventListener('touchstart', startPress);
+  el.addEventListener('touchend', endPress);
 
-  // PC 일반 클릭
-  el.addEventListener('click', ()=>{
-    if(window.innerWidth>600){
-      clearTimeout(clickTimer);
-      clickTimer=setTimeout(()=>{
-        selectedEvent = e;
-        eventTitle.value = e.title;
-        eventDate.value = e.startStr;
-        eventLink.value = e.extendedProps.link || '';
-        eventType.value = e.extendedProps.type || '';
-        deleteBtn.style.display='inline-block';
-        modal.classList.add('show');
-      },250);
-    }
-  });
+  // PC
+  el.addEventListener('mousedown', startPress);
+  el.addEventListener('mouseup', endPress);
 });
+
 
 /* Firestore 불러오기 */
 (async()=>{
@@ -232,3 +225,4 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
