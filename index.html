@@ -26,7 +26,7 @@ header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
   header { font-size:20px; margin-top:32px; }
   #calendar { max-width:98%; height:auto; margin:0 auto; padding:10px; padding-bottom:10px; }
   .fc-daygrid-event { margin:1px 0 !important; }
-  .fc-event, .fc-event-title, .fc-event-title span{ display:block !important; padding-top:1px !important; padding-bottom:1px !important; padding-left:3px !important; padding-right:3px !important; margin:1px 0 !important; background:none !important; word-break: break-word; }
+  .fc-event, .fc-event-title, .fc-event-title span{ display:block !important; padding-top:1px !important; padding-bottom:1px !important; padding-left:3px !important; padding-right:3px !important; margin:1px 0 !important; background:none !important; word-break: break-word; white-space: normal; overflow-wrap: break-word; }
   #calendar .fc-daygrid-day { min-height:140px; }
   .fc-daygrid-day-number { font-size:6pt !important; }
   .fc .fc-toolbar-title { font-size:14px; }
@@ -52,13 +52,13 @@ header { font-size:24px; font-weight:900; text-align:center; margin-top:50px; }
   <input id="eventLink" placeholder="링크 (선택)">
   <select id="eventType">
     <option value="">종류 선택</option>
-    <option value="솔라시도">솔라시도</option>
     <option value="뮤지컬">뮤지컬</option>
     <option value="축하">축하</option>
     <option value="발매">발매</option>
     <option value="방송">방송</option>
-    <option value="기타">기타</option>
     <option value="SNS">SNS</option>
+    <option value="솔라시도">솔라시도</option>
+    <option value="기타">기타</option>
   </select>
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
@@ -108,16 +108,28 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     if(arg.event.title.length >= 6 && window.innerWidth <= 600) fontSize='5pt';
     const type = arg.event.extendedProps.type;
     const bgColorMap = { 
-      '솔라시도':'#FACC15',
       '뮤지컬':'#EF4444',
       '축하':'#F97316',
       '발매':'#10B981',
       '방송':'#3B82F6',
-      '기타':'#000',
-      'SNS':'#8B5CF6'
+      'SNS':'#8B5CF6',
+      '솔라시도':'#FACC15',
+      '기타':'#000'
     };
     const bgColor = bgColorMap[type] || '#aaa';
-    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:4px;font-size:${fontSize};word-break:break-word;'>${arg.event.title}</div>` };
+    return { html: `<div style="
+      display:flex;
+      align-items:center;
+      gap:2px;
+      padding:1px 3px;
+      background:${bgColor};
+      color:#fff;
+      border-radius:4px;
+      font-size:${fontSize};
+      word-break:break-word;
+      white-space: normal;
+      overflow-wrap: break-word;
+    ">${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
@@ -180,15 +192,15 @@ document.getElementById('deleteBtn').onclick = async () => {
 // 범례 항상 표시
 (function showLegend() {
   const legendEl = document.getElementById('legend');
-  const types = ['솔라시도','기타','뮤지컬', '축하', '발매', '방송', 'SNS'];
+  const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '솔라시도', '기타'];
   const colors = { 
+    '뮤지컬': '#EF4444',
+    '축하': '#F97316',
+    '발매': '#10B981',
+    '방송': '#3B82F6',
+    'SNS':'#8B5CF6',
     '솔라시도':'#FACC15',
-    '뮤지컬': '#EF4444', 
-    '축하': '#F97316', 
-    '발매': '#10B981', 
-    '방송': '#3B82F6', 
-    'SNS': '#8B5CF6', 
-    '기타': '#000000' 
+    '기타': '#000000'
   };
   legendEl.innerHTML = '';
   types.forEach(t => {
