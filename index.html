@@ -147,13 +147,13 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   }
 });
 
-// 기존 eventClick 제거 후 링크/모달 처리 추가
+// 기존 eventClick 제거 후 대체
 calendar.on('eventDidMount', info => {
   const el = info.el;
   const e = info.event;
   const link = e.extendedProps.link;
-  let touchTimer;
-  let longPress = false;
+  let touchTimer, longPress = false;
+  let clickTimer;
 
   // 모바일 롱프레스
   el.addEventListener('touchstart', () => {
@@ -178,21 +178,24 @@ calendar.on('eventDidMount', info => {
 
   // PC 더블클릭
   el.addEventListener('dblclick', () => {
-    if(link) window.open(link, '_blank');
+    if(link) window.open(link,'_blank');
+    if(clickTimer) clearTimeout(clickTimer);
   });
 
-  // PC 일반 클릭 (더블클릭과 구분)
-  el.addEventListener('click', (ev) => {
-    ev.preventDefault();
-    ev.stopPropagation();
+  // PC 일반 클릭
+  el.addEventListener('click', () => {
     if(window.innerWidth > 600){
-      selectedEvent = e;
-      eventTitle.value = e.title;
-      eventDate.value = e.startStr;
-      eventLink.value = e.extendedProps.link || '';
-      eventType.value = e.extendedProps.type || '';
-      deleteBtn.style.display = 'inline-block';
-      modal.classList.add('show');
+      if(clickTimer) return;
+      clickTimer = setTimeout(() => {
+        selectedEvent = e;
+        eventTitle.value = e.title;
+        eventDate.value = e.startStr;
+        eventLink.value = e.extendedProps.link || '';
+        eventType.value = e.extendedProps.type || '';
+        deleteBtn.style.display = 'inline-block';
+        modal.classList.add('show');
+        clickTimer = null;
+      }, 250);
     }
   });
 });
@@ -228,4 +231,3 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
-
