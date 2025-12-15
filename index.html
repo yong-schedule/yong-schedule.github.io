@@ -144,57 +144,60 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     }else fontSize = '8pt';
 
     return {html:`<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:2px !important;font-size:${fontSize};word-break:break-word;white-space:normal;">${iconHTML} ${arg.event.title}</div>`};
-  },
-  eventClick: info => {
-    // 클릭 시 모달만 띄우는 기본 이벤트 처리
-    selectedEvent = info.event;
-    eventTitle.value = info.event.title;
-    eventDate.value = info.event.startStr;
-    eventLink.value = info.event.extendedProps.link || '';
-    eventType.value = info.event.extendedProps.type || '';
-    deleteBtn.style.display = 'inline-block';
-    modal.classList.add('show');
   }
 });
-calendar.render();
 
-/* 링크 이동 기능: 모바일 롱프레스 / PC 더블클릭 */
+// 기존 eventClick 제거 후 링크/모달 처리 추가
 calendar.on('eventDidMount', info => {
   const el = info.el;
-  const event = info.event;
-  const link = event.extendedProps.link;
-  if (!link) return;
-
-  let touchTimer, clickTimer;
+  const e = info.event;
+  const link = e.extendedProps.link;
+  let touchTimer;
+  let longPress = false;
 
   // 모바일 롱프레스
-  el.addEventListener('touchstart', e => {
+  el.addEventListener('touchstart', () => {
+    longPress = false;
     touchTimer = setTimeout(() => {
-      window.open(link,'_blank');
-      clearTimeout(clickTimer);
+      longPress = true;
+      if(link) window.open(link, '_blank');
     }, 600);
   });
-  el.addEventListener('touchend', e => { clearTimeout(touchTimer); });
-
-  // PC 더블클릭
-  el.addEventListener('dblclick', e => {
-    window.open(link,'_blank');
-    clearTimeout(clickTimer);
-  });
-
-  // 일반 클릭 (모달)
-  el.addEventListener('click', e => {
-    clickTimer = setTimeout(() => {
-      selectedEvent = event;
-      eventTitle.value = event.title;
-      eventDate.value = event.startStr;
-      eventLink.value = event.extendedProps.link || '';
-      eventType.value = event.extendedProps.type || '';
+  el.addEventListener('touchend', () => {
+    clearTimeout(touchTimer);
+    if(!longPress){
+      selectedEvent = e;
+      eventTitle.value = e.title;
+      eventDate.value = e.startStr;
+      eventLink.value = e.extendedProps.link || '';
+      eventType.value = e.extendedProps.type || '';
       deleteBtn.style.display = 'inline-block';
       modal.classList.add('show');
-    }, 200);
+    }
+  });
+
+  // PC 더블클릭
+  el.addEventListener('dblclick', () => {
+    if(link) window.open(link, '_blank');
+  });
+
+  // PC 일반 클릭 (더블클릭과 구분)
+  el.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if(window.innerWidth > 600){
+      selectedEvent = e;
+      eventTitle.value = e.title;
+      eventDate.value = e.startStr;
+      eventLink.value = e.extendedProps.link || '';
+      eventType.value = e.extendedProps.type || '';
+      deleteBtn.style.display = 'inline-block';
+      modal.classList.add('show');
+    }
   });
 });
+
+calendar.render();
 
 /* Firestore 불러오기 */
 (async()=>{
