@@ -28,11 +28,11 @@ header {
   margin-top:50px;
 }
 
-/* ✅ 달력 스크롤 영역 */
+/* ✅ 달력 스크롤 영역 (PC / 모바일 공통 260px) */
 #calendarWrap {
   max-width:900px;
   margin:50px auto 0 auto;
-  max-height: calc(100vh - 220px); /* DC SOLAR 침범 방지 */
+  max-height: calc(100vh - 260px);
   overflow-y: auto;
 }
 
@@ -86,7 +86,7 @@ header {
   #calendarWrap{
     max-width:98%;
     margin:0 auto;
-    max-height: calc(100vh - 180px);
+    max-height: calc(100vh - 260px); /* PC와 동일 */
   }
 
   #calendar .fc-daygrid-day{
@@ -173,7 +173,6 @@ header {
 <header>📅 솔라 스케줄</header>
 <div class="event-legend" id="legend"></div>
 
-<!-- ✅ 달력 스크롤 컨테이너 -->
 <div id="calendarWrap">
   <div id="calendar"></div>
 </div>
