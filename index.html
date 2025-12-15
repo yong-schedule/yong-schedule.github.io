@@ -15,13 +15,15 @@ body {
     margin:0; 
     font-family:'Roboto', system-ui, sans-serif; 
     background:#fdfdfd; 
-    position:relative;
+}
+#mainContainer {
+    /* 기본 위치: PC는 그대로 */
 }
 header { 
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:50px; /* PC에서 아래로 위치 */
+    margin-top:24px; 
 }
 #calendar { 
     max-width:900px; 
@@ -31,7 +33,6 @@ header {
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
-    margin-top:50px; /* PC에서 헤더와 달력 간격 */
 }
 .fc-event-title { 
     white-space: normal !important; 
@@ -85,43 +86,6 @@ header {
     color:#fff; 
     font-weight:700; 
 }
-@media(max-width:600px){
-    header { 
-        font-size:20px; 
-        margin-top:32px; 
-    }
-    #calendar { 
-        max-width:98%; 
-        height:auto; 
-        margin:0 auto; 
-        padding:10px; 
-        padding-bottom:10px; 
-    }
-    .fc-daygrid-event { 
-        margin:1px 0 !important; 
-    }
-    .fc-event, .fc-event-title, .fc-event-title span{
-        display:block !important;
-        padding-top:0 !important;    
-        padding-bottom:0 !important; 
-        padding-left:3px !important;  
-        padding-right:3px !important; 
-        margin:1px 0 !important;     
-        background:none !important;
-        word-break: break-word;
-    }
-    #calendar .fc-daygrid-day {
-        min-height:140px; 
-    }
-    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
-    .fc .fc-toolbar-title { 
-        font-size:14px; 
-    }
-    .fc .fc-button { 
-        font-size:10px; 
-        padding:2px 6px; 
-    }
-}
 .modal { 
     position: fixed; 
     top:50%; 
@@ -160,21 +124,69 @@ header {
     padding:6px 12px; 
     cursor:pointer; 
 }
+
+/* 모바일만 적용 */
+@media(max-width:600px){
+    #mainContainer {
+        margin-top:150px; /* 모바일에서 전체 아래로 */
+    }
+    header { 
+        font-size:20px; 
+        margin-top:32px; 
+    }
+    #calendar { 
+        max-width:98%; 
+        height:auto; 
+        margin:0 auto; 
+        padding:10px; 
+        padding-bottom:10px; 
+    }
+    .fc-daygrid-event { 
+        margin:1px 0 !important; 
+    }
+    .fc-event, .fc-event-title, .fc-event-title span{
+        display:block !important;
+        font-size:6pt !important;  /* 모바일 기본 글자 */
+        padding:3px !important;    /* 내부 padding */
+        margin:1px 0 !important;     
+        background:none !important;
+        word-break: break-word; /* 필요 시 줄바꿈 */
+    }
+    #calendar .fc-daygrid-day {
+        min-height:140px; /* 모바일 최소 높이 */
+    }
+    .fc .fc-toolbar-title { 
+        font-size:14px; 
+    }
+    .fc .fc-button { 
+        font-size:10px; 
+        padding:2px 6px; 
+    }
+    /* 모바일 날짜 숫자 크기 */
+    .fc-daygrid-day-top {
+        font-size:6pt !important;
+    }
+}
+
+/* 화면 하단에 DC SOLAR GALLERY 표시 */
 #footerLabel {
     position:fixed;
     bottom:100px;
     width:100%;
     text-align:center;
-    font-size:10pt;
-    color:#aaa;
+    font-size:12px;
+    color:#888;
+    pointer-events:none;
+    user-select:none;
 }
 </style>
 </head>
 <body>
-<header>📅 솔라 스케줄</header>
-
-<div class="event-legend" id="legend"></div>
-<div id="calendar"></div>
+<div id="mainContainer">
+    <header>📅 솔라 스케줄</header>
+    <div class="event-legend" id="legend"></div>
+    <div id="calendar"></div>
+</div>
 
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
@@ -195,7 +207,7 @@ header {
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
 
-<div id="footerLabel">DC SOLAR GALLERY @</div>
+<div id="footerLabel">✨ DC SOLAR GALLERY ✨</div>
 
 <script>
 firebase.initializeApp({
@@ -216,7 +228,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   showNonCurrentDates: false,
   fixedWeekCount: true,
   firstDay: 1,
-  dayMinHeight: window.innerWidth > 600 ? 120 : 140,
+  dayMinHeight: window.innerWidth > 600 ? 120 : 140, // PC:120, 모바일:140
   height: 'auto',
   headerToolbar: {
     left: 'title',
@@ -234,20 +246,25 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
         document.getElementById('eventType').value = '';
         document.getElementById('deleteBtn').style.display = 'none';
         modal.classList.add('show');
-      }
+      },
+      themeIcon: '',
     }
   },
   events: [],
   eventContent: arg => {
-    let fontSize = '6pt';
-    if(window.innerWidth <= 600 && arg.event.title.length >= 6) fontSize='5pt';
     const type = arg.event.extendedProps.type;
-    const bgColorMap = {
-        '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
-        '방송':'#3B82F6','기타':'#000','SNS':'#8B5CF6'
-    };
-    const bgColor = bgColorMap[type] || '#aaa';
-    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:0 3px;background:${bgColor};color:#fff;border-radius:4px;font-size:${fontSize};word-break:break-word;'>${arg.event.title}</div>` };
+    const link = arg.event.extendedProps.link;
+    let bgColor = '#aaa', textColor = '#fff';
+    switch (type) {
+      case '뮤지컬': bgColor = '#EF4444'; break;
+      case '축하': bgColor = '#F97316'; break;
+      case '발매': bgColor = '#10B981'; break;
+      case '방송': bgColor = '#3B82F6'; break;
+      case '기타': bgColor = '#000000'; break;
+      case 'SNS': bgColor = '#8B5CF6'; break;
+      default: bgColor = '#aaa';
+    }
+    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:0 3px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
