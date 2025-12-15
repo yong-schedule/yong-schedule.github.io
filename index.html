@@ -132,17 +132,15 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
     ">${arg.event.title}</div>` };
   },
   eventClick: info => {
+    // 링크 여부 상관없이 항상 모달 열기
     const e = info.event;
-    if (e.extendedProps.link) window.open(e.extendedProps.link, '_blank');
-    else {
-      selectedEvent = e;
-      document.getElementById('eventTitle').value = e.title;
-      document.getElementById('eventDate').value = e.startStr;
-      document.getElementById('eventLink').value = e.extendedProps.link || '';
-      document.getElementById('eventType').value = e.extendedProps.type || '';
-      document.getElementById('deleteBtn').style.display = 'inline-block';
-      modal.classList.add('show');
-    }
+    selectedEvent = e;
+    document.getElementById('eventTitle').value = e.title;
+    document.getElementById('eventDate').value = e.startStr;
+    document.getElementById('eventLink').value = e.extendedProps.link || '';
+    document.getElementById('eventType').value = e.extendedProps.type || '';
+    document.getElementById('deleteBtn').style.display = 'inline-block';
+    modal.classList.add('show');
   }
 });
 calendar.render();
