@@ -31,14 +31,16 @@ header {
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
 }
-.fc-event, 
-.fc-event:focus, 
-.fc-event:active, 
-.fc-event:hover, 
-.fc-event:focus-visible {
-    outline: none !important;   /* 파란 테두리 완전 제거 */
-    border: none !important;    
+/* 이벤트 스타일 - 패딩 제거, 여백, 글씨 크기 고정, 파란 테두리 제거 */
+.fc-event, .fc-event-title, .fc-event-title span,
+.fc-event:focus, .fc-event:active, .fc-event:hover, .fc-event:focus-visible {
+    padding: 0 !important;
+    margin: 1px 2px !important;  /* 세로 1px, 좌우 2px */
+    outline: 0 !important;
+    border: 0 !important;
     box-shadow: none !important;
+    font-size: 11px !important;
+    display: block !important;
 }
 .fc .fc-toolbar-title { 
     font-size:16px; 
@@ -69,6 +71,7 @@ header {
     color:#fff; 
     font-weight:700; 
 }
+/* 모바일 설정 */
 @media(max-width:600px){
     header { 
         font-size:20px; 
@@ -90,6 +93,10 @@ header {
     .fc .fc-button { 
         font-size:10px; 
         padding:2px 6px; 
+    }
+    /* 모바일 날짜 숫자 크기 6pt */
+    .fc-daygrid-day-number {
+        font-size:6pt !important;
     }
 }
 .modal { 
@@ -213,8 +220,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return { 
         html: `<div style='display:flex;align-items:center;gap:2px;
-                          margin:1px 2px; /* 좌우 2px 여백 */
-                          padding:0; 
+                          margin:1px 2px;
+                          padding:0;
+                          font-size:11px;
                           background:${bgColor};
                           color:${textColor};
                           border-radius:4px;
