@@ -45,7 +45,7 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
   left:50%;
   transform:translate(-50%,-50%);
   background:#fff;
-  padding:16px 16px; /* 좌우 패딩 균일 */
+  padding:16px 16px;
   border-radius:8px;
   max-width:90%;
   max-height:80%;
@@ -99,16 +99,9 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-/* 범례 + 색상 */
 const legendData={
-  '공식':'#EF4444',
-  '뮤지컬':'#fc95cc',
-  '축하':'#F97316',
-  '발매':'#10B981',
-  '방송':'#3B82F6',
-  'SNS':'#8B5CF6',
-  '솔라시도':'#FACC15',
-  '기타':'#474a49'
+  '공식':'#EF4444','뮤지컬':'#fc95cc','축하':'#F97316','발매':'#10B981',
+  '방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#FACC15','기타':'#474a49'
 };
 document.getElementById('legend').innerHTML =
   Object.entries(legendData).map(([k,v])=>`<div style="background:${v}">${k}</div>`).join('');
@@ -152,7 +145,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
 });
 calendar.render();
 
-/* 클릭/더블클릭/롱프레스 처리 */
+/* ✅ 여기만 교체: 클릭/롱프레스 처리 */
 calendar.on('eventDidMount', info => {
   const el = info.el;
   const e = info.event;
@@ -170,18 +163,15 @@ calendar.on('eventDidMount', info => {
     modal.classList.add('show');
   };
 
-  // 롱프레스 시작
   const startPress = (ev) => {
     ev.preventDefault();
     startTime = ev.timeStamp;
     pressTimer = setTimeout(() => openModal(), 600); // 0.6초 이상 누르면 모달
   };
 
-  // 롱프레스 끝
   const endPress = (ev) => {
     clearTimeout(pressTimer);
-    const duration = ev.timeStamp - startTime;
-    if(duration < 600 && link){ // 짧게 누르면 링크 열기
+    if(ev.timeStamp - startTime < 600 && link){ // 짧게 누르면 링크 열기
       window.open(link,'_blank');
     }
   };
@@ -195,10 +185,9 @@ calendar.on('eventDidMount', info => {
   el.addEventListener('mouseup', endPress);
 });
 
-
 /* Firestore 불러오기 */
 (async()=>{
-  const snap=await db.collection('schedules').get();
+  const snap = await db.collection('schedules').get();
   calendar.addEventSource(snap.docs.map(d=>({id:d.id,...d.data()})));
 })();
 
@@ -206,8 +195,11 @@ calendar.on('eventDidMount', info => {
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
   const data={title:eventTitle.value,start:eventDate.value,link:eventLink.value,type:eventType.value};
-  if(selectedEvent) await db.collection('schedules').doc(selectedEvent.id).update(data);
-  else{
+  if(selectedEvent){
+    await db.collection('schedules').doc(selectedEvent.id).update(data);
+    calendar.getEventById(selectedEvent.id).remove();
+    calendar.addEvent({id:selectedEvent.id,...data});
+  }else{
     const r=await db.collection('schedules').add(data);
     calendar.addEvent({id:r.id,...data});
   }
@@ -225,4 +217,3 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
-
