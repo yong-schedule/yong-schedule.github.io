@@ -11,14 +11,22 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 body { margin:0; font-family:'Noto Sans',system-ui,sans-serif; background:#fdfdfd; }
-header { padding:16px; font-size:24px; font-weight:900; text-align:center; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.05); }
-#calendar { max-width:750px; margin:24px auto 0 auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
+header {
+  padding:16px;
+  font-size:24px;
+  font-weight:900;
+  text-align:center;
+  background:transparent; /* 배경 제거 */
+  box-shadow:none; /* 그림자 제거 */
+  margin-bottom:24px; /* 달력과 간격 */
+}
+#calendar { max-width:750px; margin:0 auto 0 auto; padding:10px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); }
 .fc-event-title { white-space: normal !important; line-height:1.2; font-family:'Noto Sans',sans-serif; background:none !important; }
 #addBtn { position:fixed; right:16px; bottom:16px; padding:12px 16px; border-radius:999px; background:#000; color:white; border:none; cursor:pointer; }
 
 @media(max-width:600px){
   header { font-size:20px; padding-bottom:12px; }
-  #calendar { max-width:98%; height:calc(72vh); margin:16px auto; } /* 하단 여백 72% */
+  #calendar { max-width:98%; height:calc(72vh); margin:8px auto; }
   .fc-daygrid-day-frame { min-height:auto; }
   .fc-event, .fc-event-title, .fc-event-title span {
     display:block !important;
@@ -30,10 +38,10 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
     padding:2px 4px !important;
     margin-bottom:2px !important;
     background:none !important;
+    border:none !important; /* 파란 테두리 제거 */
   }
-  .fc .fc-button { font-size:10px; padding:2px 6px; background:#000; color:#fff; border:none; border-radius:4px; }
-  .fc .fc-toolbar-title { font-size:14px; text-align:left; }
-  #addBtn { padding:10px 14px; font-size:12px; }
+  .fc .fc-button { font-size:10px; padding:2px 4px; background:#000; color:#fff; border:none; } /* 버튼 작게, 색상 통일 */
+  .fc .fc-toolbar-title { font-size:14px; }
 }
 
 .modal { position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:#fff; padding:16px; border-radius:8px; max-width:90%; max-height:80%; overflow-y:auto; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:none; z-index:9999; }
@@ -45,6 +53,7 @@ header { padding:16px; font-size:24px; font-weight:900; text-align:center; backg
 </head>
 <body>
 <header>📅 솔라 스케줄</header>
+
 <div id="calendar"></div>
 <button id="addBtn">＋ 일정 추가</button>
 
@@ -80,6 +89,7 @@ const modal = document.getElementById('modal');
 let selectedEvent = null;
 
 modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
+
 addBtn.onclick = () => {
   selectedEvent = null;
   document.getElementById('eventTitle').value = '';
@@ -115,7 +125,6 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
       default: bgColor='#aaa';
     }
 
-    // 테두리 제거, 파란색 border 없음
     return { html: `<div style='display:flex;align-items:center;gap:4px;padding:2px 4px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
   },
   eventClick: info => {
@@ -151,7 +160,9 @@ document.getElementById('saveBtn').onclick = async () => {
   const start = document.getElementById('eventDate').value;
   const link = document.getElementById('eventLink').value;
   const type = document.getElementById('eventType').value;
+
   if(!title || !start) return alert('제목과 날짜를 입력해주세요.');
+
   const data = { title, start, link, type };
   if(selectedEvent){
     await db.collection('schedules').doc(selectedEvent.id).update(data);
