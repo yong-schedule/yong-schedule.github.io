@@ -311,6 +311,29 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
 });
 calendar.render();
 
+/* 링크 이동 기능 추가 */
+calendar.on('eventDidMount', info => {
+  const el = info.el;
+  const link = info.event.extendedProps.link;
+  if(!link) return;
+
+  // 모바일 롱프레스
+  let touchTimer;
+  el.addEventListener('touchstart', e => {
+    touchTimer = setTimeout(() => {
+      window.open(link, '_blank');
+    }, 600); // 0.6초 이상 누르면 이동
+  });
+  el.addEventListener('touchend', e => {
+    clearTimeout(touchTimer);
+  });
+
+  // PC 더블클릭
+  el.addEventListener('dblclick', e => {
+    window.open(link, '_blank');
+  });
+});
+
 /* Firestore */
 (async()=>{
   const snap=await db.collection('schedules').get();
@@ -349,10 +372,3 @@ deleteBtn.onclick=async()=>{
 
 </body>
 </html>
-
-
-
-
-
-
-
