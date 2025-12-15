@@ -95,14 +95,15 @@ header {
         padding:10px; 
         padding-bottom:10px; 
     }
+    /* 모바일에서도 이벤트 사이 여백 PC처럼 1px로 맞춤 */
     .fc-daygrid-event { 
         margin:1px 0 !important; 
     }
-    .fc-event, .fc-event-title, .fc-event-title span {
+    .fc-event, .fc-event-title, .fc-event-title span{
         display:block !important;
         font-size:6pt !important;
-        padding:3px !important;
-        margin:1px 0 !important;
+        padding:0 !important; /* 패딩 제거 */
+        margin:1px 0 !important; /* 여백 1px 유지 */
         background:none !important;
     }
     .fc .fc-toolbar-title { 
@@ -198,6 +199,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   height: 'auto',
   fixedWeekCount: true,
   firstDay: 1,
+  dayMinHeight: 110, // PC 기본 최소 높이
   headerToolbar: {
     left: 'title',
     center: '',
