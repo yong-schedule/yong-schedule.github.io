@@ -20,45 +20,40 @@ header {
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:32px; /* 모바일/PC 공용 조금 더 아래로 */
+    margin-top:24px; 
 }
-
 #calendar { 
-    max-width:900px; /* PC 최대 너비 */
-    margin:16px auto 0 auto; 
+    max-width:900px; 
+    margin:0 auto; 
     padding:10px; 
     background:#fff; 
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
-    padding-bottom:10px; /* 백그라운드 하단 여백 */
+    padding-bottom:10px; 
 }
 .fc-event-title { 
     white-space: normal !important; 
     font-family:'Roboto', sans-serif; 
     background:none !important; 
 }
-
 #addBtn { 
     display:inline-flex;
-    justify-content:center;
     align-items:center;
-    border:none;
-    cursor:pointer;
-    background:#000;
-    color:#fff;
-    font-size:12px;
-    padding:0 12px;
-    border-radius:4px;
-    height:auto;
-    line-height:normal;
+    justify-content:center;
+    margin-left:8px;
+    padding:4px 10px; 
+    border-radius:4px; 
+    background:#000; 
+    color:white; 
+    border:none; 
+    cursor:pointer; 
+    font-size:11px;
 }
-
 .fc-event {
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
 }
-
 .fc .fc-toolbar-title { 
     font-size:16px; 
     font-weight:700; 
@@ -74,13 +69,12 @@ header {
     background:#000; 
     color:#fff; 
 }
-
 .event-legend { 
     display:flex; 
     flex-wrap:wrap; 
     gap:6px; 
     justify-content:center; 
-    margin:24px 0; /* 범례와 달력 사이 넉넉한 여백 */
+    margin:20px 0; 
     font-size:12px; 
 }
 .event-legend div { 
@@ -89,16 +83,15 @@ header {
     color:#fff; 
     font-weight:700; 
 }
-
 @media(max-width:600px){
     header { 
         font-size:20px; 
-        margin-top:36px; 
+        margin-top:32px; 
     }
     #calendar { 
         max-width:98%; 
         height:auto; 
-        margin:16px auto; 
+        margin:0 auto; 
         padding:10px; 
         padding-bottom:10px; 
     }
@@ -120,7 +113,6 @@ header {
         padding:2px 6px; 
     }
 }
-
 .modal { 
     position: fixed; 
     top:50%; 
@@ -165,9 +157,7 @@ header {
 <header>📅 솔라 스케줄</header>
 
 <div class="event-legend" id="legend"></div>
-
 <div id="calendar"></div>
-<button id="addBtn">＋ 일정 추가</button>
 
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
@@ -196,20 +186,9 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-const addBtn = document.getElementById('addBtn');
 const modal = document.getElementById('modal');
 let selectedEvent = null;
-
 modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
-addBtn.onclick = () => {
-  selectedEvent = null;
-  document.getElementById('eventTitle').value = '';
-  document.getElementById('eventDate').value = '';
-  document.getElementById('eventLink').value = '';
-  document.getElementById('eventType').value = '';
-  document.getElementById('deleteBtn').style.display = 'none';
-  modal.classList.add('show');
-};
 
 const calendarEl = document.getElementById('calendar');
 const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -219,10 +198,27 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   height: 'auto',
   fixedWeekCount: true,
   firstDay: 1,
-  headerToolbar: { left: 'title', center: '', right: 'prev,next today' },
+  headerToolbar: {
+    left: 'title',
+    center: '',
+    right: 'prev,next today customAddBtn'
+  },
+  customButtons: {
+    customAddBtn: {
+      text: '＋ 일정 추가',
+      click: () => {
+        selectedEvent = null;
+        document.getElementById('eventTitle').value = '';
+        document.getElementById('eventDate').value = '';
+        document.getElementById('eventLink').value = '';
+        document.getElementById('eventType').value = '';
+        document.getElementById('deleteBtn').style.display = 'none';
+        modal.classList.add('show');
+      },
+      themeIcon: '',
+    }
+  },
   events: [],
-  dayMaxEventRows: true,
-  contentHeight: 115, // PC 세로 칸 높이
   eventContent: arg => {
     const type = arg.event.extendedProps.type;
     const link = arg.event.extendedProps.link;
@@ -305,20 +301,6 @@ document.getElementById('deleteBtn').onclick = async () => {
     legendEl.appendChild(div);
   });
 })();
-
-// 일정 추가 버튼 투데이 옆 배치, 클릭 이벤트 유지
-document.addEventListener('DOMContentLoaded', function() {
-    const todayBtns = document.querySelectorAll('.fc-today-button');
-    const addBtn = document.getElementById('addBtn');
-    todayBtns.forEach(todayBtn => {
-        if(todayBtn && addBtn){
-            todayBtn.parentNode.insertBefore(addBtn, todayBtn.nextSibling);
-            const height = todayBtn.offsetHeight;
-            addBtn.style.height = height + 'px';
-            addBtn.style.lineHeight = height + 'px';
-        }
-    });
-});
 </script>
 </body>
 </html>
