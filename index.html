@@ -58,7 +58,7 @@ header{
 @media(min-width:601px){
   .calendar-wrap{
     padding-right:50px;   /* 스크롤바 완충 공간 */
-    scrollbar-gutter: stable; /* 스크롤 발생 여부와 상관없이 오른쪽 공간 확보 */
+    scrollbar-gutter: stable;
   }
 }
 
@@ -112,13 +112,15 @@ header{
   }
 }
 
-/* 포커스 파란 테두리 완전 제거 (모든 엘리먼트 포함) */
+/* 포커스 파란 테두리 완전 제거 (모바일/PC 모든 이벤트 포함) */
 *,
 *::before,
 *::after,
 .fc *,
 .fc *::before,
-.fc *::after {
+.fc *::after,
+.fc *:focus,
+.fc *:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
