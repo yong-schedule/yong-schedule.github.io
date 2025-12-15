@@ -15,12 +15,13 @@ body {
     margin:0; 
     font-family:'Roboto', system-ui, sans-serif; 
     background:#fdfdfd; 
+    position:relative;
 }
 header { 
     font-size:24px; 
     font-weight:900; 
     text-align:center; 
-    margin-top:24px; 
+    margin-top:50px; /* PC에서 아래로 위치 */
 }
 #calendar { 
     max-width:900px; 
@@ -30,11 +31,25 @@ header {
     border-radius:8px; 
     box-shadow:0 2px 6px rgba(0,0,0,.05); 
     padding-bottom:10px; 
+    margin-top:50px; /* PC에서 헤더와 달력 간격 */
 }
 .fc-event-title { 
     white-space: normal !important; 
     font-family:'Roboto', sans-serif; 
     background:none !important; 
+}
+#addBtn { 
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-left:8px;
+    padding:4px 10px; 
+    border-radius:4px; 
+    background:#000; 
+    color:white; 
+    border:none; 
+    cursor:pointer; 
+    font-size:11px;
 }
 .fc-event {
     border: none !important;
@@ -55,7 +70,6 @@ header {
 .fc .fc-button:active, .fc .fc-button:focus { 
     background:#000; 
     color:#fff; 
-    box-shadow:none !important;
 }
 .event-legend { 
     display:flex; 
@@ -88,19 +102,18 @@ header {
     }
     .fc-event, .fc-event-title, .fc-event-title span{
         display:block !important;
-        font-size:6pt !important;
         padding-top:0 !important;    
         padding-bottom:0 !important; 
+        padding-left:3px !important;  
+        padding-right:3px !important; 
         margin:1px 0 !important;     
         background:none !important;
-        word-wrap: break-word;
+        word-break: break-word;
     }
     #calendar .fc-daygrid-day {
         min-height:140px; 
     }
-    .fc .fc-daygrid-day-number {
-        font-size:6pt !important;
-    }
+    .fc-daygrid-day-number { font-size:6pt !important; } /* 날짜 글씨 모바일 6pt */
     .fc .fc-toolbar-title { 
         font-size:14px; 
     }
@@ -147,15 +160,13 @@ header {
     padding:6px 12px; 
     cursor:pointer; 
 }
-#footerText {
-    position: fixed;
-    bottom: 100px;
-    width: 100%;
-    text-align: center;
+#footerLabel {
+    position:fixed;
+    bottom:100px;
+    width:100%;
+    text-align:center;
     font-size:10pt;
     color:#aaa;
-    pointer-events:none;
-    user-select:none;
 }
 </style>
 </head>
@@ -164,7 +175,6 @@ header {
 
 <div class="event-legend" id="legend"></div>
 <div id="calendar"></div>
-<div id="footerText">DC SOLAR GALLERY 😊</div>
 
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
@@ -184,6 +194,8 @@ header {
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
+
+<div id="footerLabel">DC SOLAR GALLERY @</div>
 
 <script>
 firebase.initializeApp({
@@ -227,23 +239,15 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   },
   events: [],
   eventContent: arg => {
+    let fontSize = '6pt';
+    if(window.innerWidth <= 600 && arg.event.title.length >= 6) fontSize='5pt';
     const type = arg.event.extendedProps.type;
-    const link = arg.event.extendedProps.link;
-    let bgColor = '#aaa', textColor = '#fff';
-    switch (type) {
-      case '뮤지컬': bgColor = '#EF4444'; break;
-      case '축하': bgColor = '#F97316'; break;
-      case '발매': bgColor = '#10B981'; break;
-      case '방송': bgColor = '#3B82F6'; break;
-      case '기타': bgColor = '#000000'; break;
-      case 'SNS': bgColor = '#8B5CF6'; break;
-      default: bgColor = '#aaa';
-    }
-    const title = arg.event.title;
-    let fontSize = (title.length > 4 && window.innerWidth <= 600) ? '5pt' : '6pt';
-    return { 
-      html: `<div style='display:flex;align-items:center;gap:2px;margin:1px 0;padding:0 2px;background:${bgColor};color:${textColor};border-radius:4px;font-size:${fontSize};word-wrap:break-word;'>${title}</div>` 
+    const bgColorMap = {
+        '뮤지컬':'#EF4444','축하':'#F97316','발매':'#10B981',
+        '방송':'#3B82F6','기타':'#000','SNS':'#8B5CF6'
     };
+    const bgColor = bgColorMap[type] || '#aaa';
+    return { html: `<div style='display:flex;align-items:center;gap:2px;padding:0 3px;background:${bgColor};color:#fff;border-radius:4px;font-size:${fontSize};word-break:break-word;'>${arg.event.title}</div>` };
   },
   eventClick: info => {
     const e = info.event;
@@ -295,6 +299,7 @@ document.getElementById('deleteBtn').onclick = async () => {
   }
 };
 
+// 범례 항상 표시
 (function showLegend() {
   const legendEl = document.getElementById('legend');
   const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '기타'];
