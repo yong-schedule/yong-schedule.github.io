@@ -40,7 +40,6 @@ header {
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    padding:0 !important; /* 이벤트 내부 패딩 제거 */
 }
 .fc .fc-toolbar-title { 
     font-size:16px; 
@@ -56,6 +55,7 @@ header {
 .fc .fc-button:active, .fc .fc-button:focus { 
     background:#000; 
     color:#fff; 
+    box-shadow:none !important;
 }
 .event-legend { 
     display:flex; 
@@ -88,15 +88,18 @@ header {
     }
     .fc-event, .fc-event-title, .fc-event-title span{
         display:block !important;
-        font-size:6pt !important; /* 모바일 기본 글씨 6pt */
+        font-size:6pt !important;
         padding-top:0 !important;    
         padding-bottom:0 !important; 
         margin:1px 0 !important;     
         background:none !important;
-        word-break: break-word; /* 4글자 이상 줄바꿈 */
+        word-wrap: break-word;
     }
-    .fc-daygrid-day-number {
-        font-size:6pt !important; /* 날짜 글씨 6pt */
+    #calendar .fc-daygrid-day {
+        min-height:140px; 
+    }
+    .fc .fc-daygrid-day-number {
+        font-size:6pt !important;
     }
     .fc .fc-toolbar-title { 
         font-size:14px; 
@@ -104,9 +107,6 @@ header {
     .fc .fc-button { 
         font-size:10px; 
         padding:2px 6px; 
-    }
-    #calendar .fc-daygrid-day {
-        min-height:140px;
     }
 }
 .modal { 
@@ -147,17 +147,15 @@ header {
     padding:6px 12px; 
     cursor:pointer; 
 }
-/* 하단 친근 표시 */
 #footerText {
     position: fixed;
     bottom: 100px;
     width: 100%;
     text-align: center;
-    font-size: 12px;
-    color: #555;
-    pointer-events: none;
-    font-weight: 700;
-    z-index: 500;
+    font-size:10pt;
+    color:#aaa;
+    pointer-events:none;
+    user-select:none;
 }
 </style>
 </head>
@@ -166,6 +164,7 @@ header {
 
 <div class="event-legend" id="legend"></div>
 <div id="calendar"></div>
+<div id="footerText">DC SOLAR GALLERY 😊</div>
 
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
@@ -186,9 +185,6 @@ header {
   <button id="deleteBtn" style="background:#ef4444;color:white;">삭제</button>
 </div>
 
-<!-- 하단 친근 표시 -->
-<div id="footerText">✨ DC SOLAR GALLERY ✨</div>
-
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -208,7 +204,7 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   showNonCurrentDates: false,
   fixedWeekCount: true,
   firstDay: 1,
-  dayMinHeight: window.innerWidth > 600 ? 120 : 140, // PC:120, 모바일:140
+  dayMinHeight: window.innerWidth > 600 ? 120 : 140,
   height: 'auto',
   headerToolbar: {
     left: 'title',
@@ -243,7 +239,11 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
       case 'SNS': bgColor = '#8B5CF6'; break;
       default: bgColor = '#aaa';
     }
-    return { html: `<div style='display:flex;align-items:center;gap:2px;margin:2px;background:${bgColor};color:${textColor};border-radius:4px;'>${arg.event.title}</div>` };
+    const title = arg.event.title;
+    let fontSize = (title.length > 4 && window.innerWidth <= 600) ? '5pt' : '6pt';
+    return { 
+      html: `<div style='display:flex;align-items:center;gap:2px;margin:1px 0;padding:0 2px;background:${bgColor};color:${textColor};border-radius:4px;font-size:${fontSize};word-wrap:break-word;'>${title}</div>` 
+    };
   },
   eventClick: info => {
     const e = info.event;
@@ -295,7 +295,6 @@ document.getElementById('deleteBtn').onclick = async () => {
   }
 };
 
-// 범례 항상 표시
 (function showLegend() {
   const legendEl = document.getElementById('legend');
   const types = ['뮤지컬', '축하', '발매', '방송', 'SNS', '기타'];
