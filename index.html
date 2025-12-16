@@ -28,13 +28,7 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
 .fc .fc-button{font-size:12px;padding:4px 8px;background:#000;color:#fff;border:none;}
 .fc .fc-button:focus,.fc .fc-button:active{background:#000;}
 .fc-daygrid-day-number{font-size:10pt;}
-@media(max-width:600px){
-  header{font-size:22px;margin-top:32px;}
-  .calendar-wrap{max-height:calc(100vh - 260px);}
-  .fc-daygrid-day-number{font-size:6pt!important;}
-  .fc .fc-toolbar-title{font-size:14px;}
-  .fc .fc-button{font-size:10px;padding:2px 6px;}
-}
+
 
 *:focus{outline:none!important;box-shadow:none!important;}
 .fc *:focus{outline:none!important;box-shadow:none!important;}
@@ -124,6 +118,14 @@ header{
   color: #353837;
   text-align: center;
 }
+
+@media(max-width:600px){
+  header{font-size:22px;margin-top:32px;}
+  .calendar-wrap{max-height:calc(100vh - 260px);}
+  .fc-daygrid-day-number{font-size:6pt!important;}
+  .fc .fc-toolbar-title{font-size:14px;}
+  .fc .fc-button{font-size:10px;padding:2px 6px;}
+}  
   
 </style>
 </head>
@@ -282,6 +284,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
