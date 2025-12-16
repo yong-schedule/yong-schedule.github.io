@@ -41,7 +41,7 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
   left:50%;
   transform:translate(-50%,-50%);
   background:#fff;
-  padding:16px 16px; /* 좌우 패딩 균일 */
+  padding:16px 16px;
   border-radius:8px;
   max-width:90%;
   max-height:80%;
@@ -89,29 +89,20 @@ firebase.initializeApp({
   projectId:"yong-schedule"
 });
 const db = firebase.firestore();
-/* 범례 + 색상 */
 const legendData={
-  '공식':'#EF4444',
-  '뮤지컬':'#fc95cc',
-  '축하':'#F97316',
-  '발매':'#10B981',
-  '방송':'#3B82F6',
-  'SNS':'#8B5CF6',
-  '솔라시도':'#FACC15',
-  '기타':'#474a49'
+  '공식':'#EF4444','뮤지컬':'#fc95cc','축하':'#F97316','발매':'#10B981',
+  '방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#FACC15','기타':'#474a49'
 };
 document.getElementById('legend').innerHTML =
   Object.entries(legendData).map(([k,v])=>`<div style="background:${v}">${k}</div>`).join('');
 const modal=document.getElementById('modal');
 modal.querySelector('.close-btn').onclick=()=>modal.classList.remove('show');
 let selectedEvent=null;
+let modifyMode=false; // 수정 모드 상태
+
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
-  locale:'ko',
-  firstDay:1,
-  fixedWeekCount:false,
-  height:'auto',
-  dayMinHeight:120,
-  headerToolbar:{left:'title',right:'prev,next today customAddBtn'},
+  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight:120,
+  headerToolbar:{left:'title',right:'prev,next today customAddBtn modifyBtn'},
   customButtons:{
     customAddBtn:{text:'＋ 일정 추가',click(){
       selectedEvent=null;
@@ -121,6 +112,15 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       eventType.value='';
       deleteBtn.style.display='none';
       modal.classList.add('show');
+    }},
+    modifyBtn:{text:'수정',click(){
+      modifyMode = !modifyMode;
+      if(modifyMode){
+        calendar.getOption('customButtons').modifyBtn.text='수정 모드 ON';
+      } else {
+        calendar.getOption('customButtons').modifyBtn.text='수정';
+      }
+      calendar.render();
     }}
   },
   events:[],
@@ -139,24 +139,31 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   }
 });
 calendar.render();
-/* 모든 이벤트 클릭 시 모달 열기 */
+
+// 이벤트 클릭 처리
 calendar.on('eventClick', info => {
   const e = info.event;
-  selectedEvent = e;
-  eventTitle.value = e.title;
-  eventDate.value = e.startStr;
-  eventLink.value = e.extendedProps.link || '';
-  eventType.value = e.extendedProps.type || '';
-  deleteBtn.style.display = 'inline-block';
-  modal.classList.add('show');
+  if(modifyMode){
+    selectedEvent = e;
+    eventTitle.value = e.title;
+    eventDate.value = e.startStr;
+    eventLink.value = e.extendedProps.link || '';
+    eventType.value = e.extendedProps.type || '';
+    deleteBtn.style.display='inline-block';
+    modal.classList.add('show');
+  } else {
+    const link = e.extendedProps.link;
+    if(link) window.open(link,'_blank'); // 링크가 있으면 이동
+  }
 });
-  
-/* Firestore 불러오기 */
+
+// Firestore 불러오기
 (async()=>{
   const snap=await db.collection('schedules').get();
   calendar.addEventSource(snap.docs.map(d=>({id:d.id,...d.data()})));
 })();
-/* 저장 */
+
+// 저장
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
   const data={title:eventTitle.value,start:eventDate.value,link:eventLink.value,type:eventType.value};
@@ -166,29 +173,21 @@ saveBtn.onclick=async()=>{
     calendar.addEvent({id:r.id,...data});
   }
   modal.classList.remove('show');
+  modifyMode=false;
+  calendar.getOption('customButtons').modifyBtn.text='수정';
+  calendar.render();
 };
-/* 삭제 */
+// 삭제
 deleteBtn.onclick=async()=>{
   if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
     await db.collection('schedules').doc(selectedEvent.id).delete();
     calendar.getEventById(selectedEvent.id).remove();
     modal.classList.remove('show');
+    modifyMode=false;
+    calendar.getOption('customButtons').modifyBtn.text='수정';
+    calendar.render();
   }
 };
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
