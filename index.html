@@ -93,10 +93,19 @@ firebase.initializeApp({
   projectId:"yong-schedule"
 });
 const db = firebase.firestore();
-const legendData={
+
+  // 달력 이벤트 색
+const eventColorData = {
   '공식':'#EF4444','뮤지컬':'#FACC15','축하':'#F97316','발매':'#10B981',
-  '방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'fc95cc','기타':'#474a49'
+  '방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#fc95cc','기타':'#474a49'
 };
+
+// 범례용 (솔라시도 제외)
+const legendData = {
+  '공식':'#EF4444','뮤지컬':'#FACC15','축하':'#F97316','발매':'#10B981',
+  '방송':'#3B82F6','SNS':'#8B5CF6','기타':'#474a49'
+};
+
 document.getElementById('legend').innerHTML =
   Object.entries(legendData)
         .filter(([k,v])=>k!=='솔라시도') // 솔라시도 제외
@@ -205,6 +214,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
