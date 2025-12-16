@@ -144,7 +144,7 @@ calendar.render();
 calendar.on('eventDidMount', info => {
   const el = info.el;
   const e = info.event;
-  const link = e.extendedProps.link;
+  const link = e.extendedProps.link || null;
 
   let pressTimer = null;
   let longPressed = false;
@@ -164,17 +164,15 @@ calendar.on('eventDidMount', info => {
     if(link) window.open(link,'_blank');
   };
 
-  const startPress = (ev) => {
+  const startPress = () => {
     longPressed = false;
-    pressTimer = setTimeout(openLink, 600);
+    if(link) pressTimer = setTimeout(openLink, 600);
   };
 
-  const endPress = (ev) => {
-    clearTimeout(pressTimer);
-  };
+  const endPress = () => clearTimeout(pressTimer);
 
-  // 모바일
   if('ontouchstart' in window){
+    // 모바일
     el.addEventListener('touchstart', startPress);
     el.addEventListener('touchend', (ev) => {
       endPress();
@@ -191,6 +189,7 @@ calendar.on('eventDidMount', info => {
     });
   }
 });
+
 
 /* Firestore 불러오기 */
 (async()=>{
@@ -219,6 +218,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
