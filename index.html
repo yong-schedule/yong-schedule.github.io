@@ -140,56 +140,55 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
 });
 calendar.render();
 
-/* 모달 클릭 + 링크 처리 */
 calendar.on('eventDidMount', info => {
   const el = info.el;
   const e = info.event;
   const link = e.extendedProps.link;
-  let touchTimer;
-  let longPress = false;
+  let pressTimer = null;
+  let longPressed = false;
 
-  // 모바일 롱프레스
-  el.addEventListener('touchstart', () => {
-    longPress = false;
-    touchTimer = setTimeout(() => {
-      longPress = true;
-      if(link) window.open(link, '_blank');
-    }, 600);
-  });
-  el.addEventListener('touchend', () => {
-    clearTimeout(touchTimer);
-    if(!longPress){
-      // 짧게 누르면 모달
-      selectedEvent = e;
-      eventTitle.value = e.title;
-      eventDate.value = e.startStr;
-      eventLink.value = e.extendedProps.link || '';
-      eventType.value = e.extendedProps.type || '';
-      deleteBtn.style.display = 'inline-block';
-      modal.classList.add('show');
-    }
-  });
+  const openModal = () => {
+    selectedEvent = e;
+    eventTitle.value = e.title;
+    eventDate.value = e.startStr;
+    eventLink.value = e.extendedProps.link || '';
+    eventType.value = e.extendedProps.type || '';
+    deleteBtn.style.display = 'inline-block';
+    modal.classList.add('show');
+  };
 
-  // PC 더블클릭
-  el.addEventListener('dblclick', () => {
-    if(link) window.open(link, '_blank');
-  });
+  const openLink = () => {
+    longPressed = true;
+    if(link) window.open(link,'_blank');
+  };
 
-  // PC 일반 클릭 (더블클릭과 구분)
-  el.addEventListener('click', (ev) => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    if(window.innerWidth > 600){
-      selectedEvent = e;
-      eventTitle.value = e.title;
-      eventDate.value = e.startStr;
-      eventLink.value = e.extendedProps.link || '';
-      eventType.value = e.extendedProps.type || '';
-      deleteBtn.style.display = 'inline-block';
-      modal.classList.add('show');
-    }
-  });
+  const startPress = () => {
+    longPressed = false;
+    if(link) pressTimer = setTimeout(openLink, 600);
+  };
+
+  const endPress = () => clearTimeout(pressTimer);
+
+  if('ontouchstart' in window){
+    // 모바일
+    el.addEventListener('touchstart', startPress);
+    el.addEventListener('touchend', () => {
+      endPress();
+      if(!longPressed) openModal();
+    });
+    el.addEventListener('touchmove', endPress);
+  } else {
+    // PC
+    el.addEventListener('mousedown', startPress);
+    el.addEventListener('mouseup', endPress);
+    el.addEventListener('mouseleave', endPress);
+    el.addEventListener('click', () => {
+      if(!longPressed) openModal();
+    });
+    el.addEventListener('dblclick', openLink);
+  }
 });
+
 
   const openLink = () => {
     longPressed = true;
@@ -250,6 +249,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
