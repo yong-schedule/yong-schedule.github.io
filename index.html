@@ -150,7 +150,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   eventContent: arg => {
     const type = arg.event.extendedProps.type;
     const link = arg.event.extendedProps.link;
-    const bgColor = legendData[type] || '#aaa';
+    const bgColor = eventColorData[type] || '#aaa';
     let iconHTML = '';
     if(link){
       if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
@@ -214,6 +214,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
