@@ -147,7 +147,7 @@ calendar.on('eventDidMount', info => {
   const link = e.extendedProps.link;
 
   let pressTimer = null;
-  let isLongPress = false;
+  let longPressed = false;
 
   const openModal = () => {
     selectedEvent = e;
@@ -160,37 +160,36 @@ calendar.on('eventDidMount', info => {
   };
 
   const openLink = () => {
-    if (!link) return;
-    isLongPress = true;
-    window.open(link, '_blank');
+    longPressed = true;
+    if(link) window.open(link, '_blank');
   };
 
-  // 누르기 시작
   const startPress = () => {
-    isLongPress = false;
+    longPressed = false;
     pressTimer = setTimeout(openLink, 600);
   };
 
-  // 손 떼면
-  const endPress = () => {
-    clearTimeout(pressTimer);
-  };
+  const endPress = () => clearTimeout(pressTimer);
 
-  // 클릭 → 모달
-  el.addEventListener('click', () => {
-    if (!isLongPress) openModal();
-  });
-
-  // 모바일
+  // 모바일 터치
   el.addEventListener('touchstart', startPress);
-  el.addEventListener('touchend', endPress);
+  el.addEventListener('touchend', (ev) => {
+    endPress();
+    if(!longPressed) openModal();
+  });
   el.addEventListener('touchmove', endPress);
 
-  // PC
+  // PC 마우스
   el.addEventListener('mousedown', startPress);
   el.addEventListener('mouseup', endPress);
   el.addEventListener('mouseleave', endPress);
+
+  // 클릭 → 모달 (PC)
+  el.addEventListener('click', () => {
+    if(!longPressed) openModal();
+  });
 });
+
 
 
 /* Firestore 불러오기 */
@@ -220,6 +219,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
