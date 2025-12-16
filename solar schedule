@@ -2,9 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<title>솔라 스케줄</title>
+<title>solar schedule</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -27,12 +29,22 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
 .fc .fc-button:focus,.fc .fc-button:active{background:#000;}
 .fc-daygrid-day-number{font-size:10pt;}
 @media(max-width:600px){
-  header{font-size:20px;margin-top:32px;}
+  header{font-size:24px;margin-top:32px;}
   .calendar-wrap{max-height:calc(100vh - 260px);}
   .fc-daygrid-day-number{font-size:6pt!important;}
   .fc .fc-toolbar-title{font-size:14px;}
   .fc .fc-button{font-size:10px;padding:2px 6px;}
 }
+
+*
+header{
+  font-family: 'Anton', sans-serif;
+  font-size: 50px;   /* ← 여기 */
+  letter-spacing: 0.04em;
+  color: #353837;   /* ← 이 줄 */
+}
+
+
 *:focus{outline:none!important;box-shadow:none!important;}
 .fc *:focus{outline:none!important;box-shadow:none!important;}
 .modal{
@@ -87,11 +99,38 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
   }
 }
 
+/* ===== FullCalendar 버튼 색상 커스텀 ===== */
+
+/* 이전 / 다음 (< >) */
+.fc .fc-prev-button,
+.fc .fc-next-button {
+  background: #353837 !important;
+  color: #fff !important;
+}
+
+/* 일정 추가 / 수정 (커스텀 버튼) */
+.fc .fc-customAddBtn-button,
+.fc .fc-modifyBtn-button {
+  background: #353837 !important;
+  color: #fff !important;
+}
+
+/* TODAY 버튼 */
+.fc .fc-today-button {
+  background: #EF4444 !important;
+  color: #fff !important;
+}
+
+/* hover 시 살짝 어둡게 (선택이지만 추천) */
+.fc .fc-button:hover {
+  filter: brightness(0.9);
+}
+
   
 </style>
 </head>
 <body>
-<header>📅 솔라 스케줄</header>
+<header>solar schedule</header>
 <div class="event-legend" id="legend"></div>
 <div class="calendar-wrap">
   <div id="calendar"></div>
@@ -245,11 +284,3 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
