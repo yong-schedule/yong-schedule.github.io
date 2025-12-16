@@ -37,14 +37,6 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
 }
 
 
-header{
-  font-family: 'Anton', sans-serif;
-  font-size: 50px;   /* ← 여기 */
-  letter-spacing: 0.04em;
-  color: #353837;   /* ← 이 줄 */
-}
-
-
 *:focus{outline:none!important;box-shadow:none!important;}
 .fc *:focus{outline:none!important;box-shadow:none!important;}
 .modal{
@@ -126,6 +118,13 @@ header{
   filter: brightness(0.9);
 }
 
+header{
+  font-family: 'Anton', sans-serif;
+  font-size: 50px;
+  letter-spacing: 0.04em;
+  color: #353837;
+  text-align: center;
+}
   
 </style>
 </head>
@@ -284,6 +283,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
