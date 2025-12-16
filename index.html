@@ -161,36 +161,36 @@ calendar.on('eventDidMount', info => {
 
   const openLink = () => {
     longPressed = true;
-    if(link) window.open(link, '_blank');
+    if(link) window.open(link,'_blank');
   };
 
-  const startPress = () => {
+  const startPress = (ev) => {
     longPressed = false;
     pressTimer = setTimeout(openLink, 600);
   };
 
-  const endPress = () => clearTimeout(pressTimer);
+  const endPress = (ev) => {
+    clearTimeout(pressTimer);
+  };
 
-  // 모바일 터치
-  el.addEventListener('touchstart', startPress);
-  el.addEventListener('touchend', (ev) => {
-    endPress();
-    if(!longPressed) openModal();
-  });
-  el.addEventListener('touchmove', endPress);
-
-  // PC 마우스
-  el.addEventListener('mousedown', startPress);
-  el.addEventListener('mouseup', endPress);
-  el.addEventListener('mouseleave', endPress);
-
-  // 클릭 → 모달 (PC)
-  el.addEventListener('click', () => {
-    if(!longPressed) openModal();
-  });
+  // 모바일
+  if('ontouchstart' in window){
+    el.addEventListener('touchstart', startPress);
+    el.addEventListener('touchend', (ev) => {
+      endPress();
+      if(!longPressed) openModal();
+    });
+    el.addEventListener('touchmove', endPress);
+  } else {
+    // PC
+    el.addEventListener('mousedown', startPress);
+    el.addEventListener('mouseup', endPress);
+    el.addEventListener('mouseleave', endPress);
+    el.addEventListener('click', () => {
+      if(!longPressed) openModal();
+    });
+  }
 });
-
-
 
 /* Firestore 불러오기 */
 (async()=>{
@@ -219,6 +219,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
