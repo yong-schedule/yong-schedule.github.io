@@ -43,7 +43,7 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
   background:#fff;
   padding:16px 16px; /* 좌우 패딩 균일 */
   border-radius:8px;
-  max-width:95%;
+  max-width:90%;
   max-height:80%;
   overflow-y:auto;
   display:none;
@@ -139,39 +139,53 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   }
 });
 calendar.render();
-/* 모달 클릭 처리 */
-calendar.on('eventClick', info => {
-  const e = info.event;
-  selectedEvent = e;
-  eventTitle.value = e.title;
-  eventDate.value = e.startStr;
-  eventLink.value = e.extendedProps.link || '';
-  eventType.value = e.extendedProps.type || '';
-  deleteBtn.style.display = 'inline-block';
-  modal.classList.add('show');
-});
 
- /* 링크 열기 처리 */ 
+/* 모달 클릭 + 링크 처리 */
 calendar.on('eventDidMount', info => {
-  const link = info.event.extendedProps.link;
-  if(!link) return;
-
   const el = info.el;
-  const isTouchDevice = 'ontouchstart' in window;
+  const e = info.event;
+  const link = e.extendedProps.link;
+  if (!link) return;
 
-  if(isTouchDevice){
-    // 모바일: 롱프레스 0.6초 → 링크
-    let pressTimer;
-    const openLink = () => window.open(link,'_blank');
-    el.addEventListener('touchstart', e => { pressTimer = setTimeout(openLink,600); });
-    el.addEventListener('touchend', e => { clearTimeout(pressTimer); });
-    el.addEventListener('touchmove', e => { clearTimeout(pressTimer); });
-  } else {
-    // PC: 더블 클릭 → 링크
-    el.addEventListener('dblclick', () => window.open(link,'_blank'));
-  }
+  let pressTimer = null;
+  let longPressed = false;
+
+  const openLink = () => {
+    longPressed = true;
+    window.open(link, '_blank');
+  };
+
+  const startPress = () => {
+    longPressed = false;
+    pressTimer = setTimeout(openLink, 600); // 0.6초 이상 → 링크
+  };
+
+  const endPress = () => {
+    clearTimeout(pressTimer);
+  };
+
+  // 모바일/PC 공통
+  el.addEventListener('touchstart', startPress);
+  el.addEventListener('touchend', endPress);
+  el.addEventListener('touchmove', endPress);
+
+  el.addEventListener('mousedown', startPress);
+  el.addEventListener('mouseup', endPress);
+  el.addEventListener('mouseleave', endPress); // 마우스가 나가면 취소
+
+  // 클릭 이벤트 처리 (롱프레스가 아니면 모달)
+  el.addEventListener('click', () => {
+    if (!longPressed) {
+      selectedEvent = e;
+      eventTitle.value = e.title;
+      eventDate.value = e.startStr;
+      eventLink.value = e.extendedProps.link || '';
+      eventType.value = e.extendedProps.type || '';
+      deleteBtn.style.display = 'inline-block';
+      modal.classList.add('show');
+    }
+  });
 });
-
 
 /* Firestore 불러오기 */
 (async()=>{
@@ -200,5 +214,6 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
