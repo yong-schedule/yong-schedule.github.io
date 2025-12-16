@@ -113,15 +113,21 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       deleteBtn.style.display='none';
       modal.classList.add('show');
     }},
-    modifyBtn:{text:'수정',click(){
-      modifyMode = !modifyMode;
-      if(modifyMode){
-        calendar.getOption('customButtons').modifyBtn.text='수정 모드 ON';
-      } else {
-        calendar.getOption('customButtons').modifyBtn.text='수정';
-      }
-      calendar.render();
-    }}
+   modifyBtn:{text:'수정',click(){
+  modifyMode = !modifyMode;
+  const btnEl = document.querySelector('.fc-modifyBtn-button'); // 버튼 엘리먼트 선택
+  if(modifyMode){
+    btnEl.textContent = '수정 모드 ON';
+    btnEl.style.background = '#ef4444'; // 활성화 시 빨강
+    btnEl.style.color = '#fff';
+  } else {
+    btnEl.textContent = '수정';
+    btnEl.style.background = ''; // 원래 색
+    btnEl.style.color = '';
+  }
+  calendar.render();
+}}
+
   },
   events:[],
   eventContent: arg => {
@@ -191,3 +197,4 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
