@@ -143,21 +143,41 @@ calendar.render();
 /* 모달 클릭 + 링크 처리 */
 calendar.on('eventDidMount', info => {
   const el = info.el;
-  const e = info.event;
-  const link = e.extendedProps.link || null;
+  const event = info.event;
+  const link = event.extendedProps.link;
+  if (!link) return;
 
-  let pressTimer = null;
-  let longPressed = false;
+  let touchTimer, clickTimer;
 
-  const openModal = () => {
-    selectedEvent = e;
-    eventTitle.value = e.title;
-    eventDate.value = e.startStr;
-    eventLink.value = e.extendedProps.link || '';
-    eventType.value = e.extendedProps.type || '';
-    deleteBtn.style.display = 'inline-block';
-    modal.classList.add('show');
-  };
+  // 모바일 롱프레스
+  el.addEventListener('touchstart', e => {
+    touchTimer = setTimeout(() => {
+      window.open(link,'_blank');
+      clearTimeout(clickTimer); // 모달 띄우는 click 이벤트 방지
+    }, 600);
+  });
+  el.addEventListener('touchend', e => { clearTimeout(touchTimer); });
+
+  // PC 더블클릭
+  el.addEventListener('dblclick', e => {
+    window.open(link,'_blank');
+    clearTimeout(clickTimer); // 모달 띄우는 click 이벤트 방지
+  });
+
+  // 일반 클릭 (모달)
+  el.addEventListener('click', e => {
+    // 롱프레스 / 더블클릭 시 모달이 안 뜨도록 200ms 지연
+    clickTimer = setTimeout(() => {
+      selectedEvent = event;
+      eventTitle.value = event.title;
+      eventDate.value = event.startStr;
+      eventLink.value = event.extendedProps.link || '';
+      eventType.value = event.extendedProps.type || '';
+      deleteBtn.style.display = 'inline-block';
+      modal.classList.add('show');
+    }, 200);
+  });
+});
 
   const openLink = () => {
     longPressed = true;
@@ -218,6 +238,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
