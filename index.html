@@ -139,55 +139,18 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   }
 });
 calendar.render();
-/* 모달 클릭 + 링크 롱프레스 처리 (모바일+PC 통합) */
-calendar.on('eventDidMount', info => {
-  const el = info.el;
+/* 모든 이벤트 클릭 시 모달 열기 */
+calendar.on('eventClick', info => {
   const e = info.event;
-  const link = e.extendedProps.link;
-  let longPress = false;
-  let pressTimer;
-
-  const openModal = () => {
-    selectedEvent = e;
-    eventTitle.value = e.title;
-    eventDate.value = e.startStr;
-    eventLink.value = e.extendedProps.link || '';
-    eventType.value = e.extendedProps.type || '';
-    deleteBtn.style.display = 'inline-block';
-    modal.classList.add('show');
-  };
-
-  const openLink = () => {
-    if(link) window.open(link, '_blank');
-  };
-
-  const startPress = () => {
-    longPress = false;
-    if(link) pressTimer = setTimeout(() => {
-      longPress = true;
-      openLink();
-    }, 600);
-  };
-
-  const endPress = () => clearTimeout(pressTimer);
-
-  // 터치/마우스 구분 없이 모두 롱프레스 처리
-  el.addEventListener('touchstart', startPress);
-  el.addEventListener('mousedown', startPress);
-
-  el.addEventListener('touchend', () => {
-    endPress();
-    if(!longPress) openModal();
-  });
-  el.addEventListener('mouseup', () => {
-    endPress();
-    if(!longPress) openModal();
-  });
-
-  el.addEventListener('touchmove', endPress);
-  el.addEventListener('mouseleave', endPress);
+  selectedEvent = e;
+  eventTitle.value = e.title;
+  eventDate.value = e.startStr;
+  eventLink.value = e.extendedProps.link || '';
+  eventType.value = e.extendedProps.type || '';
+  deleteBtn.style.display = 'inline-block';
+  modal.classList.add('show');
 });
-
+  
 /* Firestore 불러오기 */
 (async()=>{
   const snap=await db.collection('schedules').get();
@@ -215,6 +178,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
