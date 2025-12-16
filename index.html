@@ -52,6 +52,10 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
 .modal.show{ display:block; }
 .modal .close-btn{position:absolute;top:8px;right:8px;border:none;background:none;font-size:18px;cursor:pointer;}
 .modal input,.modal select{width:100%;margin:6px 0;padding:6px;}
+.modal input,.modal select,.modal button { 
+  box-sizing: border-box; 
+}
+
 #footerLabel{position:fixed;bottom:30px;left:0;width:100%;text-align:center;font-size:9pt;color:#aaa;z-index:1000;}
 </style>
 </head>
@@ -197,4 +201,5 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
