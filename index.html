@@ -134,11 +134,11 @@ header{
   vertical-align: middle;
   margin-left: 2px;
 }
-
-/* 비스테이지 전용 */
+  
+/* 비스테이지 전용 - 글자보다 1pt 크게 */
 .event-icon.bstage {
-  transform: scale(1.5); /* 1.5배 확대 */
-  display: inline-block;  /* transform 적용 시 필요 */
+  width: calc(1em + 1pt);
+  height: calc(1em + 1pt);
 }
 
 
@@ -318,6 +318,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
