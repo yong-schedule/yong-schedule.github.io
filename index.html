@@ -137,8 +137,8 @@ header{
   
 /* 비스테이지 전용 - 글자보다 1pt 크게 */
 .event-icon.bstage {
-  width: calc(1em + 2pt);
-  height: calc(1em + 2pt);
+  width: calc(1em + 1pt);
+  height: calc(1em + 1pt);
 }
 
 
@@ -251,7 +251,8 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     else if(link.includes('github')) iconHTML = '<i class="fab fa-github event-icon"></i>';
     else if(link.includes('twitter.com') || link.includes('x.com')) iconHTML = '<i class="fab fa-twitter event-icon"></i>'; // 트위터/X
     else if(link.includes('bstage') || link.includes('https://solarkeem.com')) 
-  iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon">'; // 비스테이지
+  iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon bstage">';
+
 
     else iconHTML = '<i class="fas fa-link event-icon"></i>'; // 기타 링크
   }
@@ -318,6 +319,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
