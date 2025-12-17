@@ -218,18 +218,32 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   },
   events:[],
   eventContent: arg => {
-    const type = arg.event.extendedProps.type;
-    const link = arg.event.extendedProps.link;
-    const bgColor = eventColorData[type] || '#aaa';
-    let iconHTML = '';
-    if(link){
-      if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
-      else if(link.includes('youtube')) iconHTML = '<i class="fab fa-youtube event-icon"></i>';
-      else iconHTML = '<i class="fas fa-link event-icon"></i>';
-    }
-    let fontSize = window.innerWidth <= 600 ? (arg.event.title.length>=6?'4pt':'5pt') : '8pt';
-    return {html:`<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:2px !important;font-size:${fontSize};word-break:break-word;white-space:normal;">${iconHTML} ${arg.event.title}</div>`};
+  const type = arg.event.extendedProps.type;
+  const link = arg.event.extendedProps.link;
+  const bgColor = eventColorData[type] || '#aaa';
+  let iconHTML = '';
+
+  if(link){
+    if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
+    else if(link.includes('youtube')) iconHTML = '<i class="fab fa-youtube event-icon"></i>';
+    else if(link.includes('facebook')) iconHTML = '<i class="fab fa-facebook event-icon"></i>';
+    else if(link.includes('tiktok')) iconHTML = '<i class="fab fa-tiktok event-icon"></i>';
+    else if(link.includes('threads')) iconHTML = '<i class="fab fa-threads event-icon"></i>';
+    else if(link.includes('kakaotalk')) iconHTML = '<i class="fab fa-kakaotalk event-icon"></i>';
+    else if(link.includes('naver')) iconHTML = '<i class="fab fa-naver event-icon"></i>';
+    else if(link.includes('github')) iconHTML = '<i class="fab fa-github event-icon"></i>';
+    else if(link.includes('twitter.com') || link.includes('x.com')) iconHTML = '<i class="fab fa-twitter event-icon"></i>'; // 트위터/X
+    else iconHTML = '<i class="fas fa-link event-icon"></i>'; // 기타 링크
   }
+
+  let fontSize = window.innerWidth <= 600 ? (arg.event.title.length>=6?'4pt':'5pt') : '8pt';
+  return {
+    html: `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:2px !important;font-size:${fontSize};word-break:break-word;white-space:normal;">
+             ${iconHTML} ${arg.event.title}
+           </div>`
+  };
+}
+
 });
 calendar.render();
 
@@ -284,6 +298,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
