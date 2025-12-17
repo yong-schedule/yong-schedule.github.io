@@ -233,6 +233,9 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     else if(link.includes('naver')) iconHTML = '<i class="fab fa-naver event-icon"></i>';
     else if(link.includes('github')) iconHTML = '<i class="fab fa-github event-icon"></i>';
     else if(link.includes('twitter.com') || link.includes('x.com')) iconHTML = '<i class="fab fa-twitter event-icon"></i>'; // 트위터/X
+    else if(link.includes('bstage') || link.includes('https://solarkeem.com/contents')) 
+  iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon">'; // 비스테이지
+
     else iconHTML = '<i class="fas fa-link event-icon"></i>'; // 기타 링크
   }
 
@@ -298,6 +301,7 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
+
 
 
 
