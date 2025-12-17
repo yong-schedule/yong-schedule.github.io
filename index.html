@@ -53,6 +53,15 @@ header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
   box-sizing: border-box; 
 }
 
+.modal textarea {
+  width: 100%;
+  margin: 6px 0;
+  padding: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+
 #footerLabel{position:fixed;bottom:30px;left:0;width:100%;text-align:center;font-size:9pt;color:#aaa;z-index:1000;}
 
 /* ================= 스크롤바 숨기기 ================= */
@@ -127,6 +136,16 @@ header{
   .fc .fc-button{font-size:10px;padding:2px 6px;}
 }  
 
+@media (max-width:600px){
+  .memo-title {
+    font-size: 12px;
+  }
+
+  #memoViewContent {
+    font-size: 11px;
+  }
+}
+
 .event-icon {
   width: 1em;
   height: 1em;
@@ -142,6 +161,26 @@ header{
 }
 
 
+/* ===== 메모 보기 전용 모달 ===== */
+#memoViewModal {
+  font-family: 'Roboto', system-ui, sans-serif;
+}
+
+.memo-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #353837;
+}
+
+#memoViewContent {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+}
 
   
 </style>
@@ -157,7 +196,6 @@ header{
   <h3>일정 등록 / 수정</h3>
   <input id="eventTitle" placeholder="일정 제목">
   <input id="eventDate" type="date">
-  <input id="eventLink" placeholder="링크 (선택)">
   <select id="eventType">
     <option value="">종류 선택</option>
     <option value="공식">공식</option>
@@ -168,10 +206,30 @@ header{
     <option value="축하">축하</option>
     <option value="발매">발매</option>
     <option value="기타">기타</option>
-  </select>
+</select>
+
+<input id="eventLink" placeholder="링크 (선택)">
+<textarea
+  id="eventMemo"
+  placeholder="메모"
+  rows="3"
+></textarea>
+
+
   <button id="saveBtn">저장</button>
   <button id="deleteBtn" style="background:#ef4444;color:#fff;">삭제</button>
 </div>
+
+<div id="memoViewModal" class="modal">
+  <button class="close-btn">&times;</button>
+  <h3 class="memo-title">
+  <i class="fa-regular fa-note-sticky"></i> MEMO
+</h3>
+
+  <p id="memoViewContent" style="white-space:pre-wrap;"></p>
+</div>
+
+
 <div id="footerLabel">✨ DC SOLAR GALLERY ✨</div>
 <script>
 firebase.initializeApp({
@@ -200,6 +258,12 @@ document.getElementById('legend').innerHTML =
         .join('');
 
 const modal=document.getElementById('modal');
+const memoViewModal = document.getElementById('memoViewModal');
+const memoViewContent = document.getElementById('memoViewContent');
+
+memoViewModal.querySelector('.close-btn').onclick =
+  () => memoViewModal.classList.remove('show');
+
 modal.querySelector('.close-btn').onclick=()=>modal.classList.remove('show');
 let selectedEvent=null;
 let modifyMode=false; // 수정 모드 상태
@@ -214,6 +278,8 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       eventDate.value='';
       eventLink.value='';
       eventType.value='';
+      eventMemo.value='';
+
       deleteBtn.style.display='none';
       modal.classList.add('show');
     }},
@@ -237,8 +303,17 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   eventContent: arg => {
   const type = arg.event.extendedProps.type;
   const link = arg.event.extendedProps.link;
+const memo = arg.event.extendedProps.memo;
+const hasMemo = memo && memo.trim();
+
   const bgColor = eventColorData[type] || '#aaa';
   let iconHTML = '';
+
+let memoIcon = '';
+if (type === '뮤지컬' && hasMemo) {
+  memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
+}
+
 
   if(link){
     if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
@@ -260,7 +335,8 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   let fontSize = window.innerWidth <= 600 ? (arg.event.title.length>=6?'4pt':'5pt') : '8pt';
   return {
     html: `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:2px !important;font-size:${fontSize};word-break:break-word;white-space:normal;">
-             ${iconHTML} ${arg.event.title}
+             ${iconHTML} ${memoIcon} ${arg.event.title}
+
            </div>`
   };
 }
@@ -271,19 +347,39 @@ calendar.render();
 // 이벤트 클릭 처리
 calendar.on('eventClick', info => {
   const e = info.event;
-  if(modifyMode){
+  const { type, link, memo } = e.extendedProps;
+
+  // ✏️ 수정 모드일 때만 수정 모달
+  if (modifyMode) {
     selectedEvent = e;
     eventTitle.value = e.title;
     eventDate.value = e.startStr;
-    eventLink.value = e.extendedProps.link || '';
-    eventType.value = e.extendedProps.type || '';
+    eventLink.value = link || '';
+    eventType.value = type || '';
+    eventMemo.value = memo || '';
+
     deleteBtn.style.display='inline-block';
     modal.classList.add('show');
-  } else {
-    const link = e.extendedProps.link;
-    if(link) window.open(link,'_blank'); // 링크가 있으면 이동
+    return;
+  }
+
+  // 🎭 링크 없는 뮤지컬 + 메모 있음 → 보기 전용 모달
+  if (
+    type === '뮤지컬' &&
+    !link &&
+    memo && memo.trim()
+  ) {
+    memoViewContent.textContent = memo;
+    memoViewModal.classList.add('show');
+    return;
+  }
+
+  // 🔗 링크 있으면 링크만 열기
+  if (link) {
+    window.open(link, '_blank');
   }
 });
+
 
 // Firestore 불러오기
 (async()=>{
@@ -294,7 +390,14 @@ calendar.on('eventClick', info => {
 // 저장
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
-  const data={title:eventTitle.value,start:eventDate.value,link:eventLink.value,type:eventType.value};
+  const data = {
+  title: eventTitle.value,
+  start: eventDate.value,
+  link: eventLink.value,
+  type: eventType.value,
+  memo: eventMemo.value
+};
+
   if(selectedEvent) await db.collection('schedules').doc(selectedEvent.id).update(data);
   else{
     const r=await db.collection('schedules').add(data);
@@ -319,20 +422,3 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
