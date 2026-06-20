@@ -271,6 +271,24 @@ let modifyMode=false; // 수정 모드 상태
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight:120,
   headerToolbar:{left:'title',right:'prev,next today customAddBtn modifyBtn'},
+
+  // 👇 여기에 이 코드를 그대로 복사해서 붙여넣으세요!
+  navLinks: true, 
+  dateClick: function(info) {
+    if (!modifyMode) return; // 수정 모드가 아니면 작동하지 않음 (오작동 방지)
+
+    selectedEvent = null;
+    eventTitle.value = '';
+    eventDate.value = info.dateStr; // 클릭한 날짜가 자동으로 세팅됩니다.
+    eventLink.value = '';
+    eventType.value = '';
+    eventMemo.value = '';
+
+    deleteBtn.style.display = 'none';
+    modal.classList.add('show');
+  },
+  // 👆 여기까지 붙여넣기
+  
   customButtons:{
     customAddBtn:{text:'＋ 일정 추가',click(){
       selectedEvent=null;
@@ -391,26 +409,44 @@ calendar.on('eventClick', info => {
 })();
 
 // 저장
+// 저장
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
   const data = {
-  title: eventTitle.value,
-  start: eventDate.value,
-  link: eventLink.value,
-  type: eventType.value,
-  memo: eventMemo.value
-};
+    title: eventTitle.value,
+    start: eventDate.value,
+    link: eventLink.value,
+    type: eventType.value,
+    memo: eventMemo.value
+  };
 
-  if(selectedEvent) await db.collection('schedules').doc(selectedEvent.id).update(data);
+  if(selectedEvent) {
+    await db.collection('schedules').doc(selectedEvent.id).update(data);
+    
+    // 🌟 [수정 가미] 화면에 수정된 내용(제목, 날짜, 링크, 종류, 메모) 즉시 반영
+    selectedEvent.setProp('title', data.title);
+    selectedEvent.setStart(data.start);
+    selectedEvent.setExtendedProp('link', data.link);
+    selectedEvent.setExtendedProp('type', data.type);
+    selectedEvent.setExtendedProp('memo', data.memo);
+  }
   else{
     const r=await db.collection('schedules').add(data);
     calendar.addEvent({id:r.id,...data});
   }
   modal.classList.remove('show');
   modifyMode=false;
-  calendar.getOption('customButtons').modifyBtn.text='수정';
+
+  // 🌟 [수정 가미] 수정 모드 버튼 UI를 안전하고 깨끗하게 원래 상태로 초기화
+  const modifyBtnEl = document.querySelector('.fc-modifyBtn-button');
+  if(modifyBtnEl) {
+    modifyBtnEl.textContent = '수정';
+    modifyBtnEl.style.background = '';
+    modifyBtnEl.style.color = '';
+  }
   calendar.render();
 };
+
 // 삭제
 deleteBtn.onclick=async()=>{
   if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
@@ -418,14 +454,20 @@ deleteBtn.onclick=async()=>{
     calendar.getEventById(selectedEvent.id).remove();
     modal.classList.remove('show');
     modifyMode=false;
-    calendar.getOption('customButtons').modifyBtn.text='수정';
+    
+    // 🌟 [수정 가미] 삭제 후에도 수정 모드 버튼 UI를 원래 상태로 초기화
+    const modifyBtnEl = document.querySelector('.fc-modifyBtn-button');
+    if(modifyBtnEl) {
+      modifyBtnEl.textContent = '수정';
+      modifyBtnEl.style.background = '';
+      modifyBtnEl.style.color = '';
+    }
     calendar.render();
   }
 };
 </script>
 </body>
 </html>
-
 
 
 
