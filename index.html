@@ -272,14 +272,21 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight:120,
   headerToolbar:{left:'title',right:'prev,next today customAddBtn modifyBtn'},
 
-  // 👇 여기에 이 코드를 그대로 복사해서 붙여넣으세요!
+  // 🌟 날짜 칸/숫자 클릭 연동 기능 구현
   navLinks: true, 
   dateClick: function(info) {
-    if (!modifyMode) return; // 수정 모드가 아니면 작동하지 않음 (오작동 방지)
+    if (!modifyMode) return; // '수정 모드 ON' 상태가 아니면 무시
 
     selectedEvent = null;
     eventTitle.value = '';
-    eventDate.value = info.dateStr; // 클릭한 날짜가 자동으로 세팅됩니다.
+    
+    // 🌟 클릭한 날짜가 모달창 입력박스(eventDate)에 바로 세팅되도록 구현
+    if(document.getElementById('eventDate')) {
+      document.getElementById('eventDate').value = info.dateStr;
+    } else {
+      eventDate.value = info.dateStr;
+    }
+    
     eventLink.value = '';
     eventType.value = '';
     eventMemo.value = '';
@@ -287,7 +294,6 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     deleteBtn.style.display = 'none';
     modal.classList.add('show');
   },
-  // 👆 여기까지 붙여넣기
   
   customButtons:{
     customAddBtn:{text:'＋ 일정 추가',click(){
@@ -301,37 +307,35 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       deleteBtn.style.display='none';
       modal.classList.add('show');
     }},
-   modifyBtn:{text:'수정',click(){
-  modifyMode = !modifyMode;
-  const btnEl = document.querySelector('.fc-modifyBtn-button'); // 버튼 엘리먼트 선택
-  if(modifyMode){
-    btnEl.textContent = '수정 모드 ON';
-    btnEl.style.background = '#ef4444'; // 활성화 시 빨강
-    btnEl.style.color = '#fff';
-  } else {
-    btnEl.textContent = '수정';
-    btnEl.style.background = ''; // 원래 색
-    btnEl.style.color = '';
-  }
-  calendar.render();
-}}
-
+    modifyBtn:{text:'수정',click(){
+      modifyMode = !modifyMode;
+      const btnEl = document.querySelector('.fc-modifyBtn-button'); // 버튼 엘리먼트 선택
+      if(modifyMode){
+        btnEl.textContent = '수정 모드 ON';
+        btnEl.style.background = '#ef4444'; // 활성화 시 빨강
+        btnEl.style.color = '#fff';
+      } else {
+        btnEl.textContent = '수정';
+        btnEl.style.background = ''; // 원래 색
+        btnEl.style.color = '';
+      }
+      calendar.render();
+    }}
   },
   events:[],
   eventContent: arg => {
   const type = arg.event.extendedProps.type;
   const link = arg.event.extendedProps.link;
-const memo = arg.event.extendedProps.memo;
-const hasMemo = memo && memo.trim();
+  const memo = arg.event.extendedProps.memo;
+  const hasMemo = memo && memo.trim();
 
   const bgColor = eventColorData[type] || '#aaa';
   let iconHTML = '';
 
-let memoIcon = '';
-if (type === '뮤지컬' && hasMemo) {
-  memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
-}
-
+  let memoIcon = '';
+  if (type === '뮤지컬' && hasMemo) {
+    memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
+  }
 
   if(link){
     if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
@@ -343,13 +347,10 @@ if (type === '뮤지컬' && hasMemo) {
     else if(link.includes('naver')) iconHTML = '<i class="fab fa-naver event-icon"></i>';
     else if(link.includes('github')) iconHTML = '<i class="fab fa-github event-icon"></i>';
     else if (link.includes('twitter.com') || link.includes('x.com')) {
-  iconHTML = '<i class="fab fa-x-twitter event-icon"></i>';
-}
-
+      iconHTML = '<i class="fab fa-x-twitter event-icon"></i>';
+    }
     else if(link.includes('bstage') || link.includes('https://solarkeem.com')) 
-  iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon bstage">';
-
-
+      iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon bstage">';
     else iconHTML = '<i class="fas fa-link event-icon"></i>'; // 기타 링크
   }
 
@@ -357,11 +358,9 @@ if (type === '뮤지컬' && hasMemo) {
   return {
     html: `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:2px !important;font-size:${fontSize};word-break:break-word;white-space:normal;">
              ${iconHTML} ${memoIcon} ${arg.event.title}
-
            </div>`
   };
 }
-
 });
 calendar.render();
 
@@ -409,7 +408,6 @@ calendar.on('eventClick', info => {
 })();
 
 // 저장
-// 저장
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
   const data = {
@@ -423,7 +421,7 @@ saveBtn.onclick=async()=>{
   if(selectedEvent) {
     await db.collection('schedules').doc(selectedEvent.id).update(data);
     
-    // 🌟 [수정 가미] 화면에 수정된 내용(제목, 날짜, 링크, 종류, 메모) 즉시 반영
+    // 🌟 화면에 수정된 내용 즉시 반영
     selectedEvent.setProp('title', data.title);
     selectedEvent.setStart(data.start);
     selectedEvent.setExtendedProp('link', data.link);
@@ -437,7 +435,7 @@ saveBtn.onclick=async()=>{
   modal.classList.remove('show');
   modifyMode=false;
 
-  // 🌟 [수정 가미] 수정 모드 버튼 UI를 안전하고 깨끗하게 원래 상태로 초기화
+  // 🌟 수정 모드 버튼 UI 원래 상태로 초기화
   const modifyBtnEl = document.querySelector('.fc-modifyBtn-button');
   if(modifyBtnEl) {
     modifyBtnEl.textContent = '수정';
@@ -455,7 +453,7 @@ deleteBtn.onclick=async()=>{
     modal.classList.remove('show');
     modifyMode=false;
     
-    // 🌟 [수정 가미] 삭제 후에도 수정 모드 버튼 UI를 원래 상태로 초기화
+    // 🌟 삭제 후에도 수정 모드 버튼 UI 원래 상태로 초기화
     const modifyBtnEl = document.querySelector('.fc-modifyBtn-button');
     if(modifyBtnEl) {
       modifyBtnEl.textContent = '수정';
@@ -468,8 +466,3 @@ deleteBtn.onclick=async()=>{
 </script>
 </body>
 </html>
-
-
-
-
-
