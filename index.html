@@ -2,200 +2,478 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<title>solar schedule</title>
+<title>Solar Schedule</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&display=swap" rel="stylesheet">
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<style>
-body{margin:0;font-family:'Roboto', system-ui, sans-serif;background:#fdfdfd;}
-header{font-size:24px;font-weight:900;text-align:center;margin-top:50px;}
-.event-legend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:20px 0;font-size:12px;}
-.event-legend div{padding:2px 6px;border-radius:4px;color:#fff;font-weight:700;}
-.calendar-wrap{max-width:900px;margin:0 auto;box-sizing:border-box;max-height:calc(100vh - 260px);overflow-y:auto;scrollbar-gutter: stable both-edges;background:#fff;}
-.calendar-wrap::-webkit-scrollbar{width:12px;}
-.calendar-wrap::-webkit-scrollbar-track{background:transparent;}
-.calendar-wrap::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:6px;}
-@supports (scrollbar-width: thin) {.calendar-wrap {scrollbar-width: thin;scrollbar-color: rgba(0,0,0,0.2) transparent;}}
-#calendar{border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.05);padding:10px;}
-.fc-event{border:none!important;box-shadow:none!important;border-radius:2px !important;}
-.fc .fc-toolbar-title{font-size:16px;font-weight:700;}
-.fc .fc-button{font-size:12px;padding:4px 8px;background:#000;color:#fff;border:none;}
-.fc .fc-button:focus,.fc .fc-button:active{background:#000;}
-.fc-daygrid-day-number{font-size:10pt;}
 
+<style>
+/* ============ 디자인 토큰 ============ */
+:root{
+  --bg:#F9F7F3;
+  --surface:#FFFFFF;
+  --ink:#2A2621;
+  --ink-soft:#7A7369;
+  --ink-faint:#B3ACA1;
+  --line:#E9E3D7;
+  --line-strong:#DCD4C4;
+
+  --gold:#B9873A;
+  --gold-deep:#93692A;
+  --gold-soft:#F3E7CE;
+  --gold-glow: radial-gradient(circle at 30% 20%, rgba(201,151,62,.35), rgba(201,151,62,0) 65%);
+
+  --danger:#B3453D;
+  --danger-soft:#F6E4E2;
+
+  --c-official:#B33A32;
+  --c-musical:#A9821C;
+  --c-broadcast:#3B6690;
+  --c-sns:#675A8F;
+  --c-solardo:#BE6F8E;
+  --c-celebrate:#B66A2E;
+  --c-release:#457E67;
+  --c-etc:#66625B;
+
+  --radius-lg:18px;
+  --radius-md:12px;
+  --radius-sm:8px;
+  --shadow-soft:0 4px 18px rgba(42,38,33,.06);
+  --shadow-pop:0 12px 32px rgba(42,38,33,.14);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Pretendard Variable','Pretendard', system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============ 상단 헤더 ============ */
+.page-wrap{
+  max-width:900px;
+  margin:0 auto;
+  padding:44px 20px 120px;
+}
+
+.hero{
+  text-align:center;
+  margin-bottom:28px;
+  position:relative;
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  top:-40px;
+  left:50%;
+  transform:translateX(-50%);
+  width:280px;
+  height:180px;
+  background:var(--gold-glow);
+  pointer-events:none;
+  z-index:0;
+}
+.wordmark{
+  position:relative;
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:56px;
+  line-height:1;
+  letter-spacing:-0.01em;
+  color:var(--ink);
+  margin:0;
+}
+.wordmark-sub{
+  position:relative;
+  font-family:'Pretendard Variable','Pretendard', system-ui, sans-serif;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:0.34em;
+  color:var(--gold-deep);
+  text-transform:uppercase;
+  margin-top:8px;
+}
+
+/* ============ D-day 카드 ============ */
+.dday-card{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:16px 22px;
+  margin:0 0 22px;
+  box-shadow:var(--shadow-soft);
+}
+.dday-number{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-weight:600;
+  font-size:34px;
+  color:var(--gold-deep);
+  min-width:82px;
+  text-align:center;
+  line-height:1;
+}
+.dday-divider{
+  width:1px;
+  align-self:stretch;
+  background:var(--line);
+}
+.dday-body{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.dday-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+}
+.dday-title-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+.dday-dot{
+  width:7px;height:7px;border-radius:50%;
+  flex:none;
+}
+.dday-title{
+  font-size:15px;
+  font-weight:700;
+  color:var(--ink);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.dday-date{
+  font-size:12px;
+  color:var(--ink-soft);
+}
+
+/* ============ 툴바 (검색 + 필터) ============ */
+.toolbar{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-bottom:18px;
+}
+.search-box{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.search-box i{
+  position:absolute;
+  left:14px;
+  font-size:13px;
+  color:var(--ink-faint);
+}
+.search-box input{
+  width:100%;
+  padding:11px 14px 11px 36px;
+  border:1px solid var(--line);
+  border-radius:var(--radius-md);
+  background:var(--surface);
+  font-family:inherit;
+  font-size:13px;
+  color:var(--ink);
+}
+.search-box input:focus{
+  border-color:var(--gold);
+}
+.search-box input::placeholder{color:var(--ink-faint);}
+
+.filter-row{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:2px;
+  scrollbar-width:none;
+}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 13px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  font-size:12px;
+  font-weight:600;
+  color:var(--ink-soft);
+  cursor:pointer;
+  user-select:none;
+  transition:all .15s ease;
+  white-space:nowrap;
+}
+.filter-chip .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.filter-chip.active{
+  color:#fff;
+  border-color:transparent;
+}
+.filter-chip.all{font-weight:700;}
+.filter-chip.all.active{background:var(--ink);color:#fff;}
+
+/* ============ 달력 ============ */
+.calendar-wrap{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-soft);
+  padding:6px;
+  overflow-y:auto;
+  -ms-overflow-style:none;
+  scrollbar-width:none;
+}
+.calendar-wrap::-webkit-scrollbar{width:0;background:transparent;}
+
+#calendar{padding:8px;}
+
+.fc{font-family:'Pretendard Variable','Pretendard',system-ui,sans-serif;}
+.fc-event{border:none!important;box-shadow:none!important;border-radius:4px!important;}
+.fc .fc-toolbar-title{
+  font-family:'Pretendard Variable','Pretendard', system-ui, sans-serif;
+  font-style:normal;
+  font-weight:800;
+  font-size:18px;
+  letter-spacing:-0.01em;
+  color:var(--ink);
+}
+.fc .fc-button{
+  font-family:inherit;
+  font-size:12px;
+  font-weight:600;
+  padding:6px 12px;
+  background:var(--ink);
+  color:#fff;
+  border:none;
+  border-radius:var(--radius-sm);
+}
+.fc .fc-button:focus,.fc .fc-button:active{background:var(--ink);}
+.fc .fc-button:hover{filter:brightness(1.15);}
+.fc-daygrid-day-number{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
+.fc-col-header-cell-cushion{
+  font-size:11px;
+  color:var(--ink-faint);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  padding:8px 0;
+}
+.fc-theme-standard td, .fc-theme-standard th{border-color:var(--line)!important;}
+.fc .fc-daygrid-day.fc-day-today{background:var(--gold-soft)!important;}
+.fc-daygrid-day-frame{padding:2px;}
+.fc-daygrid-day{cursor:pointer;}
 
 *:focus{outline:none!important;box-shadow:none!important;}
 .fc *:focus{outline:none!important;box-shadow:none!important;}
+
+/* 이전 / 다음 */
+.fc .fc-prev-button,.fc .fc-next-button{background:var(--ink)!important;color:#fff!important;}
+.fc .fc-customAddBtn-button,.fc .fc-modifyBtn-button{background:var(--ink)!important;color:#fff!important;}
+.fc .fc-today-button{background:var(--danger)!important;color:#fff!important;}
+
+.event-icon{width:1em;height:1em;object-fit:contain;vertical-align:middle;margin-left:2px;}
+.event-icon.bstage{width:calc(1em + 1pt);height:calc(1em + 1pt);}
+
+/* ============ 모달 ============ */
 .modal{
   position:fixed;
-  top:50%;
-  left:50%;
+  top:50%;left:50%;
   transform:translate(-50%,-50%);
-  background:#fff;
-  padding:16px 16px;
-  border-radius:8px;
+  background:var(--surface);
+  padding:22px 22px 20px;
+  border-radius:var(--radius-lg);
+  width:340px;
   max-width:90%;
-  max-height:80%;
+  max-height:82%;
   overflow-y:auto;
   display:none;
   z-index:9999;
+  box-shadow:var(--shadow-pop);
 }
-.modal.show{ display:block; }
-.modal .close-btn{position:absolute;top:8px;right:8px;border:none;background:none;font-size:18px;cursor:pointer;}
-.modal input,.modal select{width:100%;margin:6px 0;padding:6px;}
-.modal input,.modal select,.modal button { 
-  box-sizing: border-box; 
+.modal.show{display:block;}
+.modal h3{
+  font-family:'Pretendard Variable','Pretendard', system-ui, sans-serif;
+  font-style:normal;
+  font-weight:800;
+  font-size:17px;
+  letter-spacing:-0.01em;
+  margin:0 0 16px;
+  color:var(--ink);
 }
-
-.modal textarea {
-  width: 100%;
-  margin: 6px 0;
-  padding: 6px;
-  resize: vertical;
-  box-sizing: border-box;
+.modal .close-btn{
+  position:absolute;top:14px;right:14px;
+  border:none;background:none;font-size:16px;cursor:pointer;color:var(--ink-faint);
 }
-
-
-#footerLabel{position:fixed;bottom:30px;left:0;width:100%;text-align:center;font-size:9pt;color:#aaa;z-index:1000;}
-
-/* ================= 스크롤바 숨기기 ================= */
-.calendar-wrap {
-  overflow-y: auto;           /* 스크롤 가능 */
-  -ms-overflow-style: none;   /* IE 10+ */
-  scrollbar-width: none;      /* Firefox */
+.field-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.06em;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  margin:12px 0 4px;
+  display:block;
 }
-.calendar-wrap::-webkit-scrollbar {
-  width: 0px;
-  background: transparent;    /* Chrome, Edge, Safari */
+.modal input,.modal select,.modal textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:13px;
+  color:var(--ink);
+  background:var(--surface);
 }
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--gold);}
+.modal textarea{resize:vertical;}
 
-/* ================= PC 전용 테두리/그림자 ================= */
-@media (min-width: 601px) {
-  .calendar-wrap {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
+.modal-actions{
+  display:flex;
+  gap:8px;
+  margin-top:20px;
 }
-
-/* ================= 모바일에서는 테두리 제거 ================= */
-@media (max-width: 600px) {
-  .calendar-wrap {
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-  }
+.btn{
+  flex:1;
+  padding:11px;
+  border:none;
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
 }
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:var(--gold-deep);}
+.btn-danger{background:var(--danger-soft);color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
 
-/* ===== FullCalendar 버튼 색상 커스텀 ===== */
-
-/* 이전 / 다음 (< >) */
-.fc .fc-prev-button,
-.fc .fc-next-button {
-  background: #353837 !important;
-  color: #fff !important;
+/* ============ 메모 보기 모달 ============ */
+.memo-title{
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--gold-deep);
+  text-transform:uppercase;
+  letter-spacing:.08em;
 }
-
-/* 일정 추가 / 수정 (커스텀 버튼) */
-.fc .fc-customAddBtn-button,
-.fc .fc-modifyBtn-button {
-  background: #353837 !important;
-  color: #fff !important;
-}
-
-/* TODAY 버튼 */
-.fc .fc-today-button {
-  background: #EF4444 !important;
-  color: #fff !important;
-}
-
-/* hover 시 살짝 어둡게 (선택이지만 추천) */
-.fc .fc-button:hover {
-  filter: brightness(0.9);
-}
-
-header{
-  font-family: 'Anton', sans-serif;
-  font-size: 50px;
-  letter-spacing: 0.04em;
-  color: #353837;
-  text-align: center;
+#memoViewContent{
+  font-size:13px;
+  line-height:1.7;
+  color:var(--ink);
 }
 
+/* ============ 범례 ============ */
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 10px;
+  justify-content:center;
+  margin:18px 0 0;
+}
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--ink-soft);
+}
+.legend-item .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+
+footer.site-footer{
+  text-align:center;
+  margin-top:34px;
+  font-size:10px;
+  letter-spacing:.14em;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+}
+
+/* ============ 반응형 ============ */
 @media(max-width:600px){
-  header{font-size:40px;margin-top:32px;}
-  .calendar-wrap{max-height:calc(100vh - 260px);}
-  .fc-daygrid-day-number{font-size:6pt!important;}
-  .fc .fc-toolbar-title{font-size:14px;}
-  .fc .fc-button{font-size:10px;padding:2px 6px;}
-}  
-
-@media (max-width:600px){
-  .memo-title {
-    font-size: 12px;
-  }
-
-  #memoViewContent {
-    font-size: 11px;
-  }
+  .page-wrap{padding:32px 14px 100px;}
+  .wordmark{font-size:40px;}
+  .dday-card{padding:13px 16px;gap:12px;}
+  .dday-number{font-size:26px;min-width:64px;}
+  .fc-daygrid-day-number{font-size:9px!important;}
+  .fc .fc-toolbar-title{font-size:15px;}
+  .fc .fc-button{font-size:10px;padding:4px 8px;}
+  .fc-col-header-cell-cushion{font-size:9px;}
 }
-
-.event-icon {
-  width: 1em;
-  height: 1em;
-  object-fit: contain;
-  vertical-align: middle;
-  margin-left: 2px;
-}
-  
-/* 비스테이지 전용 - 글자보다 1pt 크게 */
-.event-icon.bstage {
-  width: calc(1em + 1pt);
-  height: calc(1em + 1pt);
-}
-
-
-/* ===== 메모 보기 전용 모달 ===== */
-#memoViewModal {
-  font-family: 'Roboto', system-ui, sans-serif;
-}
-
-.memo-title {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #353837;
-}
-
-#memoViewContent {
-  font-size: 13px;
-  line-height: 1.6;
-  color: #333;
-}
-
-  
 </style>
 </head>
 <body>
-<header>solar schedule</header>
-<div class="event-legend" id="legend"></div>
-<div class="calendar-wrap">
-  <div id="calendar"></div>
+<div class="page-wrap">
+
+  <div class="hero">
+    <h1 class="wordmark">Solar</h1>
+    <div class="wordmark-sub">Schedule</div>
+  </div>
+
+  <div id="ddayCard" class="dday-card" style="display:none;">
+    <div class="dday-number" id="ddayNumber">–</div>
+    <div class="dday-divider"></div>
+    <div class="dday-body">
+      <div class="dday-label">다가오는 일정</div>
+      <div class="dday-title-row">
+        <span class="dday-dot" id="ddayDot"></span>
+        <span class="dday-title" id="ddayTitle"></span>
+      </div>
+      <div class="dday-date" id="ddayDate"></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="searchInput" placeholder="일정 검색">
+    </div>
+    <div class="filter-row" id="filterRow"></div>
+  </div>
+
+  <div class="calendar-wrap">
+    <div id="calendar"></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <footer class="site-footer">✨ DC Solar Gallery ✨</footer>
 </div>
+
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
+
+  <span class="field-label">제목</span>
   <input id="eventTitle" placeholder="일정 제목">
+
+  <span class="field-label">날짜</span>
   <input id="eventDate" type="date">
+
+  <span class="field-label">종류</span>
   <select id="eventType">
     <option value="">종류 선택</option>
     <option value="공식">공식</option>
@@ -206,31 +484,26 @@ header{
     <option value="축하">축하</option>
     <option value="발매">발매</option>
     <option value="기타">기타</option>
-</select>
+  </select>
 
-<input id="eventLink" placeholder="링크 (선택)">
-<textarea
-  id="eventMemo"
-  placeholder="메모"
-  rows="3"
-></textarea>
+  <span class="field-label">링크 (선택)</span>
+  <input id="eventLink" placeholder="https://...">
 
+  <span class="field-label">메모</span>
+  <textarea id="eventMemo" placeholder="메모" rows="3"></textarea>
 
-  <button id="saveBtn">저장</button>
-  <button id="deleteBtn" style="background:#ef4444;color:#fff;">삭제</button>
+  <div class="modal-actions">
+    <button id="deleteBtn" class="btn btn-danger">삭제</button>
+    <button id="saveBtn" class="btn btn-primary">저장</button>
+  </div>
 </div>
 
 <div id="memoViewModal" class="modal">
   <button class="close-btn">&times;</button>
-  <h3 class="memo-title">
-  <i class="fa-regular fa-note-sticky"></i> MEMO
-</h3>
-
+  <h3 class="memo-title"><i class="fa-regular fa-note-sticky"></i> Memo</h3>
   <p id="memoViewContent" style="white-space:pre-wrap;"></p>
 </div>
 
-
-<div id="footerLabel">✨ DC SOLAR GALLERY ✨</div>
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
@@ -239,37 +512,83 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-  // 달력 이벤트 색
+// ============ 색상 정의 ============
 const eventColorData = {
-  '공식':'#EF4444','뮤지컬':'#f7c80a','축하':'#F97316','발매':'#10B981',
-  '방송':'#3B82F6','SNS':'#8B5CF6','솔라시도':'#fc95cc','기타':'#474a49'
+  '공식':'var(--c-official)','뮤지컬':'var(--c-musical)','축하':'var(--c-celebrate)','발매':'var(--c-release)',
+  '방송':'var(--c-broadcast)','SNS':'var(--c-sns)','솔라시도':'var(--c-solardo)','기타':'var(--c-etc)'
+};
+// eventContent에서 인라인 style에 쓰기 위한 실제 hex 값
+const eventColorHex = {
+  '공식':'#B33A32','뮤지컬':'#A9821C','축하':'#B66A2E','발매':'#457E67',
+  '방송':'#3B6690','SNS':'#675A8F','솔라시도':'#BE6F8E','기타':'#66625B'
 };
 
-// 범례용 (솔라시도 제외)
-const legendData = {
-  '공식':'#EF4444','뮤지컬':'#f7c80a','방송':'#3B82F6','SNS':'#8B5CF6',
-  '축하':'#F97316','발매':'#10B981','기타':'#474a49'
-};
+const legendTypes = Object.keys(eventColorHex).filter(k=>k!=='솔라시도');
 
-document.getElementById('legend').innerHTML =
-  Object.entries(legendData)
-        .filter(([k,v])=>k!=='솔라시도') // 솔라시도 제외
-        .map(([k,v])=>`<div style="background:${v}">${k}</div>`)
-        .join('');
+document.getElementById('legend').innerHTML = legendTypes.map(k=>
+  `<div class="legend-item"><span class="dot" style="background:${eventColorHex[k]}"></span>${k}</div>`
+).join('');
 
+// ============ 필터 칩 ============
+const filterRow = document.getElementById('filterRow');
+let activeTypes = new Set(Object.keys(eventColorHex));
+
+function renderFilterChips(){
+  const allChip = `<div class="filter-chip all active" data-all="1">전체</div>`;
+  const chips = Object.keys(eventColorHex).map(k=>{
+    const isActive = activeTypes.has(k);
+    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="${isActive?`background:${eventColorHex[k]};border-color:${eventColorHex[k]}`:''}">
+      <span class="dot" style="background:${isActive?'#fff':eventColorHex[k]}"></span>${k}
+    </div>`;
+  }).join('');
+  filterRow.innerHTML = allChip + chips;
+  syncAllChip();
+}
+
+function syncAllChip(){
+  const allChip = filterRow.querySelector('.filter-chip.all');
+  if(activeTypes.size === Object.keys(eventColorHex).length){
+    allChip.classList.add('active');
+  } else {
+    allChip.classList.remove('active');
+  }
+}
+
+filterRow.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.filter-chip');
+  if(!chip) return;
+  if(chip.dataset.all){
+    activeTypes = new Set(Object.keys(eventColorHex));
+  } else {
+    const t = chip.dataset.type;
+    if(activeTypes.has(t)) activeTypes.delete(t);
+    else activeTypes.add(t);
+    if(activeTypes.size===0) activeTypes = new Set(Object.keys(eventColorHex));
+  }
+  renderFilterChips();
+  refreshCalendarEvents();
+});
+
+renderFilterChips();
+
+// ============ 검색 ============
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', refreshCalendarEvents);
+
+// ============ 모달 ============
 const modal=document.getElementById('modal');
 const memoViewModal = document.getElementById('memoViewModal');
 const memoViewContent = document.getElementById('memoViewContent');
 
-memoViewModal.querySelector('.close-btn').onclick =
-  () => memoViewModal.classList.remove('show');
+memoViewModal.querySelector('.close-btn').onclick = () => memoViewModal.classList.remove('show');
+modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
 
-modal.querySelector('.close-btn').onclick=()=>modal.classList.remove('show');
 let selectedEvent=null;
-let modifyMode=false; // 수정 모드 상태
+let modifyMode=false;
+let allEventsData=[];
 
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
-  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight:120,
+  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight:110,
   headerToolbar:{left:'title',right:'prev,next today customAddBtn modifyBtn'},
   customButtons:{
     customAddBtn:{text:'＋ 일정 추가',click(){
@@ -279,80 +598,79 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       eventLink.value='';
       eventType.value='';
       eventMemo.value='';
-
       deleteBtn.style.display='none';
       modal.classList.add('show');
     }},
-   modifyBtn:{text:'수정',click(){
-  modifyMode = !modifyMode;
-  const btnEl = document.querySelector('.fc-modifyBtn-button'); // 버튼 엘리먼트 선택
-  if(modifyMode){
-    btnEl.textContent = '수정 모드 ON';
-    btnEl.style.background = '#ef4444'; // 활성화 시 빨강
-    btnEl.style.color = '#fff';
-  } else {
-    btnEl.textContent = '수정';
-    btnEl.style.background = ''; // 원래 색
-    btnEl.style.color = '';
-  }
-  calendar.render();
-}}
-
+    modifyBtn:{text:'수정',click(){
+      modifyMode = !modifyMode;
+      const btnEl = document.querySelector('.fc-modifyBtn-button');
+      if(modifyMode){
+        btnEl.textContent = '수정 모드 ON';
+        btnEl.style.background = '#B3453D';
+        btnEl.style.color = '#fff';
+      } else {
+        btnEl.textContent = '수정';
+        btnEl.style.background = '';
+        btnEl.style.color = '';
+      }
+      calendar.render();
+    }}
   },
   events:[],
+  dateClick: info => {
+    selectedEvent=null;
+    eventTitle.value='';
+    eventDate.value=info.dateStr;
+    eventLink.value='';
+    eventType.value='';
+    eventMemo.value='';
+    deleteBtn.style.display='none';
+    modal.classList.add('show');
+  },
   eventContent: arg => {
-  const type = arg.event.extendedProps.type;
-  const link = arg.event.extendedProps.link;
-const memo = arg.event.extendedProps.memo;
-const hasMemo = memo && memo.trim();
+    const type = arg.event.extendedProps.type;
+    const link = arg.event.extendedProps.link;
+    const memo = arg.event.extendedProps.memo;
+    const hasMemo = memo && memo.trim();
 
-  const bgColor = eventColorData[type] || '#aaa';
-  let iconHTML = '';
+    const bgColor = eventColorHex[type] || '#999';
+    let iconHTML = '';
 
-let memoIcon = '';
-if (type === '뮤지컬' && hasMemo) {
-  memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
-}
+    let memoIcon = '';
+    if (type === '뮤지컬' && hasMemo) {
+      memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
+    }
 
+    if(link){
+      if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
+      else if(link.includes('youtube.com') || link.includes('youtu.be')) iconHTML = '<i class="fab fa-youtube event-icon"></i>';
+      else if(link.includes('facebook')) iconHTML = '<i class="fab fa-facebook event-icon"></i>';
+      else if(link.includes('tiktok')) iconHTML = '<i class="fab fa-tiktok event-icon"></i>';
+      else if(link.includes('threads')) iconHTML = '<i class="fab fa-threads event-icon"></i>';
+      else if(link.includes('kakaotalk')) iconHTML = '<i class="fab fa-kakaotalk event-icon"></i>';
+      else if(link.includes('naver')) iconHTML = '<i class="fab fa-naver event-icon"></i>';
+      else if(link.includes('github')) iconHTML = '<i class="fab fa-github event-icon"></i>';
+      else if (link.includes('twitter.com') || link.includes('x.com')) iconHTML = '<i class="fab fa-x-twitter event-icon"></i>';
+      else if(link.includes('bstage') || link.includes('https://solarkeem.com'))
+        iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon bstage">';
+      else iconHTML = '<i class="fas fa-link event-icon"></i>';
+    }
 
-  if(link){
-    if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
-    else if(link.includes('youtube.com') || link.includes('youtu.be')) iconHTML = '<i class="fab fa-youtube event-icon"></i>';
-    else if(link.includes('facebook')) iconHTML = '<i class="fab fa-facebook event-icon"></i>';
-    else if(link.includes('tiktok')) iconHTML = '<i class="fab fa-tiktok event-icon"></i>';
-    else if(link.includes('threads')) iconHTML = '<i class="fab fa-threads event-icon"></i>';
-    else if(link.includes('kakaotalk')) iconHTML = '<i class="fab fa-kakaotalk event-icon"></i>';
-    else if(link.includes('naver')) iconHTML = '<i class="fab fa-naver event-icon"></i>';
-    else if(link.includes('github')) iconHTML = '<i class="fab fa-github event-icon"></i>';
-    else if (link.includes('twitter.com') || link.includes('x.com')) {
-  iconHTML = '<i class="fab fa-x-twitter event-icon"></i>';
-}
-
-    else if(link.includes('bstage') || link.includes('https://solarkeem.com')) 
-  iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon bstage">';
-
-
-    else iconHTML = '<i class="fas fa-link event-icon"></i>'; // 기타 링크
+    let fontSize = window.innerWidth <= 600 ? (arg.event.title.length>=6?'4pt':'5pt') : '8pt';
+    return {
+      html: `<div style="display:flex;align-items:center;gap:2px;padding:2px 4px;background:${bgColor};color:#fff;border-radius:4px !important;font-size:${fontSize};font-weight:600;word-break:break-word;white-space:normal;">
+               ${iconHTML} ${memoIcon} ${arg.event.title}
+             </div>`
+    };
   }
-
-  let fontSize = window.innerWidth <= 600 ? (arg.event.title.length>=6?'4pt':'5pt') : '8pt';
-  return {
-    html: `<div style="display:flex;align-items:center;gap:2px;padding:1px 3px;background:${bgColor};color:#fff;border-radius:2px !important;font-size:${fontSize};word-break:break-word;white-space:normal;">
-             ${iconHTML} ${memoIcon} ${arg.event.title}
-
-           </div>`
-  };
-}
-
 });
 calendar.render();
 
-// 이벤트 클릭 처리
+// ============ 이벤트 클릭 ============
 calendar.on('eventClick', info => {
   const e = info.event;
   const { type, link, memo } = e.extendedProps;
 
-  // ✏️ 수정 모드일 때만 수정 모달
   if (modifyMode) {
     selectedEvent = e;
     eventTitle.value = e.title;
@@ -360,72 +678,100 @@ calendar.on('eventClick', info => {
     eventLink.value = link || '';
     eventType.value = type || '';
     eventMemo.value = memo || '';
-
     deleteBtn.style.display='inline-block';
     modal.classList.add('show');
     return;
   }
 
-  // 🎭 링크 없는 뮤지컬 + 메모 있음 → 보기 전용 모달
-  if (
-    type === '뮤지컬' &&
-    !link &&
-    memo && memo.trim()
-  ) {
+  if (type === '뮤지컬' && !link && memo && memo.trim()) {
     memoViewContent.textContent = memo;
     memoViewModal.classList.add('show');
     return;
   }
 
-  // 🔗 링크 있으면 링크만 열기
-  if (link) {
-    window.open(link, '_blank');
-  }
+  if (link) window.open(link, '_blank');
 });
 
+// ============ 필터 / 검색 반영 ============
+function refreshCalendarEvents(){
+  calendar.removeAllEvents();
+  const q = searchInput.value.trim().toLowerCase();
+  const filtered = allEventsData.filter(e=>
+    activeTypes.has(e.type) && (!q || (e.title||'').toLowerCase().includes(q))
+  );
+  calendar.addEventSource(filtered);
+  updateDday();
+}
 
-// Firestore 불러오기
+// ============ D-day 계산 ============
+function updateDday(){
+  const card = document.getElementById('ddayCard');
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const upcoming = allEventsData
+    .filter(e=>e.start && activeTypes.has(e.type))
+    .map(e=>({...e, dateObj:new Date(e.start)}))
+    .filter(e=>!isNaN(e.dateObj) && e.dateObj>=today)
+    .sort((a,b)=>a.dateObj-b.dateObj);
+
+  if(upcoming.length===0){ card.style.display='none'; return; }
+
+  const next = upcoming[0];
+  const diffDays = Math.round((next.dateObj - today)/86400000);
+  card.style.display='flex';
+  document.getElementById('ddayNumber').textContent = diffDays===0 ? 'D-DAY' : `D-${diffDays}`;
+  document.getElementById('ddayTitle').textContent = next.title;
+  document.getElementById('ddayDate').textContent =
+    `${next.dateObj.getMonth()+1}월 ${next.dateObj.getDate()}일`;
+  document.getElementById('ddayDot').style.background = eventColorHex[next.type] || '#999';
+}
+
+// ============ Firestore 불러오기 ============
 (async()=>{
   const snap=await db.collection('schedules').get();
-  calendar.addEventSource(snap.docs.map(d=>({id:d.id,...d.data()})));
+  allEventsData = snap.docs.map(d=>({id:d.id,...d.data()}));
+  refreshCalendarEvents();
 })();
 
-// 저장
+// ============ 저장 ============
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
   const data = {
-  title: eventTitle.value,
-  start: eventDate.value,
-  link: eventLink.value,
-  type: eventType.value,
-  memo: eventMemo.value
-};
+    title: eventTitle.value,
+    start: eventDate.value,
+    link: eventLink.value,
+    type: eventType.value,
+    memo: eventMemo.value
+  };
 
-  if(selectedEvent) await db.collection('schedules').doc(selectedEvent.id).update(data);
-  else{
+  if(selectedEvent){
+    await db.collection('schedules').doc(selectedEvent.id).update(data);
+    const idx = allEventsData.findIndex(e=>e.id===selectedEvent.id);
+    if(idx>-1) allEventsData[idx] = {id:selectedEvent.id, ...data};
+  } else {
     const r=await db.collection('schedules').add(data);
-    calendar.addEvent({id:r.id,...data});
+    allEventsData.push({id:r.id, ...data});
   }
   modal.classList.remove('show');
   modifyMode=false;
   calendar.getOption('customButtons').modifyBtn.text='수정';
-  calendar.render();
+  const btnEl = document.querySelector('.fc-modifyBtn-button');
+  if(btnEl){btnEl.textContent='수정';btnEl.style.background='';btnEl.style.color='';}
+  refreshCalendarEvents();
 };
-// 삭제
+
+// ============ 삭제 ============
 deleteBtn.onclick=async()=>{
   if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
     await db.collection('schedules').doc(selectedEvent.id).delete();
-    calendar.getEventById(selectedEvent.id).remove();
+    allEventsData = allEventsData.filter(e=>e.id!==selectedEvent.id);
     modal.classList.remove('show');
     modifyMode=false;
-    calendar.getOption('customButtons').modifyBtn.text='수정';
-    calendar.render();
+    const btnEl = document.querySelector('.fc-modifyBtn-button');
+    if(btnEl){btnEl.textContent='수정';btnEl.style.background='';btnEl.style.color='';}
+    refreshCalendarEvents();
   }
 };
 </script>
 </body>
 </html>
-
-
-
-
