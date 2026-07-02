@@ -362,6 +362,12 @@ footer.site-footer{
   .avatar-stack img{width:28px;height:28px;}
   .modal input,.modal select,.modal textarea{font-size:16px;}
   .search-box input{font-size:16px;}
+  .fc-daygrid-day-frame{max-height:80px;overflow:hidden;}
+  .fc-daygrid-day-events{max-height:58px;overflow:hidden;}
+  .fc-daygrid-event-harness{margin-bottom:1px!important;}
+  .fc-event{display:block!important;}
+  .fc-event > div{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;display:block!important;}
+  .fc-event .event-icon{display:none!important;}
 }
 </style>
 </head>
@@ -530,7 +536,7 @@ let modifyMode=false;
 let allEventsData=[];
 
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
-  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight:104,
+  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight: window.innerWidth <= 600 ? 66 : 104,
   headerToolbar:{left:'title',right:'prev,next today customAddBtn modifyBtn'},
   customButtons:{
     customAddBtn:{text:'＋ 일정 추가',click(){
@@ -643,7 +649,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
 
     let fontSize = window.innerWidth <= 600 ? (arg.event.title.length>=6?'4pt':'5pt') : '8pt';
     return {
-      html: `<div style="display:flex;align-items:center;gap:2px;padding:2px 5px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;white-space:normal;">
+      html: `<div title="${arg.event.title.replace(/"/g,'&quot;')}" style="display:flex;align-items:center;gap:2px;padding:2px 5px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;white-space:normal;">
                ${iconHTML} ${memoIcon} ${arg.event.title}
              </div>`
     };
