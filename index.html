@@ -444,12 +444,16 @@ footer.site-footer{
 .feed-item:first-of-type{margin-top:0;}
 .feed-item .dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:5px;}
 .feed-item-body{flex:1;min-width:0;}
-.feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);}
+.feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;}
+.feed-item-icon{font-size:11px;color:var(--ink-soft);margin-right:5px;width:1em;height:1em;object-fit:contain;}
 .feed-item-memo{font-size:12px;color:var(--ink-soft);margin-top:2px;word-break:break-word;}
-.feed-item-link{font-size:11px;color:var(--accent);margin-top:3px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;}
-.feed-item-actions{display:flex;gap:8px;flex:none;}
+.feed-item-clickable{cursor:pointer;transition:filter .15s ease;}
+.feed-item-clickable:hover{filter:brightness(0.97);}
+.feed-item-clickable:active{filter:brightness(0.93);}
+.feed-item-actions{display:flex;gap:10px;flex:none;}
 .feed-item-actions i{font-size:12px;color:var(--ink-faint);cursor:pointer;}
-.feed-item-actions i:hover{color:var(--danger);}
+.feed-item-actions .fa-trash:hover{color:var(--danger);}
+.feed-item-actions .fa-pen:hover{color:var(--accent);}
 .feed-empty{font-size:12px;color:var(--ink-faint);padding:8px 0 14px;}
 
 .feed-add-form{margin-top:6px;border-top:1px solid var(--line);padding-top:12px;}
@@ -479,6 +483,35 @@ footer.site-footer{
 }
 .feed-add-btn:hover{background:#3A362F;}
 .feed-panel-placeholder{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:26px 0;}
+
+/* ============ 떡밥 아이템 수정 폼 ============ */
+.feed-item-editing{flex-direction:column;align-items:stretch;background:var(--page-bg)!important;}
+.feed-item-editing select,.feed-item-editing input,.feed-item-editing textarea{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:12.5px;
+  color:var(--ink);
+  background:var(--surface);
+  margin-bottom:7px;
+}
+.feed-item-editing textarea{resize:vertical;}
+.feed-edit-actions{display:flex;gap:8px;}
+.feed-save-btn,.feed-cancel-btn{
+  flex:1;
+  padding:8px;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.feed-save-btn{border:none;background:var(--ink);color:#fff;}
+.feed-save-btn:hover{background:#3A362F;}
+.feed-cancel-btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);}
+.feed-cancel-btn:hover{background:#F5F4F1;}
 
 @media(max-width:600px){
   .feed-shell{flex-direction:column;}
@@ -561,6 +594,8 @@ footer.site-footer{
     </div>
 
   </div>
+
+  <div class="legend" id="feedLegend"></div>
   <footer class="site-footer">✨ DC Solar Gallery ✨</footer>
 </div>
 </div>
@@ -631,6 +666,24 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     }
   });
 });
+
+// ============ 링크 → 아이콘 매핑 (일정 / 떡밥 공용) ============
+function getLinkIcon(link, iconClass){
+  iconClass = iconClass || 'event-icon';
+  if(!link) return '';
+  if(link.includes('instagram')) return `<i class="fab fa-instagram ${iconClass}"></i>`;
+  else if(link.includes('youtube.com') || link.includes('youtu.be')) return `<i class="fab fa-youtube ${iconClass}"></i>`;
+  else if(link.includes('facebook')) return `<i class="fab fa-facebook ${iconClass}"></i>`;
+  else if(link.includes('tiktok')) return `<i class="fab fa-tiktok ${iconClass}"></i>`;
+  else if(link.includes('threads')) return `<i class="fab fa-threads ${iconClass}"></i>`;
+  else if(link.includes('kakaotalk')) return `<i class="fab fa-kakaotalk ${iconClass}"></i>`;
+  else if(link.includes('naver')) return `<i class="fab fa-naver ${iconClass}"></i>`;
+  else if(link.includes('github')) return `<i class="fab fa-github ${iconClass}"></i>`;
+  else if(link.includes('twitter.com') || link.includes('x.com')) return `<i class="fab fa-x-twitter ${iconClass}"></i>`;
+  else if(link.includes('bstage') || link.includes('https://solarkeem.com'))
+    return `<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="${iconClass} bstage">`;
+  else return `<i class="fas fa-link ${iconClass}"></i>`;
+}
 
 // ============ 색상 정의 ============
 const eventColorHex = {
@@ -802,20 +855,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
     }
 
-    if(link){
-      if(link.includes('instagram')) iconHTML = '<i class="fab fa-instagram event-icon"></i>';
-      else if(link.includes('youtube.com') || link.includes('youtu.be')) iconHTML = '<i class="fab fa-youtube event-icon"></i>';
-      else if(link.includes('facebook')) iconHTML = '<i class="fab fa-facebook event-icon"></i>';
-      else if(link.includes('tiktok')) iconHTML = '<i class="fab fa-tiktok event-icon"></i>';
-      else if(link.includes('threads')) iconHTML = '<i class="fab fa-threads event-icon"></i>';
-      else if(link.includes('kakaotalk')) iconHTML = '<i class="fab fa-kakaotalk event-icon"></i>';
-      else if(link.includes('naver')) iconHTML = '<i class="fab fa-naver event-icon"></i>';
-      else if(link.includes('github')) iconHTML = '<i class="fab fa-github event-icon"></i>';
-      else if (link.includes('twitter.com') || link.includes('x.com')) iconHTML = '<i class="fab fa-x-twitter event-icon"></i>';
-      else if(link.includes('bstage') || link.includes('https://solarkeem.com'))
-        iconHTML = '<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="event-icon bstage">';
-      else iconHTML = '<i class="fas fa-link event-icon"></i>';
-    }
+    iconHTML = getLinkIcon(link, 'event-icon');
 
     let len = arg.event.title.length;
     let fontSize, wrapStyle;
@@ -952,10 +992,12 @@ deleteBtn.onclick=async()=>{
 };
 
 // ============ 떡밥(Feed) 기능 ============
-const feedCategoryColor = { '사진':'#F0578F', '직캠':'#3E8FD9', '기타':'#9C9488' };
+const feedCategories = ['직캠','직찍','기사','화보','기타'];
+const feedCategoryColor = { '직캠':'#3E8FD9', '직찍':'#F0578F', '기사':'#DB9A2E', '화보':'#8B7AE8', '기타':'#9C9488' };
 let feedData = [];
 let feedByDate = {};
 let selectedFeedDate = null;
+let editingFeedId = null;
 
 function rebuildFeedByDate(){
   feedByDate = {};
@@ -976,6 +1018,44 @@ function hexToRgba(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+const feedCatOptionsHTML = sel => feedCategories.map(c=>
+  `<option value="${c}" ${c===sel?'selected':''}>${c}</option>`
+).join('');
+
+function feedItemHTML(item){
+  const color = feedCategoryColor[item.category] || '#9C9488';
+
+  if(item.id === editingFeedId){
+    const linkVal = (item.link||'').replace(/"/g,'&quot;');
+    const memoVal = item.memo||'';
+    return `<div class="feed-item feed-item-editing" style="border-left-color:${color};">
+      <select id="feedEditCat-${item.id}">${feedCatOptionsHTML(item.category)}</select>
+      <input id="feedEditLink-${item.id}" placeholder="링크 (선택)" value="${linkVal}">
+      <textarea id="feedEditMemo-${item.id}" placeholder="메모" rows="2">${memoVal}</textarea>
+      <div class="feed-edit-actions">
+        <button class="feed-cancel-btn" data-cancel="${item.id}">취소</button>
+        <button class="feed-save-btn" data-save="${item.id}">저장</button>
+      </div>
+    </div>`;
+  }
+
+  const linkIcon = item.link ? getLinkIcon(item.link, 'feed-item-icon') : '';
+  const memoHTML = item.memo ? `<div class="feed-item-memo">${item.memo.replace(/</g,'&lt;')}</div>` : '';
+  const linkAttr = item.link ? ` data-link="${item.link.replace(/"/g,'&quot;')}"` : '';
+  const clickableClass = item.link ? ' feed-item-clickable' : '';
+  return `<div class="feed-item${clickableClass}" style="background:${hexToRgba(color,0.09)};border-left-color:${color};"${linkAttr}>
+    <span class="dot" style="background:${color}"></span>
+    <div class="feed-item-body">
+      <div class="feed-item-cat">${linkIcon}${item.category}</div>
+      ${memoHTML}
+    </div>
+    <div class="feed-item-actions">
+      <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
+      <i class="fa-solid fa-trash" data-del="${item.id}"></i>
+    </div>
+  </div>`;
+}
+
 const feedPanel = document.getElementById('feedPanel');
 
 function renderFeedPanel(dateStr){
@@ -983,38 +1063,58 @@ function renderFeedPanel(dateStr){
   const d = new Date(dateStr+'T00:00:00');
   const items = (feedByDate[dateStr]||[]).slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
 
-  const itemsHTML = items.length ? items.map(item=>{
-    const color = feedCategoryColor[item.category] || '#9C9488';
-    const linkHTML = item.link ? `<a class="feed-item-link" href="${item.link}" target="_blank"><i class="fa-solid fa-link"></i> 링크 열기</a>` : '';
-    const memoHTML = item.memo ? `<div class="feed-item-memo">${item.memo.replace(/</g,'&lt;')}</div>` : '';
-    return `<div class="feed-item" style="background:${hexToRgba(color,0.09)};border-left-color:${color};">
-      <span class="dot" style="background:${color}"></span>
-      <div class="feed-item-body">
-        <div class="feed-item-cat">${item.category}</div>
-        ${memoHTML}
-        ${linkHTML}
-      </div>
-      <div class="feed-item-actions">
-        <i class="fa-solid fa-trash" data-del="${item.id}"></i>
-      </div>
-    </div>`;
-  }).join('') : `<div class="feed-empty">아직 등록된 떡밥이 없어요.</div>`;
+  const itemsHTML = items.length ? items.map(feedItemHTML).join('') : `<div class="feed-empty">아직 등록된 떡밥이 없어요.</div>`;
 
   feedPanel.innerHTML = `
     <div class="feed-panel-date">${d.getMonth()+1}월 ${d.getDate()}일</div>
     <div class="feed-panel-sub">${items.length}개의 떡밥</div>
     ${itemsHTML}
     <div class="feed-add-form">
-      <select id="feedNewCat">
-        <option value="사진">사진</option>
-        <option value="직캠">직캠</option>
-        <option value="기타">기타</option>
-      </select>
+      <select id="feedNewCat">${feedCatOptionsHTML(feedCategories[0])}</select>
       <input id="feedNewLink" placeholder="링크 (선택)">
       <textarea id="feedNewMemo" placeholder="메모" rows="2"></textarea>
       <button class="feed-add-btn" id="feedAddBtn">+ 떡밥 추가</button>
     </div>
   `;
+
+  feedPanel.querySelectorAll('.feed-item-clickable').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('.feed-item-actions')) return;
+      const link = el.dataset.link;
+      if(link) window.open(link, '_blank');
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-edit]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingFeedId = el.dataset.edit;
+      renderFeedPanel(dateStr);
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-cancel]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingFeedId = null;
+      renderFeedPanel(dateStr);
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-save]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.dataset.save;
+      const category = document.getElementById(`feedEditCat-${id}`).value;
+      const link = document.getElementById(`feedEditLink-${id}`).value.trim();
+      const memo = document.getElementById(`feedEditMemo-${id}`).value.trim();
+      if(!link && !memo) return alert('링크나 메모 중 하나는 입력해주세요.');
+      await db.collection('feed').doc(id).update({ category, link, memo });
+      const idx = feedData.findIndex(f=>f.id===id);
+      if(idx>-1) feedData[idx] = { ...feedData[idx], category, link, memo };
+      rebuildFeedByDate();
+      editingFeedId = null;
+      renderFeedPanel(dateStr);
+      refreshFeedDots();
+    });
+  });
 
   feedPanel.querySelectorAll('[data-del]').forEach(el=>{
     el.addEventListener('click', async ()=>{
@@ -1023,6 +1123,7 @@ function renderFeedPanel(dateStr){
       await db.collection('feed').doc(id).delete();
       feedData = feedData.filter(f=>f.id!==id);
       rebuildFeedByDate();
+      if(editingFeedId === id) editingFeedId = null;
       renderFeedPanel(dateStr);
       refreshFeedDots();
     });
@@ -1042,6 +1143,10 @@ function renderFeedPanel(dateStr){
   };
 }
 
+document.getElementById('feedLegend').innerHTML = feedCategories.map(k=>
+  `<div class="legend-item"><span class="dot" style="background:${feedCategoryColor[k]}"></span>${k}</div>`
+).join('');
+
 const feedCalendar = new FullCalendar.Calendar(document.getElementById('feedCalendar'), {
   locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto',
   dayMinHeight: window.innerWidth <= 600 ? 50 : 90,
@@ -1051,6 +1156,7 @@ const feedCalendar = new FullCalendar.Calendar(document.getElementById('feedCale
     arg.el.addEventListener('click', ()=>{
       document.querySelectorAll('.fc-daygrid-day.feed-selected').forEach(el=>el.classList.remove('feed-selected'));
       arg.el.classList.add('feed-selected');
+      editingFeedId = null;
       renderFeedPanel(dateStr);
     });
   },
