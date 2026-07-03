@@ -742,12 +742,13 @@ footer.site-footer{
   <select id="eventType">
     <option value="">종류 선택</option>
     <option value="공식">공식</option>
-    <option value="뮤지컬">뮤지컬</option>
     <option value="방송">방송</option>
     <option value="SNS">SNS</option>
     <option value="솔라시도">솔라시도</option>
-    <option value="축하">축하</option>
+    <option value="뮤지컬">뮤지컬</option>
+    <option value="콘서트">콘서트</option>
     <option value="발매">발매</option>
+    <option value="축하">축하</option>
     <option value="기타">기타</option>
   </select>
 
@@ -819,11 +820,11 @@ function getLinkIcon(link, iconClass){
 
 // ============ 색상 정의 ============
 const eventColorHex = {
-  '공식':'#F0554B','뮤지컬':'#DB9A2E','축하':'#F08A3C','발매':'#2FAE7C',
-  '방송':'#3E8FD9','SNS':'#8B7AE8','솔라시도':'#F0578F','기타':'#9C9488'
+  '공식':'#F0554B','방송':'#3E8FD9','SNS':'#8B7AE8','솔라시도':'#F0578F',
+  '뮤지컬':'#DB9A2E','콘서트':'#1FA6A6','발매':'#2FAE7C','축하':'#F08A3C','기타':'#9C9488'
 };
 
-const legendTypes = Object.keys(eventColorHex).filter(k=>k!=='솔라시도');
+const legendTypes = Object.keys(eventColorHex);
 
 document.getElementById('legend').innerHTML = legendTypes.map(k=>
   `<div class="legend-item"><span class="dot" style="background:${eventColorHex[k]}"></span>${k}</div>`
