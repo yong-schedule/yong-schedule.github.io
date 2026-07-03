@@ -514,11 +514,113 @@ footer.site-footer{
 .feed-cancel-btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);}
 .feed-cancel-btn:hover{background:#F5F4F1;}
 
+/* ============ 알쓸용잡 탭 ============ */
+.wiki-add-card{
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-soft);
+  padding:16px;
+  margin-bottom:18px;
+}
+.wiki-add-card textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:13px;
+  color:var(--ink);
+  background:var(--surface);
+  resize:vertical;
+  margin-bottom:8px;
+}
+.wiki-add-btn{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:999px;
+  background:var(--ink);
+  color:#fff;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+.wiki-add-btn:hover{background:#3A362F;}
+
+.wiki-list{display:flex;flex-direction:column;gap:10px;}
+.wiki-item{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-soft);
+  padding:14px 16px;
+}
+.wiki-num{
+  flex:none;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:var(--accent-soft);
+  color:var(--accent);
+  font-weight:800;
+  font-size:12.5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.wiki-body{
+  flex:1;
+  min-width:0;
+  font-size:13.5px;
+  line-height:1.55;
+  color:var(--ink);
+  white-space:pre-wrap;
+  word-break:break-word;
+  padding-top:3px;
+}
+.wiki-actions{display:flex;gap:10px;flex:none;padding-top:5px;}
+.wiki-actions i{font-size:12px;color:var(--ink-faint);cursor:pointer;}
+.wiki-actions .fa-trash:hover{color:var(--danger);}
+.wiki-actions .fa-pen:hover{color:var(--accent);}
+.wiki-empty{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:26px 0;}
+
+.wiki-item-editing{flex-direction:column;align-items:stretch;background:var(--page-bg);box-shadow:none;}
+.wiki-item-editing textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:13px;
+  color:var(--ink);
+  background:var(--surface);
+  resize:vertical;
+  margin-bottom:8px;
+}
+.wiki-edit-actions{display:flex;gap:8px;}
+.wiki-save-btn,.wiki-cancel-btn{
+  flex:1;
+  padding:8px;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.wiki-save-btn{border:none;background:var(--ink);color:#fff;}
+.wiki-save-btn:hover{background:#3A362F;}
+.wiki-cancel-btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);}
+.wiki-cancel-btn:hover{background:#F5F4F1;}
+
 @media(max-width:600px){
   .feed-shell{flex-direction:column;}
   .feed-panel-col{width:100%;}
   .tab-bar{padding:14px 10px 0;}
   .feed-add-form select,.feed-add-form input,.feed-add-form textarea{font-size:16px;}
+  .wiki-add-card textarea,.wiki-item-editing textarea{font-size:16px;}
 }
 </style>
 </head>
@@ -526,6 +628,7 @@ footer.site-footer{
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> 달력</button>
   <button class="tab-btn" data-tab="feed"><i class="fa-solid fa-camera-retro"></i> 떡밥</button>
+  <button class="tab-btn" data-tab="wiki"><i class="fa-solid fa-book-open"></i> 알쓸용잡</button>
 </div>
 <div id="calendarView">
 <div class="page-outer">
@@ -601,6 +704,30 @@ footer.site-footer{
 </div>
 </div>
 
+<div id="wikiView" style="display:none;">
+<div class="page-outer">
+  <div class="app-card">
+
+    <div class="app-header">
+      <div>
+        <h1 class="wordmark"><i class="fa-solid fa-book-open" style="font-size:20px;color:var(--accent);margin-right:6px;"></i>알쓸용잡</h1>
+        <p class="wordmark-caption">알아두면 쓸데있는 김용선 잡학사전</p>
+      </div>
+    </div>
+
+    <div class="wiki-add-card">
+      <textarea id="wikiNewContent" placeholder="새 항목 내용을 입력하세요" rows="3"></textarea>
+      <button class="wiki-add-btn" id="wikiAddBtn">+ 항목 추가</button>
+    </div>
+
+    <div class="wiki-list" id="wikiList"></div>
+
+  </div>
+
+  <footer class="site-footer">✨ DC Solar Gallery ✨</footer>
+</div>
+</div>
+
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
@@ -653,16 +780,20 @@ const db = firebase.firestore();
 // ============ 탭 전환 ============
 const calendarView = document.getElementById('calendarView');
 const feedView = document.getElementById('feedView');
+const wikiView = document.getElementById('wikiView');
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
+    calendarView.style.display='none';
+    feedView.style.display='none';
+    wikiView.style.display='none';
     if(btn.dataset.tab==='feed'){
-      calendarView.style.display='none';
       feedView.style.display='block';
       if(window.feedCalendar) window.feedCalendar.updateSize();
+    } else if(btn.dataset.tab==='wiki'){
+      wikiView.style.display='block';
     } else {
-      feedView.style.display='none';
       calendarView.style.display='block';
     }
   });
@@ -1205,6 +1336,93 @@ refreshFeedDots();
   feedData = await loadCollection('feed');
   rebuildFeedByDate();
   refreshFeedDots();
+})();
+
+// ============ 알쓸용잡(Wiki) 기능 ============
+let wikiData = [];
+let editingWikiId = null;
+const wikiList = document.getElementById('wikiList');
+
+function wikiItemHTML(item, num){
+  if(item.id === editingWikiId){
+    const val = (item.content||'').replace(/</g,'&lt;');
+    return `<div class="wiki-item wiki-item-editing">
+      <textarea id="wikiEditContent-${item.id}" rows="3">${val}</textarea>
+      <div class="wiki-edit-actions">
+        <button class="wiki-cancel-btn" data-wiki-cancel="${item.id}">취소</button>
+        <button class="wiki-save-btn" data-wiki-save="${item.id}">저장</button>
+      </div>
+    </div>`;
+  }
+  const content = (item.content||'').replace(/</g,'&lt;');
+  return `<div class="wiki-item">
+    <div class="wiki-num">${num}</div>
+    <div class="wiki-body">${content}</div>
+    <div class="wiki-actions">
+      <i class="fa-solid fa-pen" data-wiki-edit="${item.id}"></i>
+      <i class="fa-solid fa-trash" data-wiki-del="${item.id}"></i>
+    </div>
+  </div>`;
+}
+
+function renderWikiList(){
+  const items = wikiData.slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
+  wikiList.innerHTML = items.length
+    ? items.map((item,i)=> wikiItemHTML(item, i+1)).join('')
+    : `<div class="wiki-empty">아직 등록된 항목이 없어요.</div>`;
+
+  wikiList.querySelectorAll('[data-wiki-edit]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingWikiId = el.dataset.wikiEdit;
+      renderWikiList();
+    });
+  });
+
+  wikiList.querySelectorAll('[data-wiki-cancel]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingWikiId = null;
+      renderWikiList();
+    });
+  });
+
+  wikiList.querySelectorAll('[data-wiki-save]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.dataset.wikiSave;
+      const content = document.getElementById(`wikiEditContent-${id}`).value.trim();
+      if(!content) return alert('내용을 입력해주세요.');
+      await db.collection('wiki').doc(id).update({ content });
+      const idx = wikiData.findIndex(w=>w.id===id);
+      if(idx>-1) wikiData[idx] = { ...wikiData[idx], content };
+      editingWikiId = null;
+      renderWikiList();
+    });
+  });
+
+  wikiList.querySelectorAll('[data-wiki-del]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      if(!confirm('이 항목을 삭제할까요?')) return;
+      const id = el.dataset.wikiDel;
+      await db.collection('wiki').doc(id).delete();
+      wikiData = wikiData.filter(w=>w.id!==id);
+      if(editingWikiId === id) editingWikiId = null;
+      renderWikiList();
+    });
+  });
+}
+
+document.getElementById('wikiAddBtn').onclick = async ()=>{
+  const content = document.getElementById('wikiNewContent').value.trim();
+  if(!content) return alert('내용을 입력해주세요.');
+  const data = { content, createdAt: Date.now() };
+  const r = await db.collection('wiki').add(data);
+  wikiData.push({id:r.id, ...data});
+  document.getElementById('wikiNewContent').value = '';
+  renderWikiList();
+};
+
+(async()=>{
+  wikiData = await loadCollection('wiki');
+  renderWikiList();
 })();
 
 </script>
