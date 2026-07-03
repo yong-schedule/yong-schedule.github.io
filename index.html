@@ -365,7 +365,6 @@ footer.site-footer{
   .search-box input{font-size:16px;}
   .fc-daygrid-event-harness{margin-bottom:1px!important;}
   .fc-event{display:block!important;}
-  .fc-event > div{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;display:block!important;}
 }
 </style>
 </head>
@@ -645,9 +644,22 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       else iconHTML = '<i class="fas fa-link event-icon"></i>';
     }
 
-    let fontSize = window.innerWidth <= 600 ? (arg.event.title.length>=6?'4pt':'5pt') : '8pt';
+    let len = arg.event.title.length;
+    let fontSize, wrapStyle;
+    if (window.innerWidth <= 600) {
+      if (len <= 6) {
+        fontSize = '4pt';
+        wrapStyle = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      } else {
+        fontSize = '3.6pt';
+        wrapStyle = 'white-space:normal;overflow:visible;';
+      }
+    } else {
+      fontSize = '8pt';
+      wrapStyle = 'white-space:normal;overflow:visible;';
+    }
     return {
-      html: `<div title="${arg.event.title.replace(/"/g,'&quot;')}" style="display:flex;align-items:center;gap:2px;padding:2px 5px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;white-space:normal;">
+      html: `<div title="${arg.event.title.replace(/"/g,'&quot;')}" style="display:flex;align-items:center;gap:2px;padding:2px 4px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;${wrapStyle}">
                ${iconHTML} ${memoIcon} ${arg.event.title}
              </div>`
     };
