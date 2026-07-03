@@ -49,7 +49,7 @@
 }
 
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;}
+html,body{margin:0;padding:0;overflow-x:hidden;}
 body{
   font-family:'Pretendard Variable','Pretendard', system-ui, sans-serif;
   background:var(--page-bg);
@@ -61,6 +61,7 @@ body{
   max-width:960px;
   margin:0 auto;
   padding:36px 18px 80px;
+  overflow-x:hidden;
 }
 
 /* ============ 카드 ============ */
@@ -128,18 +129,20 @@ body{
 /* ============ 툴바 ============ */
 .toolbar-row{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  flex-wrap:wrap;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
   margin-bottom:18px;
+  width:100%;
+  min-width:0;
 }
 .filter-row{
   display:flex;
   gap:7px;
   overflow-x:auto;
   scrollbar-width:none;
-  flex:1;
+  width:100%;
+  max-width:100%;
   min-width:0;
 }
 .filter-row::-webkit-scrollbar{display:none;}
@@ -170,7 +173,7 @@ body{
   display:flex;
   align-items:center;
   flex:none;
-  width:180px;
+  width:100%;
 }
 .search-box i{position:absolute;left:13px;font-size:12px;color:var(--ink-faint);}
 .search-box input{
@@ -353,8 +356,6 @@ footer.site-footer{
   .wordmark{font-size:21px;}
   .dday-strip{padding:10px 14px;gap:10px;}
   .dday-number{font-size:17px;min-width:40px;}
-  .toolbar-row{flex-direction:column;align-items:stretch;}
-  .search-box{width:100%;}
   .fc-daygrid-day-number{font-size:9px!important;}
   .fc .fc-toolbar-title{font-size:14px;}
   .fc .fc-button{font-size:10px;padding:4px 9px;}
@@ -396,11 +397,11 @@ footer.site-footer{
     </div>
 
     <div class="toolbar-row">
-      <div class="filter-row" id="filterRow"></div>
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
         <input id="searchInput" placeholder="일정 검색">
       </div>
+      <div class="filter-row" id="filterRow"></div>
     </div>
 
     <div class="calendar-wrap">
