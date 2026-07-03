@@ -900,32 +900,15 @@ function updateDday(){
   document.getElementById('ddayDot').style.background = eventColorHex[next.type] || '#D9D5CE';
 }
 
-// ============ 읽기 절약용 캐싱 (1시간) ============
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1시간
-function cacheGet(name){
-  try{
-    const raw = localStorage.getItem('cache_'+name);
-    if(!raw) return null;
-    const {data, ts} = JSON.parse(raw);
-    if(Date.now() - ts > CACHE_TTL_MS) return null;
-    return data;
-  }catch(e){ return null; }
-}
-function cacheSet(name, data){
-  try{ localStorage.setItem('cache_'+name, JSON.stringify({data, ts:Date.now()})); }catch(e){}
-}
-async function loadCollectionCached(name){
-  const cached = cacheGet(name);
-  if(cached) return cached;
+// ============ Firestore 데이터 로드 ============
+async function loadCollection(name){
   const snap = await db.collection(name).get();
-  const data = snap.docs.map(d=>({id:d.id, ...d.data()}));
-  cacheSet(name, data);
-  return data;
+  return snap.docs.map(d=>({id:d.id, ...d.data()}));
 }
 
 // ============ Firestore 불러오기 ============
 (async()=>{
-  allEventsData = await loadCollectionCached('schedules');
+  allEventsData = await loadCollection('schedules');
   refreshCalendarEvents();
 })();
 
@@ -950,7 +933,6 @@ saveBtn.onclick=async()=>{
   }
   modal.classList.remove('show');
   modifyMode=false;
-  cacheSet('schedules', allEventsData);
   const btnEl = document.querySelector('.fc-modifyBtn-button');
   if(btnEl){btnEl.textContent='수정';btnEl.style.background='';btnEl.style.color='';btnEl.style.borderColor='';}
   refreshCalendarEvents();
@@ -961,7 +943,6 @@ deleteBtn.onclick=async()=>{
   if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
     await db.collection('schedules').doc(selectedEvent.id).delete();
     allEventsData = allEventsData.filter(e=>e.id!==selectedEvent.id);
-    cacheSet('schedules', allEventsData);
     modal.classList.remove('show');
     modifyMode=false;
     const btnEl = document.querySelector('.fc-modifyBtn-button');
@@ -1041,7 +1022,6 @@ function renderFeedPanel(dateStr){
       const id = el.dataset.del;
       await db.collection('feed').doc(id).delete();
       feedData = feedData.filter(f=>f.id!==id);
-      cacheSet('feed', feedData);
       rebuildFeedByDate();
       renderFeedPanel(dateStr);
       refreshFeedDots();
@@ -1056,7 +1036,6 @@ function renderFeedPanel(dateStr){
     const data = { date: dateStr, category, link, memo, createdAt: Date.now() };
     const r = await db.collection('feed').add(data);
     feedData.push({id:r.id, ...data});
-    cacheSet('feed', feedData);
     rebuildFeedByDate();
     renderFeedPanel(dateStr);
     refreshFeedDots();
@@ -1113,10 +1092,11 @@ feedCalendar.render();
 refreshFeedDots();
 
 (async()=>{
-  feedData = await loadCollectionCached('feed');
+  feedData = await loadCollection('feed');
   rebuildFeedByDate();
   refreshFeedDots();
 })();
+
 </script>
 </body>
 </html>
