@@ -60,7 +60,7 @@ body{
 .page-outer{
   max-width:960px;
   margin:0 auto;
-  padding:36px 18px 80px;
+  padding:14px 18px 80px;
   overflow-x:hidden;
 }
 
@@ -351,7 +351,7 @@ footer.site-footer{
 
 /* ============ 반응형 ============ */
 @media(max-width:600px){
-  .page-outer{padding:22px 10px 70px;}
+  .page-outer{padding:10px 10px 70px;}
   .app-card{padding:20px 16px 16px;border-radius:22px;}
   .wordmark{font-size:21px;}
   .dday-strip{padding:10px 14px;gap:10px;}
@@ -366,9 +366,133 @@ footer.site-footer{
   .fc-daygrid-event-harness{margin-bottom:1px!important;}
   .fc-event{display:block!important;}
 }
+
+/* ============ 탭 바 (달력 / 떡밥) ============ */
+.tab-bar{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  max-width:960px;
+  margin:0 auto;
+  padding:18px 18px 0;
+}
+.tab-btn{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:10px 18px;
+  border-radius:999px;
+  border:1px solid var(--line-strong);
+  background:var(--surface);
+  color:var(--ink-soft);
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:var(--shadow-soft);
+}
+.tab-btn i{font-size:14px;}
+.tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+/* ============ 떡밥 탭: 미니 달력 ============ */
+.feed-shell{
+  display:flex;
+  gap:18px;
+  align-items:flex-start;
+}
+.feed-calendar-col{flex:1 1 0;min-width:0;}
+.feed-panel-col{flex:none;width:280px;}
+
+#feedCalendar .fc-event{display:none!important;}
+.feed-dots{display:flex;gap:3px;justify-content:center;margin-top:2px;}
+.feed-dot{
+  width:6px;height:6px;border-radius:50%;
+  flex:none;
+}
+.fc-daygrid-day.feed-has-entry{cursor:pointer;}
+.fc-daygrid-day.feed-selected{background:var(--accent-soft)!important;}
+
+/* ============ 떡밥 탭: 오른쪽(또는 하단) 패널 ============ */
+.feed-panel{
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-soft);
+  padding:16px;
+}
+.feed-panel-date{
+  font-weight:800;
+  font-size:14.5px;
+  color:var(--ink);
+  margin:0 0 2px;
+}
+.feed-panel-sub{
+  font-size:11px;
+  color:var(--ink-faint);
+  margin:0 0 14px;
+}
+.feed-item{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  padding:10px 10px 10px 12px;
+  margin:8px 0 0;
+  border-left:3px solid transparent;
+  border-radius:8px;
+}
+.feed-item:first-of-type{margin-top:0;}
+.feed-item .dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:5px;}
+.feed-item-body{flex:1;min-width:0;}
+.feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);}
+.feed-item-memo{font-size:12px;color:var(--ink-soft);margin-top:2px;word-break:break-word;}
+.feed-item-link{font-size:11px;color:var(--accent);margin-top:3px;display:inline-flex;align-items:center;gap:4px;text-decoration:none;}
+.feed-item-actions{display:flex;gap:8px;flex:none;}
+.feed-item-actions i{font-size:12px;color:var(--ink-faint);cursor:pointer;}
+.feed-item-actions i:hover{color:var(--danger);}
+.feed-empty{font-size:12px;color:var(--ink-faint);padding:8px 0 14px;}
+
+.feed-add-form{margin-top:6px;border-top:1px solid var(--line);padding-top:12px;}
+.feed-add-form select,.feed-add-form input,.feed-add-form textarea{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:12.5px;
+  color:var(--ink);
+  background:var(--surface);
+  margin-bottom:7px;
+}
+.feed-add-form textarea{resize:vertical;}
+.feed-add-btn{
+  width:100%;
+  padding:9px;
+  border:none;
+  border-radius:999px;
+  background:var(--ink);
+  color:#fff;
+  font-family:inherit;
+  font-size:12.5px;
+  font-weight:700;
+  cursor:pointer;
+}
+.feed-add-btn:hover{background:#3A362F;}
+.feed-panel-placeholder{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:26px 0;}
+
+@media(max-width:600px){
+  .feed-shell{flex-direction:column;}
+  .feed-panel-col{width:100%;}
+  .tab-bar{padding:14px 10px 0;}
+  .feed-add-form select,.feed-add-form input,.feed-add-form textarea{font-size:16px;}
+}
 </style>
 </head>
 <body>
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> 달력</button>
+  <button class="tab-btn" data-tab="feed"><i class="fa-solid fa-camera-retro"></i> 떡밥</button>
+</div>
+<div id="calendarView">
 <div class="page-outer">
   <div class="app-card">
 
@@ -408,6 +532,36 @@ footer.site-footer{
 
   <div class="legend" id="legend"></div>
   <footer class="site-footer">✨ DC Solar Gallery ✨</footer>
+</div>
+</div>
+
+<div id="feedView" style="display:none;">
+<div class="page-outer">
+  <div class="app-card">
+
+    <div class="app-header">
+      <div>
+        <h1 class="wordmark">떡밥 <span class="wordmark-thin">Log</span></h1>
+        <p class="wordmark-caption">날짜를 눌러 그날의 떡밥을 기록하세요</p>
+      </div>
+    </div>
+
+    <div class="feed-shell">
+      <div class="feed-calendar-col">
+        <div class="calendar-wrap">
+          <div id="feedCalendar"></div>
+        </div>
+      </div>
+      <div class="feed-panel-col">
+        <div class="feed-panel" id="feedPanel">
+          <div class="feed-panel-placeholder">날짜를 선택하면<br>떡밥 정보가 여기에 표시돼요</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <footer class="site-footer">✨ DC Solar Gallery ✨</footer>
+</div>
 </div>
 
 <div id="modal" class="modal">
@@ -458,6 +612,24 @@ firebase.initializeApp({
   projectId:"yong-schedule"
 });
 const db = firebase.firestore();
+
+// ============ 탭 전환 ============
+const calendarView = document.getElementById('calendarView');
+const feedView = document.getElementById('feedView');
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if(btn.dataset.tab==='feed'){
+      calendarView.style.display='none';
+      feedView.style.display='block';
+      if(window.feedCalendar) window.feedCalendar.updateSize();
+    } else {
+      feedView.style.display='none';
+      calendarView.style.display='block';
+    }
+  });
+});
 
 // ============ 색상 정의 ============
 const eventColorHex = {
@@ -727,10 +899,32 @@ function updateDday(){
   document.getElementById('ddayDot').style.background = eventColorHex[next.type] || '#D9D5CE';
 }
 
+// ============ 읽기 절약용 캐싱 (1시간) ============
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1시간
+function cacheGet(name){
+  try{
+    const raw = localStorage.getItem('cache_'+name);
+    if(!raw) return null;
+    const {data, ts} = JSON.parse(raw);
+    if(Date.now() - ts > CACHE_TTL_MS) return null;
+    return data;
+  }catch(e){ return null; }
+}
+function cacheSet(name, data){
+  try{ localStorage.setItem('cache_'+name, JSON.stringify({data, ts:Date.now()})); }catch(e){}
+}
+async function loadCollectionCached(name){
+  const cached = cacheGet(name);
+  if(cached) return cached;
+  const snap = await db.collection(name).get();
+  const data = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  cacheSet(name, data);
+  return data;
+}
+
 // ============ Firestore 불러오기 ============
 (async()=>{
-  const snap=await db.collection('schedules').get();
-  allEventsData = snap.docs.map(d=>({id:d.id,...d.data()}));
+  allEventsData = await loadCollectionCached('schedules');
   refreshCalendarEvents();
 })();
 
@@ -755,6 +949,7 @@ saveBtn.onclick=async()=>{
   }
   modal.classList.remove('show');
   modifyMode=false;
+  cacheSet('schedules', allEventsData);
   const btnEl = document.querySelector('.fc-modifyBtn-button');
   if(btnEl){btnEl.textContent='수정';btnEl.style.background='';btnEl.style.color='';btnEl.style.borderColor='';}
   refreshCalendarEvents();
@@ -765,6 +960,7 @@ deleteBtn.onclick=async()=>{
   if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
     await db.collection('schedules').doc(selectedEvent.id).delete();
     allEventsData = allEventsData.filter(e=>e.id!==selectedEvent.id);
+    cacheSet('schedules', allEventsData);
     modal.classList.remove('show');
     modifyMode=false;
     const btnEl = document.querySelector('.fc-modifyBtn-button');
@@ -772,6 +968,135 @@ deleteBtn.onclick=async()=>{
     refreshCalendarEvents();
   }
 };
+
+// ============ 떡밥(Feed) 기능 ============
+const feedCategoryColor = { '사진':'#F0578F', '직캠':'#3E8FD9', '기타':'#9C9488' };
+let feedData = [];
+let feedByDate = {};
+let selectedFeedDate = null;
+
+function rebuildFeedByDate(){
+  feedByDate = {};
+  feedData.forEach(item=>{
+    if(!feedByDate[item.date]) feedByDate[item.date] = [];
+    feedByDate[item.date].push(item);
+  });
+}
+
+function toISODateFeed(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function hexToRgba(hex, alpha){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const feedPanel = document.getElementById('feedPanel');
+
+function renderFeedPanel(dateStr){
+  selectedFeedDate = dateStr;
+  const d = new Date(dateStr+'T00:00:00');
+  const items = (feedByDate[dateStr]||[]).slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
+
+  const itemsHTML = items.length ? items.map(item=>{
+    const color = feedCategoryColor[item.category] || '#9C9488';
+    const linkHTML = item.link ? `<a class="feed-item-link" href="${item.link}" target="_blank"><i class="fa-solid fa-link"></i> 링크 열기</a>` : '';
+    const memoHTML = item.memo ? `<div class="feed-item-memo">${item.memo.replace(/</g,'&lt;')}</div>` : '';
+    return `<div class="feed-item" style="background:${hexToRgba(color,0.09)};border-left-color:${color};">
+      <span class="dot" style="background:${color}"></span>
+      <div class="feed-item-body">
+        <div class="feed-item-cat">${item.category}</div>
+        ${memoHTML}
+        ${linkHTML}
+      </div>
+      <div class="feed-item-actions">
+        <i class="fa-solid fa-trash" data-del="${item.id}"></i>
+      </div>
+    </div>`;
+  }).join('') : `<div class="feed-empty">아직 등록된 떡밥이 없어요.</div>`;
+
+  feedPanel.innerHTML = `
+    <div class="feed-panel-date">${d.getMonth()+1}월 ${d.getDate()}일</div>
+    <div class="feed-panel-sub">${items.length}개의 떡밥</div>
+    ${itemsHTML}
+    <div class="feed-add-form">
+      <select id="feedNewCat">
+        <option value="사진">사진</option>
+        <option value="직캠">직캠</option>
+        <option value="기타">기타</option>
+      </select>
+      <input id="feedNewLink" placeholder="링크 (선택)">
+      <textarea id="feedNewMemo" placeholder="메모" rows="2"></textarea>
+      <button class="feed-add-btn" id="feedAddBtn">+ 떡밥 추가</button>
+    </div>
+  `;
+
+  feedPanel.querySelectorAll('[data-del]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      if(!confirm('이 떡밥을 삭제할까요?')) return;
+      const id = el.dataset.del;
+      await db.collection('feed').doc(id).delete();
+      feedData = feedData.filter(f=>f.id!==id);
+      cacheSet('feed', feedData);
+      rebuildFeedByDate();
+      renderFeedPanel(dateStr);
+      feedCalendar.render();
+    });
+  });
+
+  document.getElementById('feedAddBtn').onclick = async ()=>{
+    const category = document.getElementById('feedNewCat').value;
+    const link = document.getElementById('feedNewLink').value.trim();
+    const memo = document.getElementById('feedNewMemo').value.trim();
+    if(!link && !memo) return alert('링크나 메모 중 하나는 입력해주세요.');
+    const data = { date: dateStr, category, link, memo, createdAt: Date.now() };
+    const r = await db.collection('feed').add(data);
+    feedData.push({id:r.id, ...data});
+    cacheSet('feed', feedData);
+    rebuildFeedByDate();
+    renderFeedPanel(dateStr);
+    feedCalendar.render();
+  };
+}
+
+const feedCalendar = new FullCalendar.Calendar(document.getElementById('feedCalendar'), {
+  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto',
+  dayMinHeight: window.innerWidth <= 600 ? 50 : 90,
+  headerToolbar:{left:'title', right:'prev,next today'},
+  dayCellDidMount: arg => {
+    const dateStr = toISODateFeed(arg.date);
+    if(feedByDate[dateStr] && feedByDate[dateStr].length){
+      arg.el.classList.add('feed-has-entry');
+      const frame = arg.el.querySelector('.fc-daygrid-day-frame') || arg.el;
+      const cats = [...new Set(feedByDate[dateStr].map(i=>i.category))];
+      const dotsWrap = document.createElement('div');
+      dotsWrap.className = 'feed-dots';
+      cats.forEach(cat=>{
+        const dot = document.createElement('span');
+        dot.className = 'feed-dot';
+        dot.style.background = feedCategoryColor[cat] || '#9C9488';
+        dotsWrap.appendChild(dot);
+      });
+      frame.appendChild(dotsWrap);
+    }
+    arg.el.addEventListener('click', ()=>{
+      document.querySelectorAll('.fc-daygrid-day.feed-selected').forEach(el=>el.classList.remove('feed-selected'));
+      arg.el.classList.add('feed-selected');
+      renderFeedPanel(dateStr);
+    });
+  }
+});
+window.feedCalendar = feedCalendar;
+feedCalendar.render();
+
+(async()=>{
+  feedData = await loadCollectionCached('feed');
+  rebuildFeedByDate();
+  feedCalendar.render();
+})();
 </script>
 </body>
 </html>
