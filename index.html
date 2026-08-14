@@ -30,14 +30,17 @@
   --danger:#E8556B;
   --danger-soft:#FCE3E7;
 
-  --c-official:#F0554B;
-  --c-musical:#FFC93C;
-  --c-broadcast:#3E8FD9;
-  --c-sns:#8B7AE8;
-  --c-solardo:#F0578F;
-  --c-celebrate:#F08A3C;
-  --c-release:#2FAE7C;
-  --c-etc:#9C9488;
+  --c-official:#EF4444;
+  --c-musical:#F59E0B;
+  --c-broadcast:#0EA5E9;
+  --c-sns:#8B5CF6;
+  --c-solardo:#F472B6;
+  --c-concert:#F97316;
+  --c-event:#84CC16;
+  --c-fansign:#D946EF;
+  --c-release:#14B8A6;
+  --c-anniversary:#22C55E;
+  --c-etc:#6B7280;
 
   --radius-xl:28px;
   --radius-lg:16px;
@@ -755,8 +758,10 @@ footer.site-footer{
     <option value="솔라시도">솔라시도</option>
     <option value="뮤지컬">뮤지컬</option>
     <option value="콘서트">콘서트</option>
+    <option value="행사">행사</option>
+    <option value="팬사인회">팬사인회</option>
     <option value="발매">발매</option>
-    <option value="축하">축하</option>
+    <option value="기념일">기념일</option>
     <option value="기타">기타</option>
   </select>
 
@@ -828,8 +833,9 @@ function getLinkIcon(link, iconClass){
 
 // ============ 색상 정의 ============
 const eventColorHex = {
-  '공식':'#F0554B','방송':'#3E8FD9','SNS':'#8B7AE8','솔라시도':'#F0578F',
-  '뮤지컬':'#DB9A2E','콘서트':'#F08A3C','발매':'#1FA6A6','축하':'#2FAE7C','기타':'#9C9488'
+  '공식':'#EF4444','방송':'#0EA5E9','SNS':'#8B5CF6','솔라시도':'#F472B6',
+  '뮤지컬':'#F59E0B','콘서트':'#F97316','행사':'#84CC16','팬사인회':'#D946EF',
+  '발매':'#14B8A6','기념일':'#22C55E','기타':'#6B7280'
 };
 
 const legendTypes = Object.keys(eventColorHex);
@@ -1090,6 +1096,10 @@ async function loadCollection(name){
 // ============ Firestore 불러오기 ============
 (async()=>{
   allEventsData = await loadCollection('schedules');
+  allEventsData.forEach(e=>{
+    if(e.type==='공연') e.type='콘서트';
+    if(e.type==='축하') e.type='기념일';
+  });
   refreshCalendarEvents();
 })();
 
