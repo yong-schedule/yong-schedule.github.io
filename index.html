@@ -11,6 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
@@ -406,14 +407,15 @@ footer.site-footer{
 .tab-btn i{font-size:14px;}
 .tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
 
-/* ============ 떡밥 탭: 미니 달력 ============ */
+/* ============ 떡밥 탭: 달력 + 패널 (PC/모바일 모두 세로 배치) ============ */
 .feed-shell{
   display:flex;
+  flex-direction:column;
   gap:18px;
-  align-items:flex-start;
+  align-items:stretch;
 }
-.feed-calendar-col{flex:1 1 0;min-width:0;}
-.feed-panel-col{flex:none;width:280px;}
+.feed-calendar-col{width:100%;min-width:0;}
+.feed-panel-col{width:100%;}
 
 #feedCalendar .fc-event{display:none!important;}
 .feed-dots{display:flex;flex-direction:column;align-items:flex-start;gap:1px;justify-content:flex-start;padding:0 4px;margin-top:1px;}
@@ -445,16 +447,19 @@ footer.site-footer{
   margin:0 0 14px;
 }
 .feed-item{
-  display:flex;
-  align-items:flex-start;
-  gap:9px;
-  padding:10px 10px 10px 12px;
+  position:relative;
   margin:8px 0 0;
+  padding:10px 10px 10px 12px;
   border-left:3px solid transparent;
   border-radius:8px;
+  background:var(--surface);
 }
 .feed-item:first-of-type{margin-top:0;}
-.feed-item .dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:5px;}
+.feed-item .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+
+/* 컴팩트 카드 (임베드 불가 링크 / 메모만) */
+.feed-item-compact{display:flex;align-items:flex-start;gap:9px;padding-top:10px;padding-bottom:10px;}
+.feed-item-compact .dot{margin-top:5px;}
 .feed-item-body{flex:1;min-width:0;}
 .feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;}
 .feed-item-icon{font-size:11px;color:var(--ink-soft);margin-right:5px;width:1em;height:1em;object-fit:contain;}
@@ -467,6 +472,28 @@ footer.site-footer{
 .feed-item-actions .fa-trash:hover{color:var(--danger);}
 .feed-item-actions .fa-pen:hover{color:var(--accent);}
 .feed-empty{font-size:12px;color:var(--ink-faint);padding:8px 0 14px;}
+.feed-filter-row{margin:0 0 14px;}
+
+/* 임베드 카드 (유튜브 / X) */
+.feed-item-embed{display:block;}
+.feed-item-embed .feed-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.feed-item-embed .feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
+.feed-item-embed .feed-item-actions{
+  position:absolute;top:8px;right:8px;
+  background:rgba(255,255,255,.9);
+  border-radius:999px;padding:3px 7px;
+}
+.feed-embed{margin-top:8px;}
+.feed-embed-yt{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:10px;overflow:hidden;}
+.feed-embed-yt iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
+.feed-embed-tw{max-width:100%;overflow:hidden;}
+.feed-embed-tw .twitter-tweet{margin:0!important;max-width:100%!important;}
+.feed-embed-tw iframe{max-width:100%!important;}
+.feed-embed-fallback{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:4px;font-size:11.5px;color:var(--accent);
+  text-decoration:none;
+}
 
 .feed-add-form{margin-top:6px;border-top:1px solid var(--line);padding-top:12px;}
 .feed-add-form select,.feed-add-form input,.feed-add-form textarea{
@@ -497,7 +524,9 @@ footer.site-footer{
 .feed-panel-placeholder{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:26px 0;}
 
 /* ============ 떡밥 아이템 수정 폼 ============ */
-.feed-item-editing{flex-direction:column;align-items:stretch;background:var(--page-bg)!important;}
+.feed-item-editing{
+  background:var(--page-bg)!important;
+}
 .feed-item-editing select,.feed-item-editing input,.feed-item-editing textarea{
   width:100%;
   padding:8px 10px;
@@ -627,8 +656,6 @@ footer.site-footer{
 .wiki-cancel-btn:hover{background:#F5F4F1;}
 
 @media(max-width:600px){
-  .feed-shell{flex-direction:column;}
-  .feed-panel-col{width:100%;}
   .tab-bar{padding:14px 10px 0;}
   .feed-add-form select,.feed-add-form input,.feed-add-form textarea{font-size:16px;}
   .wiki-add-card textarea,.wiki-item-editing textarea{font-size:16px;}
@@ -694,6 +721,8 @@ footer.site-footer{
         <p class="wordmark-caption">날짜를 눌러 그날의 떡밥을 기록하세요</p>
       </div>
     </div>
+
+    <div class="filter-row feed-filter-row" id="feedFilterRow"></div>
 
     <div class="feed-shell">
       <div class="feed-calendar-col">
@@ -1148,6 +1177,39 @@ let feedData = [];
 let feedByDate = {};
 let selectedFeedDate = null;
 let editingFeedId = null;
+let activeFeedTypes = new Set(feedCategories);
+
+// ============ 떡밥 필터 칩 ============
+const feedFilterRow = document.getElementById('feedFilterRow');
+function renderFeedFilterChips(){
+  const allActive = activeFeedTypes.size === feedCategories.length;
+  const allChip = `<div class="filter-chip all${allActive?' active':''}" data-all="1">전체</div>`;
+  const chips = feedCategories.map(k=>{
+    const isActive = activeFeedTypes.has(k);
+    const color = feedCategoryColor[k];
+    const style = isActive ? `background:${color};border-color:${color};` : '';
+    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="${style}">
+      <span class="dot" style="background:${isActive?'#fff':color}"></span>${k}
+    </div>`;
+  }).join('');
+  feedFilterRow.innerHTML = allChip + chips;
+}
+feedFilterRow.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.filter-chip');
+  if(!chip) return;
+  if(chip.dataset.all){
+    activeFeedTypes = new Set(feedCategories);
+  } else {
+    const t = chip.dataset.type;
+    if(activeFeedTypes.has(t)) activeFeedTypes.delete(t);
+    else activeFeedTypes.add(t);
+    if(activeFeedTypes.size===0) activeFeedTypes = new Set(feedCategories);
+  }
+  renderFeedFilterChips();
+  refreshFeedDots();
+  if(selectedFeedDate) renderFeedPanel(selectedFeedDate);
+});
+renderFeedFilterChips();
 
 function rebuildFeedByDate(){
   feedByDate = {};
@@ -1168,11 +1230,53 @@ function hexToRgba(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+// ============ 링크 → 임베드 (가능한 플랫폼만) ============
+// 유튜브: 공식 iframe 임베드, API 키 없이 항상 동작.
+// X(트위터): blockquote + widgets.js 공개 임베드, API 키 불필요하지만
+//   비공개/삭제된 게시물이거나 X 쪽 사정으로 가끔 렌더링에 실패할 수 있음 → 그 경우 링크로 대체.
+// 인스타그램/스레드: 2025년 4월 메타가 무료 client-side 임베드(embed.js)를 종료하고
+//   앱 심사 + 액세스 토큰이 필요한 Graph API 방식으로 바꿔서, 서버 없이는 실제 임베드가 불가능함.
+//   디시인사이드 등도 공식 임베드가 없음 → 이런 링크는 아이콘 카드로 대체.
+function getLinkPlatform(link){
+  if(!link) return null;
+  if(/youtube\.com|youtu\.be/.test(link)) return 'youtube';
+  if(/(^|\/\/)(www\.)?(twitter\.com|x\.com)\//.test(link)) return 'twitter';
+  return null;
+}
+
+function getYoutubeEmbedId(link){
+  const m = link.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function feedEmbedHTML(item, embedWidth){
+  const platform = getLinkPlatform(item.link);
+  if(platform === 'youtube'){
+    const id = getYoutubeEmbedId(item.link);
+    if(!id) return '';
+    return `<div class="feed-embed feed-embed-yt">
+      <iframe src="https://www.youtube.com/embed/${id}" title="YouTube video" loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>`;
+  }
+  if(platform === 'twitter'){
+    // data-width를 카드의 실제 가용 너비로 못박아둬야, 트위터 위젯이 자체적으로
+    // 재는 폭이 틀어져서(예: 처음 측정 시점이 안 맞는 경우) 카드 밖으로 삐져나오는 걸 막을 수 있음.
+    const w = embedWidth ? ` data-width="${embedWidth}"` : '';
+    return `<div class="feed-embed feed-embed-tw">
+      <blockquote class="twitter-tweet" data-dnt="true" data-conversation="none"${w}>
+        <a href="${item.link}"></a>
+      </blockquote>
+    </div>`;
+  }
+  return '';
+}
+
 const feedCatOptionsHTML = sel => feedCategories.map(c=>
   `<option value="${c}" ${c===sel?'selected':''}>${c}</option>`
 ).join('');
 
-function feedItemHTML(item){
+function feedItemHTML(item, embedWidth){
   const color = feedCategoryColor[item.category] || '#9C9488';
 
   if(item.id === editingFeedId){
@@ -1189,11 +1293,27 @@ function feedItemHTML(item){
     </div>`;
   }
 
-  const linkIcon = item.link ? getLinkIcon(item.link, 'feed-item-icon') : '';
   const memoHTML = item.memo ? `<div class="feed-item-memo">${item.memo.replace(/</g,'&lt;')}</div>` : '';
+  const embedHTML = feedEmbedHTML(item, embedWidth);
+
+  if(embedHTML){
+    return `<div class="feed-item feed-item-embed" style="border-left-color:${color};">
+      <div class="feed-item-actions">
+        <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
+        <i class="fa-solid fa-trash" data-del="${item.id}"></i>
+      </div>
+      <div class="feed-item-top">
+        <span class="feed-item-cat"><span class="dot" style="background:${color}"></span>${item.category}</span>
+      </div>
+      ${memoHTML}
+      ${embedHTML}
+    </div>`;
+  }
+
+  const linkIcon = item.link ? getLinkIcon(item.link, 'feed-item-icon') : '';
   const linkAttr = item.link ? ` data-link="${item.link.replace(/"/g,'&quot;')}"` : '';
   const clickableClass = item.link ? ' feed-item-clickable' : '';
-  return `<div class="feed-item${clickableClass}" style="background:${hexToRgba(color,0.09)};border-left-color:${color};"${linkAttr}>
+  return `<div class="feed-item feed-item-compact${clickableClass}" style="background:${hexToRgba(color,0.09)};border-left-color:${color};"${linkAttr}>
     <span class="dot" style="background:${color}"></span>
     <div class="feed-item-body">
       <div class="feed-item-cat">${linkIcon}${item.category}</div>
@@ -1211,9 +1331,18 @@ const feedPanel = document.getElementById('feedPanel');
 function renderFeedPanel(dateStr){
   selectedFeedDate = dateStr;
   const d = new Date(dateStr+'T00:00:00');
-  const items = (feedByDate[dateStr]||[]).slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
+  const items = (feedByDate[dateStr]||[])
+    .filter(i=>activeFeedTypes.has(i.category))
+    .slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
 
-  const itemsHTML = items.length ? items.map(feedItemHTML).join('') : `<div class="feed-empty">아직 등록된 떡밥이 없어요.</div>`;
+  // 카드 안에서 실제로 임베드가 차지할 수 있는 폭(패널 패딩 16px*2, 아이템 패딩 12+10)을 계산해서
+  // 트위터 위젯이 스스로 재는 값이 어긋나 카드 밖으로 삐져나오지 않게 못박아둠.
+  const panelWidth = feedPanel.clientWidth || 280;
+  const embedWidth = Math.max(220, panelWidth - 32 - 22);
+
+  const itemsHTML = items.length
+    ? items.map(item=>feedItemHTML(item, embedWidth)).join('')
+    : `<div class="feed-empty">아직 등록된 떡밥이 없어요.</div>`;
 
   feedPanel.innerHTML = `
     <div class="feed-panel-date">${d.getMonth()+1}월 ${d.getDate()}일</div>
@@ -1226,6 +1355,11 @@ function renderFeedPanel(dateStr){
       <button class="feed-add-btn" id="feedAddBtn">+ 떡밥 추가</button>
     </div>
   `;
+
+  // X(트위터) 임베드 다시 렌더링 (widgets.js가 이미 로드돼 있으면 새로 추가된 blockquote만 처리)
+  if(window.twttr && window.twttr.widgets){
+    window.twttr.widgets.load(feedPanel);
+  }
 
   feedPanel.querySelectorAll('.feed-item-clickable').forEach(el=>{
     el.addEventListener('click', (e)=>{
@@ -1321,7 +1455,7 @@ function refreshFeedDots(){
     cell.classList.remove('feed-has-entry');
     const oldDots = cell.querySelector('.feed-dots');
     if(oldDots) oldDots.remove();
-    const items = feedByDate[dateStr];
+    const items = (feedByDate[dateStr]||[]).filter(i=>activeFeedTypes.has(i.category));
     if(items && items.length){
       cell.classList.add('feed-has-entry');
       const dayTop = cell.querySelector('.fc-daygrid-day-top');
