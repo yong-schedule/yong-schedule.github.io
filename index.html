@@ -1486,6 +1486,14 @@ refreshFeedDots();
 
 (async()=>{
   feedData = await loadCollection('feed');
+  // 기존 '기사' 카테고리로 저장된 데이터를 '팬아트'로 마이그레이션
+  const legacyItems = feedData.filter(f => f.category === '기사');
+  if(legacyItems.length){
+    await Promise.all(legacyItems.map(item =>
+      db.collection('feed').doc(item.id).update({ category: '팬아트' })
+    ));
+    feedData = feedData.map(f => f.category === '기사' ? { ...f, category: '팬아트' } : f);
+  }
   rebuildFeedByDate();
   refreshFeedDots();
 })();
