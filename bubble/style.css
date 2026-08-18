@@ -256,6 +256,19 @@ body {
   white-space: nowrap;
 }
 
+/* ---------- drive link wrapper ---------- */
+.drive-link-wrap {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.drive-link-wrap:hover .attach-card,
+.drive-link-wrap:hover .attach-media,
+.drive-link-wrap:hover .live-card {
+  filter: brightness(0.96);
+}
+
 /* ---------- attachment cards ---------- */
 .attach-card {
   display: flex;

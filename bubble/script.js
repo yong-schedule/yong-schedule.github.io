@@ -130,6 +130,18 @@
     return av;
   }
 
+  function wrapWithDriveLink(el, m) {
+    if (!m.driveUrl) return el;
+    var a = document.createElement("a");
+    a.href = m.driveUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.className = "drive-link-wrap";
+    a.title = "구글드라이브 원본 열기";
+    a.appendChild(el);
+    return a;
+  }
+
   function buildPhotoFallback(m) {
     var card = document.createElement("div");
     card.className = "attach-card";
@@ -165,9 +177,9 @@
           photo.onerror = function () {
             photo.replaceWith(buildPhotoFallback(m));
           };
-          return photo;
+          return wrapWithDriveLink(photo, m);
         }
-        return buildPhotoFallback(m);
+        return wrapWithDriveLink(buildPhotoFallback(m), m);
       }
       case "video": {
         var card = document.createElement("div");
@@ -189,7 +201,7 @@
         }
         card.appendChild(icon);
         card.appendChild(txt);
-        return card;
+        return wrapWithDriveLink(card, m);
       }
       case "voice": {
         var card = document.createElement("div");
@@ -209,7 +221,7 @@
         txt.appendChild(sub);
         card.appendChild(icon);
         card.appendChild(txt);
-        return card;
+        return wrapWithDriveLink(card, m);
       }
       case "call": {
         var card = document.createElement("div");
@@ -229,7 +241,7 @@
         txt.appendChild(sub);
         card.appendChild(icon);
         card.appendChild(txt);
-        return card;
+        return wrapWithDriveLink(card, m);
       }
       case "sticker": {
         var card = document.createElement("div");
@@ -265,7 +277,7 @@
         var span = document.createElement("span");
         span.textContent = ended ? ("버블 라이브 종료 " + (m.dur || "")) : "버블 라이브 시작";
         card.appendChild(span);
-        return card;
+        return wrapWithDriveLink(card, m);
       }
       default: {
         var bubble = document.createElement("div");
