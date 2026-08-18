@@ -18,8 +18,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--page-bg);
-  min-height: 100vh;
+  background: transparent;
 }
 
 body {
@@ -30,19 +29,15 @@ body {
 .app {
   max-width: 480px;
   margin: 0 auto;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
-  box-shadow: 0 0 0 1px var(--border), 0 8px 40px rgba(0,0,0,0.08);
+  background: transparent;
 }
 
 /* ---------- top bar ---------- */
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--bar-bg);
+  position: static;
+  background: transparent;
   border-bottom: 1px solid var(--border);
 }
 .topbar-inner {
@@ -172,10 +167,9 @@ body {
 /* ---------- chat area ---------- */
 .chat {
   flex: 1;
-  overflow-y: auto;
+  overflow: visible;
   padding: 14px 14px 40px;
-  scroll-behavior: smooth;
-  background: var(--bg);
+  background: transparent;
 }
 .chat-inner {
   display: flex;
@@ -329,34 +323,6 @@ body {
   flex-shrink: 0;
 }
 .live-card.ended { background: #565656; }
-
-/* ---------- jump to latest button ---------- */
-.jump {
-  position: fixed;
-  right: calc(50% - 240px + 18px);
-  bottom: 22px;
-  z-index: 20;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: none;
-  background: #1c1c1c;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.22);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-.jump svg { width: 18px; height: 18px; }
-.jump.show { opacity: 1; pointer-events: auto; }
-
-@media (max-width: 520px) {
-  .jump { right: 18px; }
-}
 
 .empty-state {
   text-align: center;

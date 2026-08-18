@@ -5,7 +5,6 @@
   var daysEl = document.getElementById("days");
   var chatEl = document.getElementById("chat");
   var chatInnerEl = document.getElementById("chatInner");
-  var jumpBtn = document.getElementById("jumpBtn");
 
   var WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
   var currentMonthKey = null;
@@ -351,15 +350,6 @@
       chatEl.scrollTop = 0;
     }
   }
-
-  chatEl.addEventListener("scroll", function () {
-    var show = chatEl.scrollTop > 400;
-    jumpBtn.classList.toggle("show", show);
-  });
-
-  jumpBtn.addEventListener("click", function () {
-    chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: "smooth" });
-  });
 
   function init() {
     buildMonthPills();
