@@ -667,6 +667,7 @@ footer.site-footer{
   <button class="tab-btn active" data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> 달력</button>
   <button class="tab-btn" data-tab="feed"><i class="fa-solid fa-camera-retro"></i> 떡밥</button>
   <button class="tab-btn" data-tab="wiki"><i class="fa-solid fa-book-open"></i> 알쓸용잡</button>
+  <button class="tab-btn" data-tab="bubble"><i class="fa-solid fa-comment-dots"></i> 버블</button>
 </div>
 <div id="calendarView">
 <div class="page-outer">
@@ -768,6 +769,10 @@ footer.site-footer{
 </div>
 </div>
 
+<div id="bubbleView" style="display:none;">
+  <iframe id="bubbleFrame" src="bubble/index.html" title="버블 아카이브" style="display:block;width:100%;height:calc(100vh - 150px);min-height:520px;border:0;"></iframe>
+</div>
+
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
@@ -824,6 +829,7 @@ const db = firebase.firestore();
 const calendarView = document.getElementById('calendarView');
 const feedView = document.getElementById('feedView');
 const wikiView = document.getElementById('wikiView');
+const bubbleView = document.getElementById('bubbleView');
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -831,11 +837,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     calendarView.style.display='none';
     feedView.style.display='none';
     wikiView.style.display='none';
+    bubbleView.style.display='none';
     if(btn.dataset.tab==='feed'){
       feedView.style.display='block';
       if(window.feedCalendar) window.feedCalendar.updateSize();
     } else if(btn.dataset.tab==='wiki'){
       wikiView.style.display='block';
+    } else if(btn.dataset.tab==='bubble'){
+      bubbleView.style.display='block';
     } else {
       calendarView.style.display='block';
     }
