@@ -47,6 +47,13 @@
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
+  // Twemoji로 이모지를 이미지로 치환 (폰트 미설치 환경에서도 항상 동일하게 보이도록)
+  function emojify(el) {
+    if (window.twemoji && el) {
+      twemoji.parse(el, { folder: "svg", ext: ".svg" });
+    }
+  }
+
   function resetScroll() {
     chatEl.scrollTop = 0;
     if (window.scrollTo) window.scrollTo(0, 0);
@@ -368,6 +375,7 @@
     });
 
     chatInnerEl.appendChild(frag);
+    emojify(chatInnerEl);
 
     if (targetRow) {
       requestAnimationFrame(function () {
@@ -499,6 +507,7 @@
     });
 
     searchResultsEl.appendChild(frag);
+    emojify(searchResultsEl);
   }
 
   var searchDebounce = null;
@@ -542,6 +551,7 @@
     buildSearchIndex();
     var first = BUBBLE_MONTHS[0];
     selectMonth(first, false);
+    emojify(document.body); // pwGate 잠금 아이콘, 핑크 배너 등 정적 텍스트의 이모지 처리
   }
 
   init();
