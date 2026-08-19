@@ -18,6 +18,15 @@
 
 * { box-sizing: border-box; }
 
+/* Twemoji: 폰트 대신 이미지로 렌더링되는 이모지 - 텍스트와 자연스럽게 어울리도록 크기/정렬 보정 */
+img.emoji {
+  height: 1.2em;
+  width: 1.2em;
+  margin: 0 .04em 0 .08em;
+  vertical-align: -0.2em;
+  display: inline-block;
+}
+
 html, body {
   margin: 0;
   padding: 0;
