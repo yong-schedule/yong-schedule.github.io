@@ -599,7 +599,13 @@ body {
   width: 30px;
   height: 30px;
   border: none;
+  outline: none;
   background: none;
+  background-color: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -607,6 +613,13 @@ body {
   cursor: pointer;
   padding: 0;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+}
+.landing-icon-btn:focus,
+.landing-icon-btn:active {
+  background: none;
+  background-color: transparent;
+  box-shadow: none;
+  outline: none;
 }
 .landing-icon-btn svg { width: 22px; height: 22px; }
 
