@@ -1217,8 +1217,9 @@ function updateDday(){
   const card = document.getElementById('ddayCard');
   const today = new Date(); today.setHours(0,0,0,0);
 
+  const ddayExcludedTypes = new Set(['공식','SNS']);
   const upcoming = allEventsData
-    .filter(e=>e.start && activeTypes.has(e.type))
+    .filter(e=>e.start && activeTypes.has(e.type) && !ddayExcludedTypes.has(e.type))
     .map(e=>({...e, dateObj:new Date(e.start)}))
     .filter(e=>!isNaN(e.dateObj) && e.dateObj>=today)
     .sort((a,b)=>a.dateObj-b.dateObj);
