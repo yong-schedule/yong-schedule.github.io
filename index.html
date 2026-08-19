@@ -357,7 +357,6 @@ footer.site-footer{
 @media(max-width:600px){
   .page-outer{padding:10px 10px 70px;}
   .app-card{padding:20px 16px 16px;border-radius:22px;}
-  .bubble-frame-wrap{border-radius:22px;}
   .wordmark{font-size:21px;}
   .dday-strip{padding:10px 14px;gap:10px;}
   .dday-number{font-size:17px;min-width:40px;}
@@ -407,62 +406,6 @@ footer.site-footer{
 }
 .tab-btn i{font-size:14px;}
 .tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-
-/* ============ 버블 탭: 다른 탭 본문(app-card)과 동일한 형식 ============ */
-.bubble-frame-wrap{
-  background:var(--surface);
-  border-radius:var(--radius-xl);
-  overflow:hidden;
-  box-shadow:var(--shadow-card);
-}
-
-/* ============ 버블 탭: 비밀번호 카드 (라운드 박스 안에 표시) ============ */
-.bubble-pw-card{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  min-height:420px;
-  padding:40px 24px;
-  text-align:center;
-}
-.bubble-pw-lock{font-size:28px;}
-.bubble-pw-label{font-size:14.5px;font-weight:700;color:var(--ink);}
-.bubble-pw-input{
-  padding:10px 14px;
-  border:1px solid var(--line-strong);
-  border-radius:10px;
-  font-size:14px;
-  width:200px;
-  text-align:center;
-  outline:none;
-  font-family:inherit;
-}
-.bubble-pw-btnrow{display:flex;gap:8px;}
-.bubble-pw-cancel{
-  padding:9px 18px;
-  border:1px solid var(--line-strong);
-  border-radius:999px;
-  background:var(--surface);
-  color:var(--ink);
-  font-weight:700;
-  font-size:13px;
-  cursor:pointer;
-  font-family:inherit;
-}
-.bubble-pw-submit{
-  padding:9px 22px;
-  border:none;
-  border-radius:999px;
-  background:var(--ink);
-  color:#fff;
-  font-weight:700;
-  font-size:13px;
-  cursor:pointer;
-  font-family:inherit;
-}
-.bubble-pw-error{color:var(--danger);font-size:12px;visibility:hidden;}
 
 /* ============ 떡밥 탭: 달력 + 패널 (PC/모바일 모두 세로 배치) ============ */
 .feed-shell{
@@ -724,7 +667,6 @@ footer.site-footer{
   <button class="tab-btn active" data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> 달력</button>
   <button class="tab-btn" data-tab="feed"><i class="fa-solid fa-camera-retro"></i> 떡밥</button>
   <button class="tab-btn" data-tab="wiki"><i class="fa-solid fa-book-open"></i> 알쓸용잡</button>
-  <button class="tab-btn" data-tab="bubble"><i class="fa-solid fa-comment-dots"></i> 버블</button>
 </div>
 <div id="calendarView">
 <div class="page-outer">
@@ -826,24 +768,6 @@ footer.site-footer{
 </div>
 </div>
 
-<div id="bubbleView" style="display:none;">
-<div class="page-outer">
-  <div id="bubblePwGate" class="bubble-frame-wrap bubble-pw-card" style="display:none;">
-    <div class="bubble-pw-lock">🔒</div>
-    <div class="bubble-pw-label">비밀번호를 입력하세요</div>
-    <input id="bubblePwInput" type="password" inputmode="numeric" placeholder="비밀번호" class="bubble-pw-input">
-    <div class="bubble-pw-btnrow">
-      <button id="bubblePwCancel" class="bubble-pw-cancel">취소</button>
-      <button id="bubblePwSubmit" class="bubble-pw-submit">확인</button>
-    </div>
-    <div id="bubblePwError" class="bubble-pw-error">비밀번호가 틀렸습니다</div>
-  </div>
-  <div class="bubble-frame-wrap" id="bubbleFrameWrap" style="display:none;">
-    <iframe id="bubbleFrame" src="bubble/index.html" title="버블 아카이브" style="display:block;width:100%;height:calc(100vh - 150px);min-height:520px;border:0;background:#fff;"></iframe>
-  </div>
-</div>
-</div>
-
 <div id="modal" class="modal">
   <button class="close-btn">&times;</button>
   <h3>일정 등록 / 수정</h3>
@@ -900,7 +824,6 @@ const db = firebase.firestore();
 const calendarView = document.getElementById('calendarView');
 const feedView = document.getElementById('feedView');
 const wikiView = document.getElementById('wikiView');
-const bubbleView = document.getElementById('bubbleView');
 
 function activateTab(btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -908,55 +831,15 @@ function activateTab(btn){
   calendarView.style.display='none';
   feedView.style.display='none';
   wikiView.style.display='none';
-  bubbleView.style.display='none';
   if(btn.dataset.tab==='feed'){
     feedView.style.display='block';
     if(window.feedCalendar) window.feedCalendar.updateSize();
   } else if(btn.dataset.tab==='wiki'){
     wikiView.style.display='block';
-  } else if(btn.dataset.tab==='bubble'){
-    bubbleView.style.display='block';
-    renderBubbleView();
   } else {
     calendarView.style.display='block';
   }
 }
-
-const BUBBLE_PW = '910221';
-const bubblePwGate = document.getElementById('bubblePwGate');
-const bubbleFrameWrap = document.getElementById('bubbleFrameWrap');
-const bubblePwInput = document.getElementById('bubblePwInput');
-const bubblePwError = document.getElementById('bubblePwError');
-
-function renderBubbleView(){
-  if(sessionStorage.getItem('bubble_unlocked') === '1'){
-    bubblePwGate.style.display = 'none';
-    bubbleFrameWrap.style.display = 'block';
-  } else {
-    bubbleFrameWrap.style.display = 'none';
-    bubblePwGate.style.display = 'flex';
-    bubblePwError.style.visibility = 'hidden';
-    bubblePwInput.value = '';
-    setTimeout(()=> bubblePwInput.focus(), 50);
-  }
-}
-
-function tryBubbleUnlock(){
-  if(bubblePwInput.value === BUBBLE_PW){
-    sessionStorage.setItem('bubble_unlocked','1');
-    renderBubbleView();
-  } else {
-    bubblePwError.style.visibility = 'visible';
-    bubblePwInput.value = '';
-    bubblePwInput.focus();
-  }
-}
-
-document.getElementById('bubblePwSubmit').addEventListener('click', tryBubbleUnlock);
-bubblePwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryBubbleUnlock(); });
-document.getElementById('bubblePwCancel').addEventListener('click', ()=>{
-  document.querySelector('.tab-btn[data-tab="calendar"]').click();
-});
 
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> activateTab(btn));
