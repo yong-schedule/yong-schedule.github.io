@@ -581,7 +581,7 @@
   /* ================= init ================= */
 
   function init() {
-    document.title = PEER_NAME + " · 채팅 아카이브";
+    document.title = PEER_NAME + " · FROMM Archive";
     initPasswordGate();
     initLanding();
     buildMonthPills();
