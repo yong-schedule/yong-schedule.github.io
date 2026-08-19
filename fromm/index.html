@@ -19,9 +19,42 @@
 
 <div class="app">
 
+  <div class="landing" id="landing">
+    <div class="landing-bg">
+      <img class="landing-bg-img" id="landingBgImg" src="assets/landing-bg.jpg" alt="">
+      <div class="landing-bg-fallback"></div>
+      <div class="landing-bg-shade"></div>
+    </div>
+
+    <div class="landing-top">
+      <button class="landing-icon-btn" title="닫기">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="landing-top-right">
+        <button class="landing-icon-btn" title="링크"><svg viewBox="0 0 24 24" fill="none"><path d="M9 15l6-6M10 6l1-1a4 4 0 015.66 5.66l-1.5 1.5M14 18l-1 1a4 4 0 01-5.66-5.66l1.5-1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="landing-icon-btn" title="메뉴"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></svg></button>
+      </div>
+    </div>
+
+    <div class="landing-dday">
+      <div class="landing-dday-label">프롬친구와 함께한 날</div>
+      <div class="landing-dday-count">❤️ <span id="landingDdayNum">+0</span></div>
+    </div>
+
+    <div class="landing-bottom">
+      <div class="landing-avatar">
+        <img id="landingAvatarImg" src="assets/profile.jpg" alt="">
+        <div class="landing-avatar-fallback" id="landingAvatarFallback"></div>
+      </div>
+      <div class="landing-name" id="landingName">용뚠,</div>
+      <div class="landing-sub" id="landingSub">혼또니 씨에씨에🐾</div>
+      <button class="landing-cta" id="landingCta">1:1 대화하기</button>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="topbar-inner">
-      <button class="back" title="뒤로">
+      <button class="back" title="뒤로" id="chatBackBtn">
         <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="peer">

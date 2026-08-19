@@ -14,6 +14,20 @@
   var searchClear = document.getElementById("searchClear");
   var searchResultsEl = document.getElementById("searchResults");
 
+  var landingEl = document.getElementById("landing");
+  var landingCta = document.getElementById("landingCta");
+  var landingDdayNum = document.getElementById("landingDdayNum");
+  var landingBgImg = document.getElementById("landingBgImg");
+  var landingAvatarImg = document.getElementById("landingAvatarImg");
+  var landingAvatarFallback = document.getElementById("landingAvatarFallback");
+  var landingName = document.getElementById("landingName");
+  var landingSub = document.getElementById("landingSub");
+  var chatBackBtn = document.getElementById("chatBackBtn");
+
+  // 만난 날(디데이 기준일). 필요하면 이 날짜만 바꾸면 됩니다.
+  var LANDING_START_DATE = "2023-10-23";
+  var LANDING_SUBTITLE = "혼또니 씨에씨에🙇‍♀️";
+
   var PEER_NAME = "용뚠,";
   var PEER_INITIAL = "용";
 
@@ -520,11 +534,47 @@
     }
   }
 
+  /* ================= landing (intro) screen ================= */
+
+  function calcDaysTogether(startDateStr) {
+    var start = new Date(startDateStr + "T00:00:00");
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var diff = Math.round((today - start) / 86400000) + 1; // 시작일을 1일차로 포함해서 셈
+    return diff < 0 ? 0 : diff;
+  }
+
+  function initLanding() {
+    landingName.textContent = PEER_NAME;
+    landingSub.textContent = LANDING_SUBTITLE;
+    landingDdayNum.textContent = "+" + calcDaysTogether(LANDING_START_DATE);
+
+    landingBgImg.onerror = function () {
+      landingBgImg.classList.add("load-error");
+    };
+    landingAvatarImg.onerror = function () {
+      landingAvatarImg.classList.add("load-error");
+      landingAvatarFallback.style.display = "flex";
+      landingAvatarFallback.textContent = PEER_INITIAL;
+    };
+
+    landingCta.addEventListener("click", function () {
+      landingEl.classList.add("hidden");
+    });
+
+    if (chatBackBtn) {
+      chatBackBtn.addEventListener("click", function () {
+        landingEl.classList.remove("hidden");
+      });
+    }
+  }
+
   /* ================= init ================= */
 
   function init() {
     document.title = PEER_NAME + " · 채팅 아카이브";
     initPasswordGate();
+    initLanding();
     buildMonthPills();
     buildSearchIndex();
     var first = ARCHIVE_MONTHS[0];
