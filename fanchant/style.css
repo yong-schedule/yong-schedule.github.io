@@ -1,6 +1,10 @@
-/* ============ 디자인 토큰 (기존 사이트에서 그대로 가져옴) ============ */
+/* ============ 디자인 토큰 ============
+   컨셉: 콘서트 응원법 종이 — 형광펜으로 직접 표시해둔 셋리스트 카드.
+   차분한 라벤더 페이퍼 위에 보라(응원)/코랄(콜) 포인트만 쓰고,
+   'Black Han Sans'는 스티커·넘버·스탬프 등 포인트 요소에만 절제해서 사용한다.
+*/
 :root{
-  --page-bg:#EEEDF3;
+  --page-bg:#EDEBF5;
   --surface:#FFFFFF;
   --ink:#221F1C;
   --ink-soft:#8B8580;
@@ -9,10 +13,15 @@
   --line-strong:#DEDAD2;
 
   --accent:#6C5CE7;
+  --accent-dark:#4C3FC4;
   --accent-soft:#EDEAFB;
+  --accent-mark:rgba(108,92,231,.20);
 
   --danger:#E8556B;
   --danger-soft:#FCE3E7;
+  --danger-mark:rgba(232,85,107,.14);
+
+  --display-font:'Black Han Sans', 'Pretendard Variable', system-ui, sans-serif;
 
   --radius-xl:28px;
   --radius-lg:16px;
@@ -27,9 +36,9 @@
 html,body{margin:0;padding:0;overflow-x:hidden;}
 body{
   font-family:'Pretendard Variable','Pretendard', system-ui, sans-serif;
-  background:var(--page-bg);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
+  background-color:var(--page-bg);
 }
 a{ color:inherit; text-decoration:none; }
 
@@ -46,6 +55,7 @@ a{ color:inherit; text-decoration:none; }
   border-radius:var(--radius-xl);
   box-shadow:var(--shadow-card);
   padding:30px 30px 26px;
+  position:relative;
 }
 
 /* ============ 헤더 ============ */
@@ -53,8 +63,7 @@ a{ color:inherit; text-decoration:none; }
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
-  gap:16px;
-  margin-bottom:22px;
+  gap:14px;
 }
 .wordmark{
   margin:0;
@@ -69,12 +78,19 @@ a{ color:inherit; text-decoration:none; }
 }
 .wordmark-caption{
   margin:4px 0 0;
-  font-size:12.5px;
+  font-size:12px;
   color:var(--ink-faint);
   font-weight:600;
 }
 
-/* ============ 툴바 / 검색 ============ */
+/* 헤더 아래 구분선 */
+.ticket-tear{
+  height:1px;
+  margin:22px 0;
+  background:var(--line);
+}
+
+/* ============ 툴바 / 검색 (예비 요소) ============ */
 .toolbar-row{
   display:flex;
   flex-direction:column;
@@ -106,16 +122,35 @@ a{ color:inherit; text-decoration:none; }
   display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:5px 10px;
+  padding:5px 11px;
   border-radius:999px;
   border:1px solid var(--line-strong);
   background:var(--surface);
   font-size:10.5px;
-  font-weight:600;
+  font-weight:700;
   color:var(--ink-soft);
   white-space:nowrap;
 }
-.filter-chip .dot{width:5px;height:5px;border-radius:50%;flex:none;}
+.filter-chip .dot{width:6px;height:6px;border-radius:50%;flex:none;}
+
+/* 곡 상세 상단의 MV / 응원법 영상 링크 칩 */
+.link-chip{
+  font-weight:800;
+  color:var(--accent-dark);
+  border:1.5px solid var(--accent);
+  background:var(--accent-soft);
+  transition:background .15s ease, transform .15s ease;
+}
+.link-chip i{ font-size:11px; color:var(--accent-dark); }
+.link-chip:hover{ background:var(--accent); color:#fff; }
+.link-chip:hover i{ color:#fff; }
+.link-chip.is-empty{
+  color:var(--ink-faint);
+  border-color:var(--line-strong);
+  background:var(--surface);
+}
+.link-chip.is-empty i{ color:var(--ink-faint); }
+.link-chip.is-empty:hover{ background:var(--surface); color:var(--ink-faint); }
 
 /* ============ 트랙 리스트 ============ */
 .track-list{
@@ -127,13 +162,14 @@ a{ color:inherit; text-decoration:none; }
   display:flex;
   align-items:center;
   gap:14px;
-  padding:15px 16px;
+  padding:13px 16px;
   border-bottom:1px solid var(--line);
   cursor:pointer;
-  transition:background .15s ease;
+  transition:background .15s ease, transform .15s ease;
 }
 .track-row:last-child{ border-bottom:none; }
 .track-row:hover{ background:#FAFAFB; }
+
 .track-num{
   font-weight:800;
   font-size:12.5px;
@@ -168,6 +204,7 @@ a{ color:inherit; text-decoration:none; }
 }
 
 .song-head{ text-align:center; }
+
 .song-kicker{
   font-size:10.5px;
   font-weight:700;
@@ -177,10 +214,10 @@ a{ color:inherit; text-decoration:none; }
   opacity:.8;
 }
 .song-title{
-  font-size:22px;
+  font-size:23px;
   font-weight:800;
   letter-spacing:-0.02em;
-  margin-top:8px;
+  margin-top:10px;
   color:var(--ink);
 }
 .song-en{ font-size:12.5px; color:var(--ink-soft); margin-top:4px; }
@@ -204,7 +241,7 @@ a{ color:inherit; text-decoration:none; }
   grid-template-columns:1fr 1fr;
   column-gap:36px;
   font-size:14px;
-  line-height:2.1;
+  line-height:2.15;
   color:var(--ink);
 }
 .lyrics .col{ position:relative; }
@@ -215,13 +252,13 @@ a{ color:inherit; text-decoration:none; }
   width:1px;
   background:var(--line);
 }
-.line.spacer{ height:8px; }
+.line.spacer{ height:10px; }
 
 /* 한 줄 안에서 일반 가사(lyric)와 응원(cheer)/콜(cue)이
    같이 섞여 나오므로, 색은 줄 전체가 아니라 span(segment) 단위로 입힌다 */
 .line .seg.cheer{
   font-weight:800;
-  color:var(--accent);
+  color:var(--accent-dark);
 }
 .line .seg.cue{
   font-weight:800;
@@ -232,4 +269,5 @@ a{ color:inherit; text-decoration:none; }
   .lyrics{ grid-template-columns:1fr; }
   .lyrics .col:first-child::after{ display:none; }
   .app-card{ padding:24px 18px 22px; }
+  .app-header{ flex-direction:column; }
 }

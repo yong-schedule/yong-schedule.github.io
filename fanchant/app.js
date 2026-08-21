@@ -69,6 +69,13 @@ function renderSong(id){
 
   const colsHtml = song.columns.map(col => `<div class="col">${renderCol(col)}</div>`).join("");
 
+  const linkChip = (label, icon, url) => {
+    if(url){
+      return `<a class="filter-chip link-chip" href="${escapeHtml(url)}" target="_blank" rel="noopener"><i class="fa-solid ${icon}"></i>${label}</a>`;
+    }
+    return `<span class="filter-chip link-chip is-empty"><i class="fa-solid ${icon}"></i>${label}</span>`;
+  };
+
   app.innerHTML = `
     <a class="back-link" href="#/"><i class="fa-solid fa-arrow-left"></i> 목록으로</a>
 
@@ -79,8 +86,8 @@ function renderSong(id){
     </div>
 
     <div class="legend">
-      <div class="filter-chip"><span class="dot cheer"></span>떼창 · 응원 문구</div>
-      <div class="filter-chip"><span class="dot cue"></span>콜 · 타이밍</div>
+      ${linkChip("MV", "fa-film", song.mvUrl)}
+      ${linkChip("응원법 가이드", "fa-video", song.guideUrl)}
     </div>
 
     <div class="divider-line"></div>
