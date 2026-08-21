@@ -1,34 +1,20 @@
 /*
   app.js
   ------------------------------------------------------------
-  #/           -> 트랙 목록 (검색창으로 필터링 가능)
+  #/           -> 트랙 목록
   #/song-id    -> 해당 곡 상세 (songs-data.js의 id 사용)
 */
 
 const app = document.getElementById("app");
-const toolbarRow = document.getElementById("toolbarRow");
-const searchInput = document.getElementById("searchInput");
-
-let currentQuery = "";
 
 function renderList(){
-  toolbarRow.style.display = "flex";
-
   const sorted = [...SONGS].sort((a,b)=>a.order-b.order);
-  const q = currentQuery.trim().toLowerCase();
-  const filtered = q
-    ? sorted.filter(s => (s.titleKr + " " + s.titleEn).toLowerCase().includes(q))
-    : sorted;
 
   let rows = "";
-  if(filtered.length === 0){
-    rows = `<div class="empty-note">${
-      SONGS.length === 0
-        ? "아직 등록된 곡이 없어요. songs-data.js에 곡을 추가해보세요."
-        : "검색 결과가 없어요."
-    }</div>`;
+  if(sorted.length === 0){
+    rows = `<div class="empty-note">아직 등록된 곡이 없어요. songs-data.js에 곡을 추가해보세요.</div>`;
   } else {
-    rows = filtered.map(song => `
+    rows = sorted.map(song => `
       <a class="track-row" href="#/${song.id}">
         <span class="track-num">${String(song.order).padStart(2,"0")}</span>
         <span class="track-kr">${song.titleKr}</span>
@@ -42,8 +28,6 @@ function renderList(){
 }
 
 function renderSong(id){
-  toolbarRow.style.display = "none";
-
   const song = SONGS.find(s => s.id === id);
 
   if(!song){
@@ -97,11 +81,6 @@ function router(){
     renderSong(path);
   }
 }
-
-searchInput.addEventListener("input", (e)=>{
-  currentQuery = e.target.value;
-  renderList();
-});
 
 window.addEventListener("hashchange", router);
 window.addEventListener("DOMContentLoaded", router);
