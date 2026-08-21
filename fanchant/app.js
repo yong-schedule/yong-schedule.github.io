@@ -40,12 +40,31 @@ function renderSong(id){
     return;
   }
 
+  const escapeHtml = (str) => String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // line은 이제 { text, tag } 하나가 아니라, 한 줄을 이루는
+  // segment 배열입니다. 예: [{text:"하고 싶은 대로 ", tag:"lyric"}, {text:"다", tag:"cheer"}, ...]
   const renderCol = (col) => col.map(line => {
-    if(line.tag === "spacer"){
-      return `<div class="line spacer"></div>`;
+    if(!Array.isArray(line)){
+      // 혹시 예전 spacer 표기가 남아있는 경우를 위한 안전장치
+      if(line && line.tag === "spacer"){
+        return `<div class="line spacer"></div>`;
+      }
+      return "";
     }
-    const cls = line.tag ? `line ${line.tag}` : "line";
-    return `<div class="${cls}">${line.text}</div>`;
+
+    const segsHtml = line.map(seg => {
+      const text = escapeHtml(seg.text);
+      if(seg.tag === "cheer" || seg.tag === "cue"){
+        return `<span class="seg ${seg.tag}">${text}</span>`;
+      }
+      return text; // lyric은 일반 텍스트 그대로
+    }).join("");
+
+    return `<div class="line">${segsHtml}</div>`;
   }).join("");
 
   const colsHtml = song.columns.map(col => `<div class="col">${renderCol(col)}</div>`).join("");
@@ -61,6 +80,7 @@ function renderSong(id){
 
     <div class="legend">
       <div class="filter-chip"><span class="dot cheer"></span>떼창 · 응원 문구</div>
+      <div class="filter-chip"><span class="dot cue"></span>콜 · 타이밍</div>
     </div>
 
     <div class="divider-line"></div>

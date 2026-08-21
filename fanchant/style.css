@@ -216,11 +216,14 @@ a{ color:inherit; text-decoration:none; }
   background:var(--line);
 }
 .line.spacer{ height:8px; }
-.line.cheer{
+
+/* 한 줄 안에서 일반 가사(lyric)와 응원(cheer)/콜(cue)이
+   같이 섞여 나오므로, 색은 줄 전체가 아니라 span(segment) 단위로 입힌다 */
+.line .seg.cheer{
   font-weight:800;
   color:var(--accent);
 }
-.line.cue{
+.line .seg.cue{
   font-weight:800;
   color:var(--danger);
 }
