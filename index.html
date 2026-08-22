@@ -17,7 +17,7 @@
 <style>
 /* ============ 디자인 토큰 ============ */
 :root{
-  --page-bg:#EEEDF3;
+  --page-bg:#EFEFEF;
   --surface:#FFFFFF;
   --ink:#221F1C;
   --ink-soft:#8B8580;
@@ -26,7 +26,7 @@
   --line-strong:#DEDAD2;
 
   --accent:#6C5CE7;
-  --accent-soft:#EDEAFB;
+  --accent-soft:#ECECEC;
 
   --danger:#E8556B;
   --danger-soft:#FCE3E7;
@@ -72,7 +72,6 @@ body{
 .app-card{
   background:var(--surface);
   border-radius:var(--radius-xl);
-  box-shadow:var(--shadow-card);
   padding:30px 30px 22px;
 }
 
@@ -115,16 +114,15 @@ body{
 .dday-number{
   font-weight:800;
   font-size:20px;
-  color:var(--accent);
   min-width:52px;
 }
 .dday-divider{
   width:1px;
   align-self:stretch;
-  background:rgba(108,92,231,.18);
+  background:rgba(0,0,0,.1);
 }
 .dday-body{display:flex;flex-direction:column;gap:2px;min-width:0;}
-.dday-label{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase;opacity:.75;}
+.dday-label{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
 .dday-title-row{display:flex;align-items:center;gap:7px;min-width:0;}
 .dday-dot{width:6px;height:6px;border-radius:50%;flex:none;}
 .dday-title{font-size:13.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -387,6 +385,7 @@ footer.site-footer{
   max-width:960px;
   margin:0 auto;
   padding:18px 18px 0;
+  margin-bottom:10px;
 }
 .tab-btn{
   flex:none;
@@ -656,7 +655,7 @@ footer.site-footer{
 .wiki-cancel-btn:hover{background:#F5F4F1;}
 
 @media(max-width:600px){
-  .tab-bar{padding:14px 10px 0;}
+  .tab-bar{padding:14px 10px 0;margin-bottom:8px;}
   .feed-add-form select,.feed-add-form input,.feed-add-form textarea{font-size:16px;}
   .wiki-add-card textarea,.wiki-item-editing textarea{font-size:16px;}
 }
@@ -683,7 +682,7 @@ footer.site-footer{
       <div class="dday-number" id="ddayNumber">–</div>
       <div class="dday-divider"></div>
       <div class="dday-body">
-        <div class="dday-label">다가오는 일정</div>
+        <div class="dday-label" id="ddayLabel">다가오는 일정</div>
         <div class="dday-title-row">
           <span class="dday-dot" id="ddayDot"></span>
           <span class="dday-title" id="ddayTitle"></span>
@@ -706,7 +705,7 @@ footer.site-footer{
 
   </div>
 
-  <div class="legend" id="legend"></div>
+  <div class="legend" id="legend" style="display:none;"></div>
   <footer class="site-footer">✨ DC Solar Gallery ✨</footer>
 </div>
 </div>
@@ -739,7 +738,7 @@ footer.site-footer{
 
   </div>
 
-  <div class="legend" id="feedLegend"></div>
+  <div class="legend" id="feedLegend" style="display:none;"></div>
   <footer class="site-footer">✨ DC Solar Gallery ✨</footer>
 </div>
 </div>
@@ -1116,7 +1115,9 @@ function updateDday(){
   document.getElementById('ddayTitle').textContent = next.title;
   document.getElementById('ddayDate').textContent =
     `${next.dateObj.getMonth()+1}월 ${next.dateObj.getDate()}일`;
-  document.getElementById('ddayDot').style.background = eventColorHex[next.type] || '#D9D5CE';
+  document.getElementById('ddayDot').style.background = 'var(--accent)';
+  document.getElementById('ddayNumber').style.color = 'var(--accent)';
+  document.getElementById('ddayLabel').style.color = 'var(--accent)';
 }
 
 // ============ Firestore 데이터 로드 ============
