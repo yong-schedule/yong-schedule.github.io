@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>Solar · Schedule Archive</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css" />
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+/* ============ 디자인 토큰 ============ */
+:root{
+  --page-bg:#FFFFFF;
+  --surface:#FFFFFF;
+  --ink:#221F1C;
+  --ink-soft:#8B8580;
+  --ink-faint:#C2BDB6;
+  --line:#EAE7E1;
+  --line-strong:#DEDAD2;
+
+  --accent:#4A4642;
+  --accent-soft:#ECECEC;
+
+  --danger:#E8556B;
+  --danger-soft:#FCE3E7;
+
+  --c-official:#EF4444;
+  --c-musical:#F59E0B;
+  --c-broadcast:#0EA5E9;
+  --c-sns:#8B5CF6;
+  --c-solardo:#F472B6;
+  --c-concert:#F97316;
+  --c-event:#84CC16;
+  --c-fansign:#D946EF;
+  --c-release:#14B8A6;
+  --c-anniversary:#22C55E;
+  --c-etc:#6B7280;
+
+  --radius-xl:28px;
+  --radius-lg:16px;
+  --radius-md:12px;
+  --radius-sm:9px;
+  --shadow-card:0 24px 60px rgba(30,24,15,.08);
+  --shadow-soft:0 4px 14px rgba(30,24,15,.05);
+  --shadow-pop:0 16px 40px rgba(30,24,15,.18);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;overflow-x:hidden;}
+body{
+  font-family:'Pretendard Variable','Pretendard', system-ui, sans-serif;
+  background:var(--page-bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* 문서 스크롤바: PC(마우스 환경)에서만 커스텀 바를 보여주고, 모바일/터치에서는 숨김 */
+@media (hover:hover) and (pointer:fine){
+  html{ scrollbar-width:thin; scrollbar-color:rgba(0,0,0,.18) transparent; }
+  html::-webkit-scrollbar{ width:6px; }
+  html::-webkit-scrollbar-track{ background:transparent; }
+  html::-webkit-scrollbar-thumb{ background:#fff; border:1px solid rgba(0,0,0,.15); background-clip:padding-box; border-radius:999px; }
+  html::-webkit-scrollbar-thumb:hover{ background:#fff; border-color:rgba(0,0,0,.28); }
+}
+@media not all and (hover:hover) and (pointer:fine){
+  html{ scrollbar-width:none; }
+  html::-webkit-scrollbar{ display:none; width:0; height:0; }
+}
+
+.page-outer{
+  max-width:960px;
+  margin:0 auto;
+  padding:14px 18px 80px;
+  overflow-x:hidden;
+}
+
+/* ============ 카드 ============ */
+.app-card{
+  background:var(--surface);
+  border-radius:var(--radius-xl);
+  padding:30px 30px 22px;
+  border:0.5px solid #dedcd6;
+  box-shadow:0 0 12px rgba(0,0,0,.12);
+}
+
+/* ============ 헤더 ============ */
+.app-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:22px;
+}
+.wordmark{
+  margin:0;
+  font-weight:800;
+  font-size:26px;
+  letter-spacing:-0.02em;
+  color:var(--ink);
+}
+.wordmark-thin{
+  font-weight:500;
+  color:var(--ink-soft);
+}
+.wordmark-caption{
+  margin:4px 0 0;
+  font-size:12.5px;
+  color:var(--ink-faint);
+  font-weight:600;
+}
+
+/* ============ D-day 스트립 ============ */
+.dday-strip{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--accent-soft);
+  border-radius:var(--radius-lg);
+  padding:12px 18px;
+  margin-bottom:18px;
+}
+.dday-number{
+  font-weight:800;
+  font-size:20px;
+  min-width:52px;
+}
+.dday-divider{
+  width:1px;
+  align-self:stretch;
+  background:rgba(0,0,0,.1);
+}
+.dday-body{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.dday-label{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;}
+.dday-title-row{display:flex;align-items:center;gap:7px;min-width:0;}
+.dday-dot{width:6px;height:6px;border-radius:50%;flex:none;}
+.dday-title{font-size:13.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dday-date{font-size:11.5px;color:var(--ink-soft);}
+
+/* ============ 툴바 ============ */
+.toolbar-row{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  margin-bottom:18px;
+  width:100%;
+  min-width:0;
+}
+.filter-row{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:5px 10px;
+  border-radius:999px;
+  border:1px solid var(--line-strong);
+  background:var(--surface);
+  font-size:10.5px;
+  font-weight:600;
+  color:var(--ink-soft);
+  cursor:pointer;
+  user-select:none;
+  transition:all .15s ease;
+  white-space:nowrap;
+}
+.filter-chip .dot{width:5px;height:5px;border-radius:50%;flex:none;}
+.filter-chip.active{color:#fff;border-color:transparent;}
+.filter-chip.all{font-weight:700;}
+.filter-chip.all.active{background:var(--ink);color:#fff;}
+
+.search-box{
+  position:relative;
+  display:flex;
+  align-items:center;
+  flex:none;
+  width:100%;
+}
+.search-box i{position:absolute;left:13px;font-size:12px;color:var(--ink-faint);}
+.search-box input{
+  width:100%;
+  padding:9px 12px 9px 32px;
+  border:1px solid var(--line-strong);
+  border-radius:999px;
+  background:var(--surface);
+  font-family:inherit;
+  font-size:12.5px;
+  color:var(--ink);
+}
+.search-box input:focus{border-color:var(--accent);}
+.search-box input::placeholder{color:var(--ink-faint);}
+
+/* ============ 아바타 스택 (사진 버전용) ============ */
+.avatar-stack{display:flex;align-items:center;flex:none;}
+.avatar-stack img{
+  width:34px;height:34px;border-radius:50%;
+  object-fit:cover;
+  border:2.5px solid var(--surface);
+  box-shadow:0 2px 6px rgba(30,24,15,.12);
+  margin-left:-10px;
+}
+.avatar-stack img:first-child{margin-left:0;}
+
+/* ============ 달력 ============ */
+.calendar-wrap{overflow-y:auto;}
+@media (hover:hover) and (pointer:fine){
+  .calendar-wrap{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent;}
+  .calendar-wrap::-webkit-scrollbar{width:6px;}
+  .calendar-wrap::-webkit-scrollbar-track{background:transparent;}
+  .calendar-wrap::-webkit-scrollbar-thumb{background:#fff;border:1px solid rgba(0,0,0,.15);background-clip:padding-box;border-radius:999px;}
+  .calendar-wrap::-webkit-scrollbar-thumb:hover{background:#fff;border-color:rgba(0,0,0,.28);}
+}
+@media not all and (hover:hover) and (pointer:fine){
+  .calendar-wrap{scrollbar-width:none;}
+  .calendar-wrap::-webkit-scrollbar{display:none;width:0;height:0;}
+}
+#calendar{padding:0;}
+
+.fc{font-family:'Pretendard Variable','Pretendard',system-ui,sans-serif;}
+.fc-event{border:none!important;box-shadow:none!important;border-radius:6px!important;}
+.fc .fc-toolbar-title{
+  font-weight:800;
+  font-size:16.5px;
+  letter-spacing:-0.01em;
+  color:var(--ink);
+}
+.fc .fc-button{
+  font-family:inherit;
+  font-size:11.5px;
+  font-weight:700;
+  padding:6px 12px;
+  background:var(--surface);
+  color:var(--ink);
+  border:1px solid var(--line-strong);
+  border-radius:999px;
+}
+.fc .fc-button:focus,.fc .fc-button:active{background:var(--surface);}
+.fc .fc-button:hover{background:#F5F4F1;}
+.fc .fc-customAddBtn-button{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important;}
+.fc .fc-customAddBtn-button:hover{filter:brightness(1.2);}
+.fc .fc-modifyBtn-button{background:var(--surface)!important;color:var(--ink)!important;}
+/* 수정모드 ON 상태 표시: 버튼 DOM을 직접 건드리지 않고 상위 컨테이너 클래스로만 제어.
+   (캘린더가 검색/필터 등으로 다시 그려져도 항상 정확하게 유지됨) */
+#calendar.modify-active .fc-modifyBtn-button{background:#E8556B!important;color:#fff!important;border-color:#E8556B!important;}
+.fc .fc-today-button{color:var(--danger)!important;border-color:var(--danger-soft)!important;background:var(--danger-soft)!important;}
+.fc-daygrid-day-number{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
+.fc-col-header-cell-cushion{
+  font-size:10.5px;
+  color:var(--ink-faint);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  padding:8px 0;
+}
+.fc-theme-standard td, .fc-theme-standard th{border-color:var(--line)!important;}
+.fc .fc-daygrid-day.fc-day-today{background:var(--accent-soft)!important;}
+.fc-daygrid-day-frame{padding:2px;}
+.fc-daygrid-day{cursor:pointer;}
+
+*:focus{outline:none!important;box-shadow:none!important;}
+.fc *:focus{outline:none!important;box-shadow:none!important;}
+
+.event-icon{width:1em;height:1em;object-fit:contain;vertical-align:middle;margin-left:2px;}
+.event-icon.bstage{width:calc(1em + 1pt);height:calc(1em + 1pt);}
+
+/* ============ 모달 ============ */
+.modal{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--surface);
+  padding:22px 22px 20px;
+  border-radius:var(--radius-xl);
+  width:340px;
+  max-width:90%;
+  max-height:82%;
+  overflow-y:auto;
+  display:none;
+  z-index:9999;
+  box-shadow:var(--shadow-pop);
+}
+@media (hover:hover) and (pointer:fine){
+  .modal{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent;}
+  .modal::-webkit-scrollbar{width:6px;}
+  .modal::-webkit-scrollbar-track{background:transparent;}
+  .modal::-webkit-scrollbar-thumb{background:#fff;border:1px solid rgba(0,0,0,.15);background-clip:padding-box;border-radius:999px;}
+  .modal::-webkit-scrollbar-thumb:hover{background:#fff;border-color:rgba(0,0,0,.28);}
+}
+@media not all and (hover:hover) and (pointer:fine){
+  .modal{scrollbar-width:none;}
+  .modal::-webkit-scrollbar{display:none;width:0;height:0;}
+}
+.modal.show{display:block;}
+.modal h3{
+  font-weight:800;
+  font-size:17px;
+  letter-spacing:-0.01em;
+  margin:0 0 16px;
+  color:var(--ink);
+}
+.modal .close-btn{
+  position:absolute;top:14px;right:14px;
+  border:none;background:none;font-size:16px;cursor:pointer;color:var(--ink-faint);
+}
+.field-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.06em;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  margin:12px 0 4px;
+  display:block;
+}
+.modal input,.modal select,.modal textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:13px;
+  color:var(--ink);
+  background:var(--surface);
+}
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--accent);}
+.modal textarea{resize:vertical;}
+
+.modal-actions{display:flex;gap:8px;margin-top:20px;}
+.btn{
+  flex:1;
+  padding:11px;
+  border:none;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:#3A362F;}
+.btn-danger{background:var(--danger-soft);color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+
+/* ============ 메모 보기 모달 ============ */
+.memo-title{
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--accent);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+#memoViewContent{font-size:13px;line-height:1.7;color:var(--ink);}
+
+/* ============ 범례 ============ */
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 12px;
+  justify-content:center;
+  margin:18px 0 0;
+}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ink-soft);}
+.legend-item .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+
+footer.site-footer{
+  text-align:center;
+  margin-top:36px;
+  font-size:11px;
+  letter-spacing:.03em;
+  color:var(--ink-faint);
+}
+
+/* ============ 반응형 ============ */
+@media(max-width:600px){
+  .page-outer{padding:10px 10px 70px;}
+  .app-card{padding:20px 16px 16px;border-radius:22px;}
+  .wordmark{font-size:21px;}
+  .dday-strip{padding:10px 14px;gap:10px;}
+  .dday-number{font-size:17px;min-width:40px;}
+  .fc-daygrid-day-number{font-size:9px!important;}
+  .fc .fc-toolbar-title{font-size:14px;}
+  .fc .fc-button{font-size:10px;padding:4px 9px;}
+  .fc-col-header-cell-cushion{font-size:9px;}
+  .avatar-stack img{width:28px;height:28px;}
+  .modal input,.modal select,.modal textarea{font-size:16px;}
+  .search-box input{font-size:16px;}
+  .fc-daygrid-event-harness{margin-bottom:1px!important;}
+  .fc-event{display:block!important;}
+  .legend{
+    flex-wrap:nowrap;
+    gap:0 6px;
+    margin:14px 0 0;
+    overflow-x:auto;
+  }
+  .legend-item{font-size:8px;gap:2px;white-space:nowrap;}
+  .legend-item .dot{width:5px;height:5px;}
+}
+@media (max-width:600px) and (hover:hover) and (pointer:fine){
+  .legend{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent;}
+  .legend::-webkit-scrollbar{height:6px;}
+  .legend::-webkit-scrollbar-track{background:transparent;}
+  .legend::-webkit-scrollbar-thumb{background:#fff;border:1px solid rgba(0,0,0,.15);background-clip:padding-box;border-radius:999px;}
+  .legend::-webkit-scrollbar-thumb:hover{background:#fff;border-color:rgba(0,0,0,.28);}
+}
+@media (max-width:600px) and (not (hover:hover)){
+  .legend{scrollbar-width:none;}
+  .legend::-webkit-scrollbar{display:none;width:0;height:0;}
+}
+
+/* ============ 처음으로 (뒤로가기) ============ */
+.back-link-wrap{
+  max-width:960px;
+  margin:0 auto;
+  padding:22px 18px 0;
+}
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+  color:var(--ink-soft);
+  text-decoration:none;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.back-link svg{flex-shrink:0;}
+
+/* ============ 탭 바 (달력 / 떡밥) ============ */
+.tab-bar{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  max-width:960px;
+  margin:0 auto;
+  padding:14px 18px 0;
+  margin-bottom:26px;
+}
+.tab-btn{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:10px 18px;
+  border-radius:999px;
+  border:1px solid var(--line-strong);
+  background:var(--surface);
+  color:var(--ink-soft);
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:var(--shadow-soft);
+}
+.tab-btn i{font-size:14px;}
+.tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+/* ============ 떡밥 탭: 달력 + 패널 (PC/모바일 모두 세로 배치) ============ */
+.feed-shell{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  align-items:stretch;
+}
+.feed-calendar-col{width:100%;min-width:0;}
+.feed-panel-col{width:100%;}
+
+#feedCalendar .fc-event{display:none!important;}
+.feed-dots{display:flex;flex-direction:column;align-items:flex-start;gap:1px;justify-content:flex-start;padding:0 4px;margin-top:1px;}
+.feed-dots-row{display:grid;grid-template-columns:repeat(3,6px);gap:3px;}
+.feed-dots .feed-count{font-size:8.5px;font-weight:700;color:var(--ink-soft);margin-left:0;line-height:1;}
+.feed-dot{
+  width:6px;height:6px;border-radius:50%;
+  flex:none;
+}
+.fc-daygrid-day.feed-has-entry{cursor:pointer;}
+.fc-daygrid-day.feed-selected{background:var(--accent-soft)!important;}
+
+/* ============ 떡밥 탭: 오른쪽(또는 하단) 패널 ============ */
+.feed-panel{
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-soft);
+  padding:16px;
+}
+.feed-panel-date{
+  font-weight:800;
+  font-size:14.5px;
+  color:var(--ink);
+  margin:0 0 2px;
+}
+.feed-panel-sub{
+  font-size:11px;
+  color:var(--ink-faint);
+  margin:0 0 14px;
+}
+.feed-item{
+  position:relative;
+  margin:8px 0 0;
+  padding:10px 10px 10px 12px;
+  border-left:3px solid transparent;
+  border-radius:8px;
+  background:var(--surface);
+}
+.feed-item:first-of-type{margin-top:0;}
+.feed-item .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+
+/* 컴팩트 카드 (임베드 불가 링크 / 메모만) */
+.feed-item-compact{display:flex;align-items:flex-start;gap:9px;padding-top:10px;padding-bottom:10px;}
+.feed-item-compact .dot{margin-top:5px;}
+.feed-item-body{flex:1;min-width:0;}
+.feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;}
+.feed-item-icon{font-size:11px;color:var(--ink-soft);margin-right:5px;width:1em;height:1em;object-fit:contain;}
+.feed-item-memo{font-size:12px;color:var(--ink-soft);margin-top:2px;word-break:break-word;}
+.feed-item-clickable{cursor:pointer;transition:filter .15s ease;}
+.feed-item-clickable:hover{filter:brightness(0.97);}
+.feed-item-clickable:active{filter:brightness(0.93);}
+.feed-item-actions{display:flex;gap:10px;flex:none;}
+.feed-item-actions i{font-size:12px;color:var(--ink-faint);cursor:pointer;}
+.feed-item-actions .fa-trash:hover{color:var(--danger);}
+.feed-item-actions .fa-pen:hover{color:var(--accent);}
+.feed-empty{font-size:12px;color:var(--ink-faint);padding:8px 0 14px;}
+.feed-filter-row{margin:0 0 14px;}
+
+/* 임베드 카드 (유튜브 / X) */
+.feed-item-embed{display:block;}
+.feed-item-embed .feed-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.feed-item-embed .feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
+.feed-item-embed .feed-item-actions{
+  position:absolute;top:8px;right:8px;
+  background:rgba(255,255,255,.9);
+  border-radius:999px;padding:3px 7px;
+}
+.feed-embed{margin-top:8px;}
+.feed-embed-yt{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:10px;overflow:hidden;}
+.feed-embed-yt iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
+.feed-embed-tw{max-width:100%;overflow:hidden;}
+.feed-embed-tw .twitter-tweet{margin:0!important;max-width:100%!important;}
+.feed-embed-tw iframe{max-width:100%!important;}
+.feed-embed-fallback{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:4px;font-size:11.5px;color:var(--accent);
+  text-decoration:none;
+}
+
+.feed-add-form{margin-top:6px;border-top:1px solid var(--line);padding-top:12px;}
+.feed-add-form select,.feed-add-form input,.feed-add-form textarea{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:12.5px;
+  color:var(--ink);
+  background:var(--surface);
+  margin-bottom:7px;
+}
+.feed-add-form textarea{resize:vertical;}
+.feed-add-btn{
+  width:100%;
+  padding:9px;
+  border:none;
+  border-radius:999px;
+  background:var(--ink);
+  color:#fff;
+  font-family:inherit;
+  font-size:12.5px;
+  font-weight:700;
+  cursor:pointer;
+}
+.feed-add-btn:hover{background:#3A362F;}
+.feed-panel-placeholder{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:26px 0;}
+
+/* ============ 떡밥 아이템 수정 폼 ============ */
+.feed-item-editing{
+  background:var(--page-bg)!important;
+}
+.feed-item-editing select,.feed-item-editing input,.feed-item-editing textarea{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  font-family:inherit;
+  font-size:12.5px;
+  color:var(--ink);
+  background:var(--surface);
+  margin-bottom:7px;
+}
+.feed-item-editing textarea{resize:vertical;}
+.feed-edit-actions{display:flex;gap:8px;}
+.feed-save-btn,.feed-cancel-btn{
+  flex:1;
+  padding:8px;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.feed-save-btn{border:none;background:var(--ink);color:#fff;}
+.feed-save-btn:hover{background:#3A362F;}
+.feed-cancel-btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);}
+.feed-cancel-btn:hover{background:#F5F4F1;}
+
+@media(max-width:600px){
+  .back-link-wrap{padding:16px 10px 0;}
+  .tab-bar{padding:10px 10px 0;margin-bottom:18px;}
+  .feed-add-form select,.feed-add-form input,.feed-add-form textarea{font-size:16px;}
+}
+</style>
+</head>
+<body>
+<div class="back-link-wrap">
+  <a class="back-link" href="https://yong-archive.github.io/">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    처음으로
+  </a>
+</div>
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> 달력</button>
+  <button class="tab-btn" data-tab="feed"><i class="fa-solid fa-camera-retro"></i> 떡밥</button>
+</div>
+<div id="calendarView">
+<div class="page-outer">
+  <div class="app-card">
+
+    <div class="app-header">
+      <div>
+        <h1 class="wordmark">Solar <span class="wordmark-thin">Schedule</span></h1>
+        <p class="wordmark-caption">마마무 솔라 캘린더</p>
+      </div>
+    </div>
+
+    <div id="ddayCard" class="dday-strip" style="display:none;">
+      <div class="dday-number" id="ddayNumber">–</div>
+      <div class="dday-divider"></div>
+      <div class="dday-body">
+        <div class="dday-label" id="ddayLabel">다가오는 일정</div>
+        <div class="dday-title-row">
+          <span class="dday-dot" id="ddayDot"></span>
+          <span class="dday-title" id="ddayTitle"></span>
+        </div>
+        <div class="dday-date" id="ddayDate"></div>
+      </div>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="searchInput" placeholder="일정 검색">
+      </div>
+      <div class="filter-row" id="filterRow"></div>
+    </div>
+
+    <div class="calendar-wrap">
+      <div id="calendar"></div>
+    </div>
+
+  </div>
+
+  <div class="legend" id="legend" style="display:none;"></div>
+  <footer class="site-footer">yong-archive · since 2026</footer>
+</div>
+</div>
+
+<div id="feedView" style="display:none;">
+<div class="page-outer">
+  <div class="app-card">
+
+    <div class="app-header">
+      <div>
+        <h1 class="wordmark">떡밥 <span class="wordmark-thin">Log</span></h1>
+        <p class="wordmark-caption">날짜를 눌러 그날의 떡밥을 기록하세요</p>
+      </div>
+    </div>
+
+    <div class="filter-row feed-filter-row" id="feedFilterRow"></div>
+
+    <div class="feed-shell">
+      <div class="feed-calendar-col">
+        <div class="calendar-wrap">
+          <div id="feedCalendar"></div>
+        </div>
+      </div>
+      <div class="feed-panel-col">
+        <div class="feed-panel" id="feedPanel">
+          <div class="feed-panel-placeholder">날짜를 선택하면<br>떡밥 정보가 여기에 표시돼요</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend" id="feedLegend" style="display:none;"></div>
+  <footer class="site-footer">yong-archive · since 2026</footer>
+</div>
+</div>
+
+<div id="modal" class="modal">
+  <button class="close-btn">&times;</button>
+  <h3>일정 등록 / 수정</h3>
+
+  <span class="field-label">제목</span>
+  <input id="eventTitle" placeholder="일정 제목">
+
+  <span class="field-label">날짜</span>
+  <input id="eventDate" type="date">
+
+  <span class="field-label">종류</span>
+  <select id="eventType">
+    <option value="">종류 선택</option>
+    <option value="공식">공식</option>
+    <option value="방송">방송</option>
+    <option value="SNS">SNS</option>
+    <option value="솔라시도">솔라시도</option>
+    <option value="뮤지컬">뮤지컬</option>
+    <option value="콘서트">콘서트</option>
+    <option value="행사">행사</option>
+    <option value="팬사인회">팬사인회</option>
+    <option value="발매">발매</option>
+    <option value="기념일">기념일</option>
+    <option value="기타">기타</option>
+  </select>
+
+  <span class="field-label">링크 (선택)</span>
+  <input id="eventLink" placeholder="https://...">
+
+  <span class="field-label">메모</span>
+  <textarea id="eventMemo" placeholder="메모" rows="3"></textarea>
+
+  <div class="modal-actions">
+    <button id="deleteBtn" class="btn btn-danger">삭제</button>
+    <button id="saveBtn" class="btn btn-primary">저장</button>
+  </div>
+</div>
+
+<div id="memoViewModal" class="modal">
+  <button class="close-btn">&times;</button>
+  <h3 class="memo-title"><i class="fa-regular fa-note-sticky"></i> Memo</h3>
+  <p id="memoViewContent" style="white-space:pre-wrap;"></p>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyD7PwhcOZpYMEm4znPSkCTkKM2ZJzlmX0k",
+  authDomain:"yong-schedule.firebaseapp.com",
+  projectId:"yong-schedule"
+});
+const db = firebase.firestore();
+
+// ============ 탭 전환 ============
+const calendarView = document.getElementById('calendarView');
+const feedView = document.getElementById('feedView');
+
+function activateTab(btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  calendarView.style.display='none';
+  feedView.style.display='none';
+  if(btn.dataset.tab==='feed'){
+    feedView.style.display='block';
+    if(window.feedCalendar) window.feedCalendar.updateSize();
+  } else {
+    calendarView.style.display='block';
+  }
+}
+
+document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
+  btn.addEventListener('click', ()=> activateTab(btn));
+});
+
+// ============ 링크 → 아이콘 매핑 (일정 / 떡밥 공용) ============
+function getLinkIcon(link, iconClass){
+  iconClass = iconClass || 'event-icon';
+  if(!link) return '';
+  if(link.includes('instagram')) return `<i class="fab fa-instagram ${iconClass}"></i>`;
+  else if(link.includes('youtube.com') || link.includes('youtu.be')) return `<i class="fab fa-youtube ${iconClass}"></i>`;
+  else if(link.includes('facebook')) return `<i class="fab fa-facebook ${iconClass}"></i>`;
+  else if(link.includes('tiktok')) return `<i class="fab fa-tiktok ${iconClass}"></i>`;
+  else if(link.includes('threads')) return `<i class="fab fa-threads ${iconClass}"></i>`;
+  else if(link.includes('kakaotalk')) return `<i class="fab fa-kakaotalk ${iconClass}"></i>`;
+  else if(link.includes('naver')) return `<i class="fab fa-naver ${iconClass}"></i>`;
+  else if(link.includes('github')) return `<i class="fab fa-github ${iconClass}"></i>`;
+  else if(link.includes('twitter.com') || link.includes('x.com')) return `<i class="fab fa-x-twitter ${iconClass}"></i>`;
+  else if(link.includes('bstage') || link.includes('https://solarkeem.com'))
+    return `<img src="https://i.namu.wiki/i/-BYbNrH2E_lYZNZnTZ7oJu1CdynHFQs8OczMZ4Qd2Jm2oGAgWJPTjoOi6LTBZnWumb_KFv7GSJhtp9B69w1fXA.svg" class="${iconClass} bstage">`;
+  else return `<i class="fas fa-link ${iconClass}"></i>`;
+}
+
+// ============ 색상 정의 ============
+const eventColorHex = {
+  '공식':'#EF4444','방송':'#0EA5E9','SNS':'#8B5CF6','솔라시도':'#F472B6',
+  '뮤지컬':'#F59E0B','콘서트':'#F97316','행사':'#84CC16','팬사인회':'#D946EF',
+  '발매':'#14B8A6','기념일':'#22C55E','기타':'#6B7280'
+};
+
+const legendTypes = Object.keys(eventColorHex);
+
+document.getElementById('legend').innerHTML = legendTypes.map(k=>
+  `<div class="legend-item"><span class="dot" style="background:${eventColorHex[k]}"></span>${k}</div>`
+).join('');
+
+// ============ 필터 칩 ============
+const filterRow = document.getElementById('filterRow');
+let activeTypes = new Set(Object.keys(eventColorHex));
+
+function renderFilterChips(){
+  const allChip = `<div class="filter-chip all active" data-all="1">전체</div>`;
+  const chips = Object.keys(eventColorHex).map(k=>{
+    const isActive = activeTypes.has(k);
+    const style = isActive
+      ? `background:${eventColorHex[k]};border-color:${eventColorHex[k]};`
+      : '';
+    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="${style}">
+      <span class="dot" style="background:${isActive?'#fff':eventColorHex[k]}"></span>${k}
+    </div>`;
+  }).join('');
+  filterRow.innerHTML = allChip + chips;
+  syncAllChip();
+}
+
+function syncAllChip(){
+  const allChip = filterRow.querySelector('.filter-chip.all');
+  if(activeTypes.size === Object.keys(eventColorHex).length){
+    allChip.classList.add('active');
+  } else {
+    allChip.classList.remove('active');
+  }
+}
+
+filterRow.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.filter-chip');
+  if(!chip) return;
+  if(chip.dataset.all){
+    activeTypes = new Set(Object.keys(eventColorHex));
+  } else {
+    const t = chip.dataset.type;
+    if(activeTypes.has(t)) activeTypes.delete(t);
+    else activeTypes.add(t);
+    if(activeTypes.size===0) activeTypes = new Set(Object.keys(eventColorHex));
+  }
+  renderFilterChips();
+  refreshCalendarEvents();
+});
+
+renderFilterChips();
+
+// ============ 검색 ============
+// 타이핑할 때마다 즉시 다시 그리지 않고, 입력이 잠깐(200ms) 멈췄을 때만
+// 다시 그리도록 디바운스 처리. 일정이 많아져도 매 키 입력마다 캘린더를
+// 통째로 다시 그리는 부담이 없어진다.
+const searchInput = document.getElementById('searchInput');
+let searchDebounceTimer = null;
+searchInput.addEventListener('input', ()=>{
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(refreshCalendarEvents, 200);
+});
+
+// ============ 모달 ============
+const modal=document.getElementById('modal');
+const memoViewModal = document.getElementById('memoViewModal');
+const memoViewContent = document.getElementById('memoViewContent');
+
+memoViewModal.querySelector('.close-btn').onclick = () => memoViewModal.classList.remove('show');
+modal.querySelector('.close-btn').onclick = () => modal.classList.remove('show');
+
+let selectedEvent=null;
+let modifyMode=false;
+let allEventsData=[];
+
+// ============ 일정 추가 모달 열기 ============
+function openAddEventModal(){
+  selectedEvent=null;
+  eventTitle.value='';
+  eventDate.value='';
+  eventLink.value='';
+  eventType.value='';
+  eventMemo.value='';
+  deleteBtn.style.display='none';
+  modal.classList.add('show');
+}
+
+// ============ 수정 버튼 상태 갱신 ============
+// 주의: 버튼 텍스트는 반드시 calendar.setOption()을 통해서만 바꿀 것.
+// FullCalendar가 자체 렌더링 엔진(Preact 가상 DOM)으로 이 버튼을 관리하기 때문에,
+// 예전처럼 btnEl.textContent를 직접 덮어쓰면 이후 캘린더가 다시 렌더링될 때
+// (검색/필터/저장/삭제 등으로 refreshCalendarEvents()가 호출될 때) FullCalendar가
+// 자신이 기억하는 옛 텍스트 노드를 정리하지 못하고 그 옆에 다시 끼워 넣어
+// "수정수정"처럼 텍스트가 중복 표시되는 버그가 있었음.
+// 배경색도 같은 이유로 버튼 DOM에 직접 style을 입히지 않고, #calendar에 클래스만
+// 토글해서 CSS(.modify-active .fc-modifyBtn-button)로 표시한다. 이렇게 하면
+// 캘린더가 버튼을 새로 그려도(검색/필터 등으로 다시 렌더링돼도) 항상 정확하게 유지된다.
+function setModifyMode(active){
+  modifyMode = active;
+  calendar.setOption('customButtons', {
+    customAddBtn:{text:'＋ 일정 추가', click: openAddEventModal},
+    modifyBtn:{text: active ? '수정 모드 ON' : '수정', click: toggleModifyMode}
+  });
+  document.getElementById('calendar').classList.toggle('modify-active', active);
+}
+
+function toggleModifyMode(){
+  setModifyMode(!modifyMode);
+}
+
+const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
+  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight: window.innerWidth <= 600 ? 66 : 104,
+  headerToolbar:{left:'title',right:'prev,next today customAddBtn modifyBtn'},
+  customButtons:{
+    customAddBtn:{text:'＋ 일정 추가', click: openAddEventModal},
+    modifyBtn:{text:'수정', click: toggleModifyMode}
+  },
+  events:[],
+  dayCellDidMount: arg => {
+    const cell = arg.el;
+    let pressTimer = null;
+    const HOLD_MS = 350;
+
+    const toISODate = d => {
+      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    };
+
+    const resetCellStyle = () => {
+      cell.style.transition = 'background-color .2s ease';
+      cell.style.backgroundColor = '';
+    };
+
+    const startPress = e => {
+      if (e.target.closest && e.target.closest('.fc-event')) return;
+      cell.style.transition = `background-color ${HOLD_MS}ms linear`;
+      cell.style.backgroundColor = 'var(--accent-soft)';
+      pressTimer = setTimeout(()=>{
+        pressTimer = null;
+        resetCellStyle();
+        selectedEvent=null;
+        eventTitle.value='';
+        eventDate.value=toISODate(arg.date);
+        eventLink.value='';
+        eventType.value='';
+        eventMemo.value='';
+        deleteBtn.style.display='none';
+        modal.classList.add('show');
+      }, HOLD_MS);
+    };
+
+    const cancelPress = () => {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      resetCellStyle();
+    };
+
+    cell.style.webkitUserSelect = 'none';
+    cell.style.userSelect = 'none';
+    cell.style.webkitTouchCallout = 'none';
+
+    cell.addEventListener('mousedown', startPress);
+    cell.addEventListener('mouseup', cancelPress);
+    cell.addEventListener('mouseleave', cancelPress);
+    cell.addEventListener('touchstart', startPress, {passive:true});
+    cell.addEventListener('touchend', cancelPress);
+    cell.addEventListener('touchcancel', cancelPress);
+    cell.addEventListener('touchmove', cancelPress);
+    cell.addEventListener('contextmenu', e => e.preventDefault());
+  },
+  eventContent: arg => {
+    const type = arg.event.extendedProps.type;
+    const link = arg.event.extendedProps.link;
+    const memo = arg.event.extendedProps.memo;
+    const hasMemo = memo && memo.trim();
+
+    const bgColor = eventColorHex[type] || '#D9D5CE';
+    let iconHTML = '';
+
+    let memoIcon = '';
+    if (type === '뮤지컬' && hasMemo) {
+      memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
+    }
+
+    iconHTML = getLinkIcon(link, 'event-icon');
+
+    let len = arg.event.title.length;
+    let fontSize, wrapStyle;
+    if (window.innerWidth <= 600) {
+      if (len <= 6) {
+        fontSize = '4pt';
+        wrapStyle = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      } else {
+        fontSize = '3.6pt';
+        wrapStyle = 'white-space:normal;overflow:visible;';
+      }
+    } else {
+      fontSize = '8pt';
+      wrapStyle = 'white-space:normal;overflow:visible;';
+    }
+    return {
+      html: `<div title="${arg.event.title.replace(/"/g,'&quot;')}" style="display:flex;align-items:center;gap:2px;padding:2px 4px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;${wrapStyle}">
+               ${iconHTML} ${memoIcon} ${arg.event.title}
+             </div>`
+    };
+  }
+});
+calendar.render();
+
+// ============ 이벤트 클릭 ============
+calendar.on('eventClick', info => {
+  const e = info.event;
+  const { type, link, memo } = e.extendedProps;
+
+  if (modifyMode) {
+    selectedEvent = e;
+    eventTitle.value = e.title;
+    eventDate.value = e.startStr;
+    eventLink.value = link || '';
+    eventType.value = type || '';
+    eventMemo.value = memo || '';
+    deleteBtn.style.display='inline-block';
+    modal.classList.add('show');
+    return;
+  }
+
+  if (type === '뮤지컬' && !link && memo && memo.trim()) {
+    memoViewContent.textContent = memo;
+    memoViewModal.classList.add('show');
+    return;
+  }
+
+  if (link) window.open(link, '_blank');
+});
+
+// ============ 필터 / 검색 반영 ============
+function refreshCalendarEvents(){
+  calendar.removeAllEvents();
+  const q = searchInput.value.trim().toLowerCase();
+  const filtered = allEventsData.filter(e=>
+    activeTypes.has(e.type) && (!q || (e.title||'').toLowerCase().includes(q))
+  );
+  calendar.addEventSource(filtered);
+  updateDday();
+}
+
+// ============ D-day 계산 ============
+function updateDday(){
+  const card = document.getElementById('ddayCard');
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const ddayExcludedTypes = new Set(['공식','SNS']);
+  const upcoming = allEventsData
+    .filter(e=>e.start && activeTypes.has(e.type) && !ddayExcludedTypes.has(e.type))
+    .map(e=>({...e, dateObj:new Date(e.start)}))
+    .filter(e=>!isNaN(e.dateObj) && e.dateObj>=today)
+    .sort((a,b)=>a.dateObj-b.dateObj);
+
+  if(upcoming.length===0){ card.style.display='none'; return; }
+
+  const next = upcoming[0];
+  const diffDays = Math.round((next.dateObj - today)/86400000);
+  card.style.display='flex';
+  document.getElementById('ddayNumber').textContent = diffDays===0 ? 'D-DAY' : `D-${diffDays}`;
+  document.getElementById('ddayTitle').textContent = next.title;
+  document.getElementById('ddayDate').textContent =
+    `${next.dateObj.getMonth()+1}월 ${next.dateObj.getDate()}일`;
+  document.getElementById('ddayDot').style.background = 'var(--accent)';
+  document.getElementById('ddayNumber').style.color = 'var(--accent)';
+  document.getElementById('ddayLabel').style.color = 'var(--accent)';
+}
+
+// ============ Firestore 데이터 로드 ============
+async function loadCollection(name){
+  const snap = await db.collection(name).get();
+  return snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+
+// ============ Firestore 불러오기 ============
+(async()=>{
+  allEventsData = await loadCollection('schedules');
+  allEventsData.forEach(e=>{
+    if(e.type==='공연') e.type='콘서트';
+    if(e.type==='축하') e.type='기념일';
+  });
+  refreshCalendarEvents();
+})();
+
+// ============ 저장 ============
+saveBtn.onclick=async()=>{
+  if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
+  const data = {
+    title: eventTitle.value,
+    start: eventDate.value,
+    link: eventLink.value,
+    type: eventType.value,
+    memo: eventMemo.value
+  };
+
+  if(selectedEvent){
+    await db.collection('schedules').doc(selectedEvent.id).update(data);
+    const idx = allEventsData.findIndex(e=>e.id===selectedEvent.id);
+    if(idx>-1) allEventsData[idx] = {id:selectedEvent.id, ...data};
+  } else {
+    const r=await db.collection('schedules').add(data);
+    allEventsData.push({id:r.id, ...data});
+  }
+  modal.classList.remove('show');
+  setModifyMode(false);
+  refreshCalendarEvents();
+};
+
+// ============ 삭제 ============
+deleteBtn.onclick=async()=>{
+  if(selectedEvent && confirm('정말 삭제하시겠습니까?')){
+    await db.collection('schedules').doc(selectedEvent.id).delete();
+    allEventsData = allEventsData.filter(e=>e.id!==selectedEvent.id);
+    modal.classList.remove('show');
+    setModifyMode(false);
+    refreshCalendarEvents();
+  }
+};
+
+// ============ 떡밥(Feed) 기능 ============
+const feedCategories = ['직캠','직찍','꿀잼','팬아트','기타'];
+const feedCategoryColor = { '직캠':'#3E8FD9', '직찍':'#F0578F', '꿀잼':'#F0A227', '팬아트':'#22A559', '기타':'#9C9488' };
+let feedData = [];
+let feedByDate = {};
+let selectedFeedDate = null;
+let editingFeedId = null;
+let activeFeedTypes = new Set(feedCategories);
+
+// ============ 떡밥 필터 칩 ============
+const feedFilterRow = document.getElementById('feedFilterRow');
+function renderFeedFilterChips(){
+  const allActive = activeFeedTypes.size === feedCategories.length;
+  const allChip = `<div class="filter-chip all${allActive?' active':''}" data-all="1">전체</div>`;
+  const chips = feedCategories.map(k=>{
+    const isActive = activeFeedTypes.has(k);
+    const color = feedCategoryColor[k];
+    const style = isActive ? `background:${color};border-color:${color};` : '';
+    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="${style}">
+      <span class="dot" style="background:${isActive?'#fff':color}"></span>${k}
+    </div>`;
+  }).join('');
+  feedFilterRow.innerHTML = allChip + chips;
+}
+feedFilterRow.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.filter-chip');
+  if(!chip) return;
+  if(chip.dataset.all){
+    activeFeedTypes = new Set(feedCategories);
+  } else {
+    const t = chip.dataset.type;
+    if(activeFeedTypes.has(t)) activeFeedTypes.delete(t);
+    else activeFeedTypes.add(t);
+    if(activeFeedTypes.size===0) activeFeedTypes = new Set(feedCategories);
+  }
+  renderFeedFilterChips();
+  refreshFeedDots();
+  if(selectedFeedDate) renderFeedPanel(selectedFeedDate);
+});
+renderFeedFilterChips();
+
+function rebuildFeedByDate(){
+  feedByDate = {};
+  feedData.forEach(item=>{
+    if(!feedByDate[item.date]) feedByDate[item.date] = [];
+    feedByDate[item.date].push(item);
+  });
+}
+
+function toISODateFeed(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function hexToRgba(hex, alpha){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ============ 링크 → 임베드 (가능한 플랫폼만) ============
+// 유튜브: 공식 iframe 임베드, API 키 없이 항상 동작.
+// X(트위터): blockquote + widgets.js 공개 임베드, API 키 불필요하지만
+//   비공개/삭제된 게시물이거나 X 쪽 사정으로 가끔 렌더링에 실패할 수 있음 → 그 경우 링크로 대체.
+// 인스타그램/스레드: 2025년 4월 메타가 무료 client-side 임베드(embed.js)를 종료하고
+//   앱 심사 + 액세스 토큰이 필요한 Graph API 방식으로 바꿔서, 서버 없이는 실제 임베드가 불가능함.
+//   디시인사이드 등도 공식 임베드가 없음 → 이런 링크는 아이콘 카드로 대체.
+function getLinkPlatform(link){
+  if(!link) return null;
+  if(/youtube\.com|youtu\.be/.test(link)) return 'youtube';
+  if(/(^|\/\/)(www\.)?(twitter\.com|x\.com)\//.test(link)) return 'twitter';
+  return null;
+}
+
+function getYoutubeEmbedId(link){
+  const m = link.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function feedEmbedHTML(item, embedWidth){
+  const platform = getLinkPlatform(item.link);
+  if(platform === 'youtube'){
+    const id = getYoutubeEmbedId(item.link);
+    if(!id) return '';
+    return `<div class="feed-embed feed-embed-yt">
+      <iframe src="https://www.youtube.com/embed/${id}" title="YouTube video" loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>`;
+  }
+  if(platform === 'twitter'){
+    // data-width를 카드의 실제 가용 너비로 못박아둬야, 트위터 위젯이 자체적으로
+    // 재는 폭이 틀어져서(예: 처음 측정 시점이 안 맞는 경우) 카드 밖으로 삐져나오는 걸 막을 수 있음.
+    const w = embedWidth ? ` data-width="${embedWidth}"` : '';
+    return `<div class="feed-embed feed-embed-tw">
+      <blockquote class="twitter-tweet" data-dnt="true" data-conversation="none"${w}>
+        <a href="${item.link}"></a>
+      </blockquote>
+    </div>`;
+  }
+  return '';
+}
+
+const feedCatOptionsHTML = sel => feedCategories.map(c=>
+  `<option value="${c}" ${c===sel?'selected':''}>${c}</option>`
+).join('');
+
+function feedItemHTML(item, embedWidth){
+  const color = feedCategoryColor[item.category] || '#9C9488';
+
+  if(item.id === editingFeedId){
+    const linkVal = (item.link||'').replace(/"/g,'&quot;');
+    const memoVal = item.memo||'';
+    return `<div class="feed-item feed-item-editing" style="border-left-color:${color};">
+      <select id="feedEditCat-${item.id}">${feedCatOptionsHTML(item.category)}</select>
+      <input id="feedEditLink-${item.id}" placeholder="링크 (선택)" value="${linkVal}">
+      <textarea id="feedEditMemo-${item.id}" placeholder="메모" rows="2">${memoVal}</textarea>
+      <div class="feed-edit-actions">
+        <button class="feed-cancel-btn" data-cancel="${item.id}">취소</button>
+        <button class="feed-save-btn" data-save="${item.id}">저장</button>
+      </div>
+    </div>`;
+  }
+
+  const memoHTML = item.memo ? `<div class="feed-item-memo">${item.memo.replace(/</g,'&lt;')}</div>` : '';
+  const embedHTML = feedEmbedHTML(item, embedWidth);
+
+  if(embedHTML){
+    return `<div class="feed-item feed-item-embed" style="border-left-color:${color};">
+      <div class="feed-item-actions">
+        <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
+        <i class="fa-solid fa-trash" data-del="${item.id}"></i>
+      </div>
+      <div class="feed-item-top">
+        <span class="feed-item-cat"><span class="dot" style="background:${color}"></span>${item.category}</span>
+      </div>
+      ${memoHTML}
+      ${embedHTML}
+    </div>`;
+  }
+
+  const linkIcon = item.link ? getLinkIcon(item.link, 'feed-item-icon') : '';
+  const linkAttr = item.link ? ` data-link="${item.link.replace(/"/g,'&quot;')}"` : '';
+  const clickableClass = item.link ? ' feed-item-clickable' : '';
+  return `<div class="feed-item feed-item-compact${clickableClass}" style="background:${hexToRgba(color,0.09)};border-left-color:${color};"${linkAttr}>
+    <span class="dot" style="background:${color}"></span>
+    <div class="feed-item-body">
+      <div class="feed-item-cat">${linkIcon}${item.category}</div>
+      ${memoHTML}
+    </div>
+    <div class="feed-item-actions">
+      <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
+      <i class="fa-solid fa-trash" data-del="${item.id}"></i>
+    </div>
+  </div>`;
+}
+
+const feedPanel = document.getElementById('feedPanel');
+
+function renderFeedPanel(dateStr){
+  selectedFeedDate = dateStr;
+  const d = new Date(dateStr+'T00:00:00');
+  const items = (feedByDate[dateStr]||[])
+    .filter(i=>activeFeedTypes.has(i.category))
+    .slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
+
+  // 카드 안에서 실제로 임베드가 차지할 수 있는 폭(패널 패딩 16px*2, 아이템 패딩 12+10)을 계산해서
+  // 트위터 위젯이 스스로 재는 값이 어긋나 카드 밖으로 삐져나오지 않게 못박아둠.
+  const panelWidth = feedPanel.clientWidth || 280;
+  const embedWidth = Math.max(220, panelWidth - 32 - 22);
+
+  const itemsHTML = items.length
+    ? items.map(item=>feedItemHTML(item, embedWidth)).join('')
+    : `<div class="feed-empty">아직 등록된 떡밥이 없어요.</div>`;
+
+  feedPanel.innerHTML = `
+    <div class="feed-panel-date">${d.getMonth()+1}월 ${d.getDate()}일</div>
+    <div class="feed-panel-sub">${items.length}개의 떡밥</div>
+    ${itemsHTML}
+    <div class="feed-add-form">
+      <select id="feedNewCat">${feedCatOptionsHTML(feedCategories[0])}</select>
+      <input id="feedNewLink" placeholder="링크 (선택)">
+      <textarea id="feedNewMemo" placeholder="메모" rows="2"></textarea>
+      <button class="feed-add-btn" id="feedAddBtn">+ 떡밥 추가</button>
+    </div>
+  `;
+
+  // X(트위터) 임베드 다시 렌더링 (widgets.js가 이미 로드돼 있으면 새로 추가된 blockquote만 처리)
+  if(window.twttr && window.twttr.widgets){
+    window.twttr.widgets.load(feedPanel);
+  }
+
+  feedPanel.querySelectorAll('.feed-item-clickable').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('.feed-item-actions')) return;
+      const link = el.dataset.link;
+      if(link) window.open(link, '_blank');
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-edit]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingFeedId = el.dataset.edit;
+      renderFeedPanel(dateStr);
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-cancel]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      editingFeedId = null;
+      renderFeedPanel(dateStr);
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-save]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.dataset.save;
+      const category = document.getElementById(`feedEditCat-${id}`).value;
+      const link = document.getElementById(`feedEditLink-${id}`).value.trim();
+      const memo = document.getElementById(`feedEditMemo-${id}`).value.trim();
+      if(!link && !memo) return alert('링크나 메모 중 하나는 입력해주세요.');
+      await db.collection('feed').doc(id).update({ category, link, memo });
+      const idx = feedData.findIndex(f=>f.id===id);
+      if(idx>-1) feedData[idx] = { ...feedData[idx], category, link, memo };
+      rebuildFeedByDate();
+      editingFeedId = null;
+      renderFeedPanel(dateStr);
+      refreshFeedDots();
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-del]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      if(!confirm('이 떡밥을 삭제할까요?')) return;
+      const id = el.dataset.del;
+      await db.collection('feed').doc(id).delete();
+      feedData = feedData.filter(f=>f.id!==id);
+      rebuildFeedByDate();
+      if(editingFeedId === id) editingFeedId = null;
+      renderFeedPanel(dateStr);
+      refreshFeedDots();
+    });
+  });
+
+  document.getElementById('feedAddBtn').onclick = async ()=>{
+    const category = document.getElementById('feedNewCat').value;
+    const link = document.getElementById('feedNewLink').value.trim();
+    const memo = document.getElementById('feedNewMemo').value.trim();
+    if(!link && !memo) return alert('링크나 메모 중 하나는 입력해주세요.');
+    const data = { date: dateStr, category, link, memo, createdAt: Date.now() };
+    const r = await db.collection('feed').add(data);
+    feedData.push({id:r.id, ...data});
+    rebuildFeedByDate();
+    renderFeedPanel(dateStr);
+    refreshFeedDots();
+  };
+}
+
+document.getElementById('feedLegend').innerHTML = feedCategories.map(k=>
+  `<div class="legend-item"><span class="dot" style="background:${feedCategoryColor[k]}"></span>${k}</div>`
+).join('');
+
+const feedCalendar = new FullCalendar.Calendar(document.getElementById('feedCalendar'), {
+  locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto',
+  dayMinHeight: window.innerWidth <= 600 ? 50 : 90,
+  headerToolbar:{left:'title', right:'prev,next today'},
+  dayCellDidMount: arg => {
+    const dateStr = toISODateFeed(arg.date);
+    arg.el.addEventListener('click', ()=>{
+      document.querySelectorAll('.fc-daygrid-day.feed-selected').forEach(el=>el.classList.remove('feed-selected'));
+      arg.el.classList.add('feed-selected');
+      editingFeedId = null;
+      renderFeedPanel(dateStr);
+    });
+  },
+  datesSet: ()=> refreshFeedDots()
+});
+window.feedCalendar = feedCalendar;
+
+function refreshFeedDots(){
+  document.querySelectorAll('#feedCalendar .fc-daygrid-day').forEach(cell=>{
+    const dateStr = cell.getAttribute('data-date');
+    if(!dateStr) return;
+    cell.classList.remove('feed-has-entry');
+    const oldDots = cell.querySelector('.feed-dots');
+    if(oldDots) oldDots.remove();
+    const items = (feedByDate[dateStr]||[]).filter(i=>activeFeedTypes.has(i.category));
+    if(items && items.length){
+      cell.classList.add('feed-has-entry');
+      const dayTop = cell.querySelector('.fc-daygrid-day-top');
+      const cats = [...new Set(items.map(i=>i.category))];
+      const dotsWrap = document.createElement('div');
+      dotsWrap.className = 'feed-dots';
+      const dotsRow = document.createElement('div');
+      dotsRow.className = 'feed-dots-row';
+      cats.forEach(cat=>{
+        const dot = document.createElement('span');
+        dot.className = 'feed-dot';
+        dot.style.background = feedCategoryColor[cat] || '#9C9488';
+        dotsRow.appendChild(dot);
+      });
+      dotsWrap.appendChild(dotsRow);
+      const countLabel = document.createElement('span');
+      countLabel.className = 'feed-count';
+      countLabel.textContent = `${items.length}개`;
+      dotsWrap.appendChild(countLabel);
+      if(dayTop) dayTop.insertAdjacentElement('afterend', dotsWrap);
+      else (cell.querySelector('.fc-daygrid-day-frame') || cell).appendChild(dotsWrap);
+    }
+  });
+}
+
+feedCalendar.render();
+refreshFeedDots();
+
+// ============ 화면 크기 변경 시 캘린더 재조정 ============
+// dayMinHeight, 이벤트 폰트 크기는 캘린더 생성 시점의 window.innerWidth로 한 번만
+// 정해지기 때문에, 화면 회전이나 브라우저 창 크기 조절 시에는 반영되지 않는 문제가 있었음.
+// resize 시 두 캘린더의 dayMinHeight를 다시 설정하고, 이벤트를 다시 그려
+// eventContent의 폰트 크기 분기(window.innerWidth 기준)도 최신 값으로 재계산되게 한다.
+let resizeTimer = null;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(()=>{
+    calendar.setOption('dayMinHeight', window.innerWidth <= 600 ? 66 : 104);
+    calendar.render();
+    feedCalendar.setOption('dayMinHeight', window.innerWidth <= 600 ? 50 : 90);
+    feedCalendar.render();
+    refreshFeedDots();
+  }, 200);
+});
+
+(async()=>{
+  feedData = await loadCollection('feed');
+  // 기존 '기사' 카테고리로 저장된 데이터를 '팬아트'로 마이그레이션
+  const legacyItems = feedData.filter(f => f.category === '기사');
+  if(legacyItems.length){
+    await Promise.all(legacyItems.map(item =>
+      db.collection('feed').doc(item.id).update({ category: '팬아트' })
+    ));
+    feedData = feedData.map(f => f.category === '기사' ? { ...f, category: '팬아트' } : f);
+  }
+  rebuildFeedByDate();
+  refreshFeedDots();
+})();
+
+</script>
+</body>
+</html>

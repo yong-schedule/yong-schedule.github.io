@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solar · 알쓸용잡</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/variable/pretendardvariable.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <div class="scroll">
+
+    <div class="layout">
+
+      <div class="rail">
+        <a class="back" href="https://yong-archive.github.io/">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          처음으로
+        </a>
+        <h1 class="title"><svg class="title-icon" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 3c-1.1 0-2 .9-2 2v15.5a.5.5 0 0 0 .8.4L12 16l7.2 4.9a.5.5 0 0 0 .8-.4V5c0-1.1-.9-2-2-2H6z"/></svg>알쓸용잡</h1>
+        <p>솔라에 관한 모든 것, <br class="brk">알아두면 쓸데있는 <br class="brk">김용선 잡학사전</p>
+      </div>
+
+      <div class="body-row">
+
+        <div class="main">
+          <div class="section-row">
+            <div class="section-label" id="entryCount">사전 · 0항목</div>
+            <button class="add-toggle" id="addToggle" type="button">
+              <i class="ti ti-plus" aria-hidden="true"></i> 새 항목
+            </button>
+          </div>
+
+          <div class="composer" id="composer" hidden>
+            <textarea id="newEntryContent" placeholder="새 항목의 내용을 입력하세요" rows="3"></textarea>
+            <div class="composer-actions">
+              <button class="btn-ghost" id="composerCancel" type="button">취소</button>
+              <button class="btn-solid" id="composerSave" type="button">등록</button>
+            </div>
+          </div>
+
+          <div id="entries" class="entries"></div>
+        </div>
+
+        <div class="page-tabs" id="pageTabs" hidden></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

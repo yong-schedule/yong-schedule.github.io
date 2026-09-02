@@ -1,0 +1,435 @@
+:root{
+  --page-bg:#ffffff;
+  --card-bg:#ffffff;
+  --ink:#161513;
+  --sub:#a3a19b;
+  --sub2:#8a887f;
+  --line:#e7e5e0;
+  --line-soft:#f3f1ec;
+
+  /* 가사 안에서 응원법(cheer) / 콜(cue) 구분용 색 */
+  --cheer:#6c5ce7;
+  --cue:#ff5b7a;
+
+  /* 기존 아카이브(메시지/SNS)와 동일한 포인트 컬러 톤 */
+  --accent:#ff5b7a;
+  --accent-soft:#ffe7ec;
+  --accent-ink:#c23f5a;
+  --photo-bg:#eeece7;
+
+  --scrollbar-thumb:#ffffff;
+  --scrollbar-thumb-hover:#ffffff;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+a{text-decoration:none;color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+body{
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI","Malgun Gothic",system-ui,sans-serif;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  background:var(--page-bg);
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:48px 20px;
+}
+
+/* ---------- card shell ---------- */
+.app{
+  width:100%;
+  max-width:380px;
+  height:676px;
+  max-height:calc(100vh - 96px);
+  max-height:calc(100dvh - 96px);
+  background:var(--card-bg);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 0 12px rgba(0,0,0,.12);
+  border:0.5px solid #dedcd6;
+  display:flex;
+  flex-direction:column;
+}
+.scroll{
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-height:0;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(0,0,0,.18) transparent;
+}
+.scroll::-webkit-scrollbar{ width:6px; }
+.scroll::-webkit-scrollbar-track{ background:transparent; }
+.scroll::-webkit-scrollbar-thumb{
+  background:var(--scrollbar-thumb);
+  border:1px solid rgba(0,0,0,.15);
+  background-clip:padding-box;
+  border-radius:999px;
+}
+.scroll::-webkit-scrollbar-thumb:hover{
+  background:var(--scrollbar-thumb-hover);
+  border-color:rgba(0,0,0,.28);
+}
+
+@media (max-width:480px){
+  body{ padding:0; }
+  .app{
+    max-width:100%;
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    max-height:none;
+    border-radius:0;
+    box-shadow:none;
+    border:none;
+  }
+}
+
+/* ============================================================
+   상단 바 — 뒤로가기 / 커버 다시 뽑기
+   ============================================================ */
+.top-bar{
+  display:flex;
+  align-items:center;
+  padding:44px 20px 0;
+}
+.top-back{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+  color:var(--sub);
+}
+.top-back svg{ flex-shrink:0; }
+
+/* ============================================================
+   히어로 — 커버 아트 + 타이틀 영역
+   ============================================================ */
+.hero-card{
+  display:flex;
+  gap:16px;
+  align-items:flex-end;
+  padding:18px 20px 0;
+}
+.hero-cover{
+  position:relative;
+  width:104px;height:104px;
+  flex-shrink:0;
+  border-radius:18px;
+  overflow:hidden;
+  background:var(--photo-bg);
+  box-shadow:0 6px 16px rgba(22,21,19,.14), 0 0 0 1px rgba(0,0,0,.04);
+}
+.hero-cover .cover-fallback{
+  position:absolute; inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--sub2);
+  opacity:.55;
+}
+.hero-cover img{
+  position:absolute; inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+}
+.hero-cover.img-fail img{ display:none; }
+
+.hero-meta{
+  flex:1;
+  min-width:0;
+  padding-bottom:2px;
+}
+.hero-eyebrow{
+  font-size:11px;
+  font-weight:700;
+  color:var(--sub);
+}
+.hero-title{
+  font-size:20px;
+  font-weight:700;
+  color:var(--ink);
+  margin-top:6px;
+  line-height:1.15;
+  letter-spacing:-.01em;
+}
+.hero-artist{
+  font-size:13px;
+  font-weight:600;
+  color:var(--sub);
+  margin-top:5px;
+}
+
+/* ---------- 재생 / 랜덤 버튼 ---------- */
+.actions{
+  display:flex;
+  gap:10px;
+  padding:20px 20px 4px;
+}
+.btn-primary,
+.btn-outline{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:12px 14px;
+  border-radius:999px;
+  font-size:13.5px;
+  font-weight:700;
+  border:none;
+}
+.btn-primary{
+  background:#fff;
+  color:var(--ink);
+  border:1.5px solid var(--line);
+}
+.btn-primary:hover{ background:var(--line-soft); }
+.btn-outline{
+  background:#fff;
+  color:var(--ink);
+  border:1.5px solid var(--line);
+}
+.btn-outline:hover{ background:var(--line-soft); }
+.btn-primary svg, .btn-outline svg{ display:block; }
+
+/* ---------- section divider / label ---------- */
+.section-divider{ height:1px; margin:0 20px; background:var(--line); flex-shrink:0; }
+.section-label{
+  padding:20px 20px 8px;
+  font-size:11px;
+  font-weight:700;
+  color:var(--sub);
+  letter-spacing:.06em;
+}
+
+/* ============================================================
+   곡 목록 — 번호 + 제목/부제 + 화살표
+   ============================================================ */
+.list{
+  padding:2px 10px 96px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.convo{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  padding:11px 10px;
+  border-radius:14px;
+  text-decoration:none;
+  color:inherit;
+  transition:background .18s ease, transform .18s ease;
+}
+.convo:active{ transform:scale(.98); }
+.convo:hover{ background:var(--line-soft); }
+.convo:hover .convo-chevron{ color:var(--ink); transform:translateX(2px); }
+
+.convo-index{
+  width:22px;
+  flex-shrink:0;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--sub);
+  font-variant-numeric:tabular-nums;
+}
+
+.convo-body{
+  flex:1; min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+.convo-name{
+  font-size:14.5px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.convo-eyebrow{
+  font-size:11.5px;
+  color:var(--sub);
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.convo-chevron{
+  flex-shrink:0;
+  color:var(--sub);
+  display:flex;
+  transition:color .18s ease, transform .18s ease;
+}
+
+.empty-note{
+  text-align:center;
+  color:var(--sub);
+  font-size:12.5px;
+  padding:36px 20px;
+}
+
+/* ============================================================
+   하단 미니 플레이어 바 — 앨범 커버(랜덤) 노출 영역
+   ============================================================ */
+.mini-player{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 16px;
+  border-top:1px solid var(--line);
+  background:#fff;
+  flex-shrink:0;
+  transition:background .15s ease;
+}
+.mini-player:hover{ background:var(--line-soft); }
+.mini-cover{
+  position:relative;
+  width:42px;height:42px;
+  flex-shrink:0;
+  border-radius:10px;
+  overflow:hidden;
+  background:var(--photo-bg);
+}
+.mini-cover .cover-fallback{
+  position:absolute; inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--sub2);
+  opacity:.55;
+}
+.mini-cover img{
+  position:absolute; inset:0;
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.mini-cover.img-fail img{ display:none; }
+
+.mini-info{ flex:0 1 auto; max-width:96px; min-width:0; }
+.mini-title{
+  font-size:13px;
+  font-weight:700;
+  color:var(--ink);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.mini-sub{
+  font-size:11px;
+  color:var(--sub);
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+/* 곡 제목과 재생 버튼 사이 - 길게 뻗은 오디오 스펙트럼 파형 */
+.mini-eq{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2.5px;
+  height:22px;
+  min-width:0;
+}
+.mini-eq span{
+  width:2.5px;
+  flex-shrink:0;
+  border-radius:2px;
+  height:var(--h, 6px);
+  transform-origin:center;
+  animation:eq-wave 1.3s ease-in-out infinite;
+  opacity:.9;
+}
+@keyframes eq-wave{
+  0%,100%{ transform:scaleY(.5); }
+  50%{ transform:scaleY(1); }
+}
+
+/* 실제 재생 아이콘 버튼 - 랜덤으로 버튼과 같은 흰색 알약필 톤 */
+.mini-play{
+  width:30px;height:30px;
+  flex-shrink:0;
+  border-radius:50%;
+  background:#fff;
+  border:1.5px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink);
+  transition:background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.mini-play svg{ display:block; margin-left:1.5px; }
+.mini-player:hover .mini-play{ background:var(--line-soft); border-color:#c9c6bf; }
+
+/* ---------- 곡 상세 (기존 그대로) ---------- */
+.back{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:12px;color:var(--sub);
+  padding:44px 20px 0;
+}
+.back svg{ flex-shrink:0; }
+
+.song-hero{ padding:14px 20px 0; }
+.song-hero .label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.10em;
+  color:var(--sub);
+  text-transform:uppercase;
+}
+.song-title{
+  font-size:21px;
+  font-weight:700;
+  margin-top:14px;
+  color:var(--ink);
+}
+.song-en{ font-size:12.5px; color:var(--sub); margin-top:7px; }
+
+.chips{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:16px 20px 18px;
+}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 13px;
+  border-radius:999px;
+  font-size:11.5px;
+  font-weight:700;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+  transition:background .15s ease, color .15s ease;
+}
+.chip svg{ display:block; }
+.chip:hover{ background:var(--line-soft); }
+.chip.is-empty{
+  color:var(--sub);
+  border-color:var(--line);
+  background:#fff;
+}
+.chip.is-empty:hover{ background:#fff; color:var(--sub); }
+
+/* 가사 — 카드가 380px로 좁아졌으므로 항상 1단 */
+.lyrics-wrap{ padding:20px 20px 8px; }
+.lyrics{
+  display:grid;
+  grid-template-columns:1fr;
+  row-gap:2px;
+  font-size:14.5px;
+  line-height:2.05;
+  color:var(--ink);
+}
+.lyrics .col + .col{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.line.spacer{ height:10px; }
+
+.line .seg.cheer{ font-weight:800; color:var(--cheer); }
+.line .seg.cue{ font-weight:800; color:var(--cue); }
