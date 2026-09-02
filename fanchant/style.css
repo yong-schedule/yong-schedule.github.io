@@ -9,6 +9,7 @@
 
   /* 가사 안에서 응원법(cheer) / 콜(cue) 구분용 색 */
   --cheer:#6c5ce7;
+  --cheer-mamamoo:#ff6a00;
   --cue:#ff5b7a;
 
   /* 기존 아카이브(메시지/SNS)와 동일한 포인트 컬러 톤 */
@@ -122,7 +123,7 @@ body{
   border-radius:18px;
   overflow:hidden;
   background:var(--photo-bg);
-  box-shadow:0 6px 16px rgba(22,21,19,.14), 0 0 0 1px rgba(0,0,0,.04);
+  box-shadow:0 3px 8px rgba(22,21,19,.09), 0 0 0 1px rgba(0,0,0,.04);
 }
 .hero-cover .cover-fallback{
   position:absolute; inset:0;
@@ -195,6 +196,30 @@ body{
 }
 .btn-outline:hover{ background:var(--line-soft); }
 .btn-primary svg, .btn-outline svg{ display:block; }
+
+/* ---------- 그룹 탭 (솔라 / 마마무 전환) ---------- */
+.tab{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:9px 14px;
+  border-radius:999px;
+  font-size:13.5px;
+  font-weight:700;
+  background:#fff;
+  border:1.5px solid var(--line);
+  color:var(--sub);
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.tab svg{ flex-shrink:0; display:block; }
+.tab:hover{ background:var(--line-soft); }
+.tab.active{
+  background:var(--ink);
+  border-color:var(--ink);
+  color:#fff;
+}
 
 /* ---------- section divider / label ---------- */
 .section-divider{ height:1px; margin:0 20px; background:var(--line); flex-shrink:0; }
@@ -433,3 +458,4 @@ body{
 
 .line .seg.cheer{ font-weight:800; color:var(--cheer); }
 .line .seg.cue{ font-weight:800; color:var(--cue); }
+.lyrics-wrap[data-group="mamamoo"] .seg.cheer{ color:var(--cheer-mamamoo); }

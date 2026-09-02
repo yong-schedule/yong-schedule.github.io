@@ -7,23 +7,84 @@
 
 const app = document.getElementById("app");
 
-// 곡 id -> assets 폴더 안 앨범 커버 파일명 매핑
-// (assets/ 폴더에 아래 파일명 그대로 넣어두면 커버가 보여요)
+// 곡 id -> 앨범 커버 이미지.
+// 1) assets/ 폴더 안 파일명만 적으면 로컬 이미지를 씁니다. (예: "뱉어.jpg")
+// 2) http:// 또는 https://로 시작하는 값을 적으면 그 링크를 그대로 불러옵니다.
+//    (assets 폴더에 파일을 넣을 필요 없이, 이미지 주소만 붙여넣으면 됩니다)
 const COVERS = {
   "spit-it-out": "뱉어.jpg",
   "honey": "꿀.jpg",
   "colors": "Colors.jpg",
   "but-i": "But_I.jpg",
   "want": "WANT.jpg",
-  "floating-free": "Floating_Free.jpg"
+  "floating-free": "Floating_Free.jpg",
+  "starry-night": "https://image.bugsm.co.kr/album/images/original/7194/719455.jpg?version=undefined",
+  "byeol-baram-kkot-taeyang": "https://image.bugsm.co.kr/album/images/original/7194/719455.jpg?version=undefined",
+  "decalcomanie": "https://image.bugsm.co.kr/album/images/original/200648/20064819.jpg?version=undefined",
+  "mr-ambiguous": "https://image.bugsm.co.kr/album/images/original/4354/435401.jpg?version=undefined",
+  "piano-man": "https://image.bugsm.co.kr/album/images/original/4650/465048.jpg?version=undefined",
+  "ahh-oop": "https://image.bugsm.co.kr/album/images/original/4937/493716.jpg?version=undefined",
+  "um-oh-ah-yeh": "https://image.bugsm.co.kr/album/images/original/5119/511917.jpg?version=undefined",
+  "neon-is-mwondeul": "https://image.bugsm.co.kr/album/images/original/200232/20023279.jpg?version=undefined",
+  "yes-i-am": "https://image.bugsm.co.kr/album/images/original/201044/20104423.jpg?version=undefined",
+  "ajae-gag": "https://image.bugsm.co.kr/album/images/original/201044/20104423.jpg?version=undefined",
+  "neona-hae": "https://image.bugsm.co.kr/album/images/original/201800/20180057.jpg?version=undefined",
+  "jamirado-jaji": "https://image.bugsm.co.kr/album/images/original/201800/20180057.jpg?version=undefined",
+  "wind-flower": "https://image.bugsm.co.kr/album/images/original/202117/20211791.jpg?version=undefined",
+  "no-more-drama": "https://image.bugsm.co.kr/album/images/original/202117/20211791.jpg?version=undefined",
+  "gogobebe": "https://image.bugsm.co.kr/album/images/original/202376/20237602.jpg?version=undefined",
+  "jaega-gyaeya": "https://image.bugsm.co.kr/album/images/original/202376/20237602.jpg?version=undefined",
+  "hip": "https://image.bugsm.co.kr/album/images/original/9541/954132.jpg?version=undefined",
+  "destiny": "https://image.bugsm.co.kr/album/images/original/9541/954132.jpg?version=undefined",
+  "aya": "https://image.bugsm.co.kr/album/images/original/40120/4012071.jpg?version=undefined",
+  "dingga": "https://image.bugsm.co.kr/album/images/original/40120/4012071.jpg?version=undefined",
+  "where-are-we-now": "https://image.bugsm.co.kr/album/images/original/40464/4046483.jpg?version=undefined",
+  "illella": "https://image.bugsm.co.kr/album/images/original/40805/4080525.jpg?version=undefined",
+  "liec": "https://image.bugsm.co.kr/album/images/original/40805/4080525.jpg?version=undefined",
+  "4-flowers": "https://image.bugsm.co.kr/album/images/original/41489/4148959.jpg?version=undefined"
 };
 
 function coverSrc(file){
+  if(!file) return "";
+  if(/^https?:\/\//i.test(file)) return file;
   return encodeURI("assets/" + file);
 }
 
 function sortedSongs(){
   return [...SONGS].sort((a, b) => a.order - b.order);
+}
+
+// group 필드(solar / mamamoo) 기준으로 곡을 묶고, 각 그룹 안에서는 order 순으로 정렬합니다.
+const GROUP_LABELS = {
+  solar: "솔라 응원법",
+  mamamoo: "마마무 응원법"
+};
+const GROUP_ORDER = ["solar", "mamamoo"];
+const GROUP_ARTIST = {
+  solar: "Solar",
+  mamamoo: "MAMAMOO"
+};
+
+function groupedSongs(){
+  const bucket = {};
+  SONGS.forEach(song => {
+    const key = song.group || "etc";
+    if(!bucket[key]) bucket[key] = [];
+    bucket[key].push(song);
+  });
+  const keys = Object.keys(bucket).sort((a, b) => {
+    const ia = GROUP_ORDER.indexOf(a);
+    const ib = GROUP_ORDER.indexOf(b);
+    if(ia === -1 && ib === -1) return a.localeCompare(b);
+    if(ia === -1) return 1;
+    if(ib === -1) return -1;
+    return ia - ib;
+  });
+  return keys.map(key => ({
+    key,
+    label: GROUP_LABELS[key] || key,
+    songs: bucket[key].slice().sort((a, b) => a.order - b.order)
+  }));
 }
 
 function randomSongId(excludeId){
@@ -40,11 +101,20 @@ function randomSongId(excludeId){
 // 하나의 "현재 곡" 상태로 관리합니다.
 let currentSong = null;
 
-function pickRandomSong(excludeId){
-  if(SONGS.length <= 1) return SONGS[0];
+// 목록 화면에서 현재 선택된 그룹(솔라/마마무) 탭. null이면 첫 번째 그룹으로 시작합니다.
+let activeGroup = null;
+
+const GROUP_ICONS = {
+  solar: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>`,
+  mamamoo: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+};
+
+function pickRandomSong(excludeId, pool){
+  const list = pool && pool.length ? pool : SONGS;
+  if(list.length <= 1) return list[0];
   let pick;
   do{
-    pick = SONGS[Math.floor(Math.random() * SONGS.length)];
+    pick = list[Math.floor(Math.random() * list.length)];
   } while(pick.id === excludeId);
   return pick;
 }
@@ -55,40 +125,54 @@ function applyCurrentSong(song){
 
   const heroCover = document.getElementById("heroCover");
   if(heroCover){
-    heroCover.classList.remove("img-fail");
     const img = heroCover.querySelector("img");
-    img.onerror = () => heroCover.classList.add("img-fail");
-    img.src = coverSrc(file);
+    if(file){
+      heroCover.classList.remove("img-fail");
+      img.onerror = () => heroCover.classList.add("img-fail");
+      img.src = coverSrc(file);
+    } else {
+      heroCover.classList.add("img-fail");
+      img.removeAttribute("src");
+    }
   }
 
   const miniPlayer = document.getElementById("miniPlayer");
   const miniCover = document.getElementById("miniCover");
   const miniTitle = document.getElementById("miniTitle");
+  const miniSub = document.getElementById("miniSub");
   if(miniPlayer && miniCover && miniTitle){
-    miniCover.classList.remove("img-fail");
     let img = miniCover.querySelector("img");
     if(!img){
       img = document.createElement("img");
       img.alt = "";
       miniCover.appendChild(img);
     }
-    img.onerror = () => miniCover.classList.add("img-fail");
-    img.src = coverSrc(file);
+    if(file){
+      miniCover.classList.remove("img-fail");
+      img.onerror = () => miniCover.classList.add("img-fail");
+      img.src = coverSrc(file);
+    } else {
+      miniCover.classList.add("img-fail");
+      img.removeAttribute("src");
+    }
     miniTitle.textContent = song.titleKr;
+    if(miniSub) miniSub.textContent = GROUP_ARTIST[song.group] || "Solar";
     miniPlayer.href = `#/${song.id}`;
   }
 }
 
 function renderList(){
   const sorted = sortedSongs();
+  const groups = groupedSongs();
 
-  let listHtml = "";
-  if(sorted.length === 0){
-    listHtml = `<div class="empty-note">아직 등록된 곡이 없어요. songs-data.js에 곡을 추가해보세요.</div>`;
-  } else {
-    const rows = sorted.map(song => {
-      const orderLabel = String(song.order).padStart(2, "0");
-      return `
+  // 활성 탭이 없거나 더 이상 존재하지 않는 그룹이면 첫 번째 그룹으로 맞춰줍니다.
+  if(!activeGroup || !groups.some(g => g.key === activeGroup)){
+    activeGroup = groups[0] ? groups[0].key : null;
+  }
+
+  const songRow = (song) => {
+    const orderLabel = String(song.order).padStart(2, "0");
+    return `
       <a class="convo" href="#/${song.id}">
         <span class="convo-index">${orderLabel}</span>
         <div class="convo-body">
@@ -100,8 +184,29 @@ function renderList(){
         </span>
       </a>
     `;
-    }).join("");
-    listHtml = `<nav class="list">${rows}</nav>`;
+  };
+
+  const tabsHtml = groups.length > 1 ? `
+    <div class="actions">
+      ${groups.map(group => `
+        <button class="tab ${group.key === activeGroup ? "active" : ""}" type="button" data-group="${group.key}">
+          ${GROUP_ICONS[group.key] || ""}${group.label}
+        </button>
+      `).join("")}
+    </div>
+  ` : "";
+
+  let listHtml = "";
+  const current = groups.find(g => g.key === activeGroup) || groups[0];
+  if(sorted.length === 0){
+    listHtml = `<div class="empty-note">아직 등록된 곡이 없어요. songs-data.js에 곡을 추가해보세요.</div>`;
+  } else {
+    if(!current || current.songs.length === 0){
+      listHtml = `<div class="empty-note">이 탭에는 아직 등록된 곡이 없어요.</div>`;
+    } else {
+      const rows = current.songs.map(songRow).join("");
+      listHtml = `<nav class="list">${rows}</nav>`;
+    }
   }
 
   app.innerHTML = `
@@ -122,36 +227,24 @@ function renderList(){
       <div class="hero-meta">
         <div class="hero-eyebrow">Solar's Music · ${sorted.length}곡</div>
         <div class="hero-title">Fanchant Archive</div>
-        <div class="hero-artist">Solar</div>
+        <div class="hero-artist">Solar · MAMAMOO</div>
       </div>
     </div>
 
-    <div class="actions">
-      <button class="btn-primary" id="playBtn" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16l13-8-13-8z"/></svg>
-        처음부터
-      </button>
-      <button class="btn-outline" id="shuffleBtn" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
-        랜덤으로
-      </button>
-    </div>
+    ${tabsHtml}
 
-    <div class="section-divider" style="margin-top:18px;"></div>
-    <div class="section-label">곡 목록</div>
     ${listHtml}
   `;
 
-  applyCurrentSong(pickRandomSong(currentSong ? currentSong.id : null));
+  applyCurrentSong(pickRandomSong(currentSong ? currentSong.id : null, current ? current.songs : null));
 
-  document.getElementById("playBtn").addEventListener("click", () => {
-    if(sorted.length === 0) return;
-    window.location.hash = `#/${sorted[0].id}`;
-  });
-
-  document.getElementById("shuffleBtn").addEventListener("click", () => {
-    if(sorted.length === 0) return;
-    window.location.hash = `#/${randomSongId()}`;
+  app.querySelectorAll(".tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.getAttribute("data-group");
+      if(key === activeGroup) return;
+      activeGroup = key;
+      renderList();
+    });
   });
 }
 
@@ -214,7 +307,7 @@ function renderSong(id){
     </a>
 
     <div class="song-hero">
-      <div class="label">Solar Fan Chant · No.${String(song.order).padStart(2, "0")}</div>
+      <div class="label">${GROUP_LABELS[song.group] || "Fan Chant"} · No.${String(song.order).padStart(2, "0")}</div>
       <div class="song-title">${song.titleKr}</div>
       <div class="song-en">${song.titleEn}</div>
     </div>
@@ -226,7 +319,7 @@ function renderSong(id){
 
     <div class="section-divider"></div>
 
-    <div class="lyrics-wrap">
+    <div class="lyrics-wrap" data-group="${song.group}">
       <div class="lyrics">
         ${colsHtml}
       </div>
