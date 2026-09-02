@@ -233,6 +233,9 @@ function renderList(){
 
     ${tabsHtml}
 
+    <div class="section-divider" style="margin-top:18px;"></div>
+    <div class="section-label">곡 목록</div>
+
     ${listHtml}
   `;
 
