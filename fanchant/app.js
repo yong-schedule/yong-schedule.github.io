@@ -104,6 +104,17 @@ let currentSong = null;
 // 목록 화면에서 현재 선택된 그룹(솔라/마마무) 탭. null이면 첫 번째 그룹으로 시작합니다.
 let activeGroup = null;
 
+// 곡 검색어. 탭(그룹)을 전환해도 유지됩니다.
+let searchQuery = "";
+
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 const GROUP_ICONS = {
   solar: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>`,
   mamamoo: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
@@ -196,18 +207,38 @@ function renderList(){
     </div>
   ` : "";
 
-  let listHtml = "";
   const current = groups.find(g => g.key === activeGroup) || groups[0];
-  if(sorted.length === 0){
-    listHtml = `<div class="empty-note">아직 등록된 곡이 없어요. songs-data.js에 곡을 추가해보세요.</div>`;
-  } else {
-    if(!current || current.songs.length === 0){
-      listHtml = `<div class="empty-note">이 탭에는 아직 등록된 곡이 없어요.</div>`;
-    } else {
-      const rows = current.songs.map(songRow).join("");
-      listHtml = `<nav class="list">${rows}</nav>`;
+
+  // 검색어와 현재 탭(그룹)에 맞는 곡 목록 HTML만 따로 만들어서,
+  // 입력할 때마다 이 부분만 갈아끼웁니다 (검색창 자체는 다시 그리지 않아 포커스가 유지됩니다).
+  const buildListHtml = () => {
+    if(sorted.length === 0){
+      return `<div class="empty-note">아직 등록된 곡이 없어요. songs-data.js에 곡을 추가해보세요.</div>`;
     }
-  }
+    if(!current || current.songs.length === 0){
+      return `<div class="empty-note">이 탭에는 아직 등록된 곡이 없어요.</div>`;
+    }
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = q
+      ? current.songs.filter(s => s.titleKr.toLowerCase().includes(q) || s.titleEn.toLowerCase().includes(q))
+      : current.songs;
+    if(filtered.length === 0){
+      return `<div class="empty-note">'${escapeHtml(searchQuery.trim())}'에 해당하는 곡이 없어요.</div>`;
+    }
+    return `<nav class="list">${filtered.map(songRow).join("")}</nav>`;
+  };
+
+  const searchHtml = sorted.length > 0 ? `
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="songSearch" placeholder="곡 제목 검색" autocomplete="off" value="${escapeHtml(searchQuery)}">
+        <button type="button" class="search-clear" id="searchClear" aria-label="검색어 지우기" style="${searchQuery ? "" : "display:none;"}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  ` : "";
 
   app.innerHTML = `
     <div class="top-bar">
@@ -235,8 +266,9 @@ function renderList(){
 
     <div class="section-divider" style="margin-top:18px;"></div>
     <div class="section-label">곡 목록</div>
+    ${searchHtml}
 
-    ${listHtml}
+    <div id="songListWrap">${buildListHtml()}</div>
   `;
 
   applyCurrentSong(pickRandomSong(currentSong ? currentSong.id : null, current ? current.songs : null));
@@ -249,6 +281,26 @@ function renderList(){
       renderList();
     });
   });
+
+  const searchInput = document.getElementById("songSearch");
+  const searchClear = document.getElementById("searchClear");
+  const listWrap = document.getElementById("songListWrap");
+  if(searchInput && listWrap){
+    searchInput.addEventListener("input", () => {
+      searchQuery = searchInput.value;
+      listWrap.innerHTML = buildListHtml();
+      if(searchClear) searchClear.style.display = searchQuery ? "" : "none";
+    });
+  }
+  if(searchClear && searchInput){
+    searchClear.addEventListener("click", () => {
+      searchQuery = "";
+      searchInput.value = "";
+      searchInput.focus();
+      listWrap.innerHTML = buildListHtml();
+      searchClear.style.display = "none";
+    });
+  }
 }
 
 function renderSong(id){
@@ -355,15 +407,33 @@ function buildMiniEq(){
   eq.innerHTML = html;
 }
 
+// 목록 화면을 벗어나기 전 스크롤 위치를 기억해뒀다가, 다시 목록으로 돌아왔을 때
+// 그 위치에서 이어보이게 합니다. (곡 상세로 들어갈 때는 항상 맨 위에서 시작합니다.)
+let prevPath = "";
+let listScrollY = 0;
+
 function router(){
   const hash = window.location.hash;
   const path = hash.replace(/^#\/?/, "");
+  const scrollEl = document.querySelector(".scroll");
+
+  // 전환되기 직전 화면이 목록이었다면, 지금 스크롤 위치를 저장해둡니다.
+  if(scrollEl && !prevPath){
+    listScrollY = scrollEl.scrollTop;
+  }
 
   if(!path){
     renderList();
   } else {
     renderSong(path);
   }
+
+  const newScrollEl = document.querySelector(".scroll");
+  if(newScrollEl){
+    newScrollEl.scrollTop = path ? 0 : listScrollY;
+  }
+
+  prevPath = path;
 }
 
 window.addEventListener("hashchange", router);
