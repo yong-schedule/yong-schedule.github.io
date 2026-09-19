@@ -820,7 +820,9 @@ document.getElementById('legend').innerHTML = legendTypes.map(k=>
 
 // ============ 필터 칩 ============
 const filterRow = document.getElementById('filterRow');
-let activeTypes = new Set(Object.keys(eventColorHex));
+// 선택된 범례가 없으면(기본) 모든 일정 표시, 선택하면 해당 범례의 일정만 표시
+let activeTypes = new Set();
+const isTypeVisible = t => activeTypes.size === 0 || activeTypes.has(t);
 
 function renderFilterChips(){
   const allChip = `<div class="filter-chip all active" data-all="1">전체</div>`;
@@ -850,12 +852,14 @@ filterRow.addEventListener('click', (e)=>{
   const chip = e.target.closest('.filter-chip');
   if(!chip) return;
   if(chip.dataset.all){
-    activeTypes = new Set(Object.keys(eventColorHex));
+    // 전체 칩: 전부 선택돼 있으면 전체 해제, 아니면 전체 선택
+    activeTypes = (activeTypes.size === Object.keys(eventColorHex).length)
+      ? new Set()
+      : new Set(Object.keys(eventColorHex));
   } else {
     const t = chip.dataset.type;
     if(activeTypes.has(t)) activeTypes.delete(t);
     else activeTypes.add(t);
-    if(activeTypes.size===0) activeTypes = new Set(Object.keys(eventColorHex));
   }
   renderFilterChips();
   refreshCalendarEvents();
@@ -1050,7 +1054,7 @@ function refreshCalendarEvents(){
   calendar.removeAllEvents();
   const q = searchInput.value.trim().toLowerCase();
   const filtered = allEventsData.filter(e=>
-    activeTypes.has(e.type) && (!q || (e.title||'').toLowerCase().includes(q))
+    isTypeVisible(e.type) && (!q || (e.title||'').toLowerCase().includes(q))
   );
   calendar.addEventSource(filtered);
   updateDday();
@@ -1063,7 +1067,7 @@ function updateDday(){
 
   const ddayExcludedTypes = new Set(['공식','SNS']);
   const upcoming = allEventsData
-    .filter(e=>e.start && activeTypes.has(e.type) && !ddayExcludedTypes.has(e.type))
+    .filter(e=>e.start && isTypeVisible(e.type) && !ddayExcludedTypes.has(e.type))
     .map(e=>({...e, dateObj:new Date(e.start)}))
     .filter(e=>!isNaN(e.dateObj) && e.dateObj>=today)
     .sort((a,b)=>a.dateObj-b.dateObj);
@@ -1140,7 +1144,9 @@ let feedData = [];
 let feedByDate = {};
 let selectedFeedDate = null;
 let editingFeedId = null;
-let activeFeedTypes = new Set(feedCategories);
+// 선택된 범례가 없으면(기본) 모든 떡밥 표시, 선택하면 해당 범례의 떡밥만 표시
+let activeFeedTypes = new Set();
+const isFeedVisible = c => activeFeedTypes.size === 0 || activeFeedTypes.has(c);
 
 // ============ 떡밥 필터 칩 ============
 const feedFilterRow = document.getElementById('feedFilterRow');
@@ -1161,12 +1167,14 @@ feedFilterRow.addEventListener('click', (e)=>{
   const chip = e.target.closest('.filter-chip');
   if(!chip) return;
   if(chip.dataset.all){
-    activeFeedTypes = new Set(feedCategories);
+    // 전체 칩: 전부 선택돼 있으면 전체 해제, 아니면 전체 선택
+    activeFeedTypes = (activeFeedTypes.size === feedCategories.length)
+      ? new Set()
+      : new Set(feedCategories);
   } else {
     const t = chip.dataset.type;
     if(activeFeedTypes.has(t)) activeFeedTypes.delete(t);
     else activeFeedTypes.add(t);
-    if(activeFeedTypes.size===0) activeFeedTypes = new Set(feedCategories);
   }
   renderFeedFilterChips();
   refreshFeedDots();
@@ -1295,7 +1303,7 @@ function renderFeedPanel(dateStr){
   selectedFeedDate = dateStr;
   const d = new Date(dateStr+'T00:00:00');
   const items = (feedByDate[dateStr]||[])
-    .filter(i=>activeFeedTypes.has(i.category))
+    .filter(i=>isFeedVisible(i.category))
     .slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
 
   // 카드 안에서 실제로 임베드가 차지할 수 있는 폭(패널 패딩 16px*2, 아이템 패딩 12+10)을 계산해서
@@ -1418,7 +1426,7 @@ function refreshFeedDots(){
     cell.classList.remove('feed-has-entry');
     const oldDots = cell.querySelector('.feed-dots');
     if(oldDots) oldDots.remove();
-    const items = (feedByDate[dateStr]||[]).filter(i=>activeFeedTypes.has(i.category));
+    const items = (feedByDate[dateStr]||[]).filter(i=>isFeedVisible(i.category));
     if(items && items.length){
       cell.classList.add('feed-has-entry');
       const dayTop = cell.querySelector('.fc-daygrid-day-top');
