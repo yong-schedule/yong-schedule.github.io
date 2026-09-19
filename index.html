@@ -353,11 +353,14 @@ body{
 .sched-feed-dots .sfd-dots{display:flex;align-items:center;gap:3px;min-width:0;overflow:hidden;}
 .sched-feed-dots .sfd-dot{width:5px;height:5px;border-radius:50%;flex:none;}
 .sched-feed-dots .sfd-count{flex:none;font-weight:700;margin-left:1px;}
+/* 일정에 연결된 떡밥: 일정 막대 맨 아래 작은 한 줄(카메라 + 개수). 제목 폭은 그대로 */
 .event-feed-badge{
-  margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:2px;
-  padding:0 4px;border-radius:999px;background:rgba(255,255,255,.3);
-  font-size:.85em;line-height:1.4;cursor:pointer;
+  display:flex;align-items:center;justify-content:flex-end;gap:3px;
+  margin-top:3px;padding-top:2px;
+  border-top:0.5px solid rgba(255,255,255,.45);
+  font-size:.85em;font-weight:700;line-height:1.2;cursor:pointer;
 }
+.event-feed-badge i{font-size:.9em;}
 
 .feed-item-event{
   display:inline-flex;align-items:center;gap:4px;max-width:100%;
@@ -522,6 +525,7 @@ footer.site-footer{
   .filter-row{gap:14px;}
   .filter-chip{font-size:12px;}
   .search-line{gap:12px;}
+  .event-feed-badge{margin-top:2px;padding-top:1px;}
   /* 모바일: 떡밥 종류(색 점)는 숨기고 "카메라 아이콘 + 개수"만 표시 */
   .sched-feed-dots{left:3px;right:3px;bottom:2px;gap:2px;overflow:hidden;}
   .sched-feed-dots i{font-size:8px;}
@@ -1168,10 +1172,18 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     }
     const feedCnt = feedUiReady ? ((feedByEvent[arg.event.id]||[]).length) : 0;
     const feedBadge = feedCnt ? `<span class="event-feed-badge" data-event-id="${arg.event.id}" title="연결된 떡밥 ${feedCnt}개 보기"><i class="fa-solid fa-camera-retro"></i>${feedCnt}</span>` : '';
+    const baseStyle = `padding:2px 4px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;${wrapStyle}`;
+    const titleAttr = arg.event.title.replace(/"/g,'&quot;');
+    const rowHTML = `${iconHTML} ${memoIcon} ${arg.event.title}`;
+    // 떡밥이 연결된 일정: 제목 줄 아래에 배지 줄을 따로 둬서 제목이 쓰는 폭은 그대로 유지
     return {
-      html: `<div title="${arg.event.title.replace(/"/g,'&quot;')}" style="display:flex;align-items:center;gap:2px;padding:2px 4px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;${wrapStyle}">
-               ${iconHTML} ${memoIcon} ${arg.event.title}${feedBadge}
-             </div>`
+      html: feedCnt
+        ? `<div class="feed-linked" title="${titleAttr}" style="display:flex;flex-direction:column;align-items:stretch;${baseStyle}">
+             <div style="display:flex;align-items:center;gap:2px;">${rowHTML}</div>${feedBadge}
+           </div>`
+        : `<div title="${titleAttr}" style="display:flex;align-items:center;gap:2px;${baseStyle}">
+             ${rowHTML}
+           </div>`
     };
   }
 });
