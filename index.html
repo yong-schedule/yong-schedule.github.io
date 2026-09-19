@@ -547,6 +547,11 @@ footer.site-footer{
   }
   .legend-item{font-size:8px;gap:2px;white-space:nowrap;}
   .legend-item .dot{width:5px;height:5px;}
+  /* 월간 요약: 4개 타일이 좁은 화면에서 줄바꿈되지 않고 한 줄에 들어가도록 강제 고정 */
+  .ms-tiles{grid-template-columns:repeat(4,1fr);gap:5px;}
+  .ms-tile{padding:8px 6px;}
+  .ms-num{font-size:13px;letter-spacing:-.01em;}
+  .ms-lab{font-size:8.3px;line-height:1.25;margin-top:3px;word-break:keep-all;}
 }
 @media (max-width:600px) and (hover:hover) and (pointer:fine){
   .legend{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent;}
