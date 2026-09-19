@@ -1704,7 +1704,7 @@ function openFeedDate(dateStr){
   }, 60);
 }
 
-// 떡밥을 연결할 수 있는 일정 목록: 해당 날짜 기준 앞뒤 7일 이내 (현재 연결된 일정은 항상 포함)
+// 떡밥을 연결할 수 있는 일정 목록: 해당 날짜 기준 앞뒤 5일 이내 (현재 연결된 일정은 항상 포함)
 function eventSelectHTML(id, dateStr, selectedId){
   const base = new Date(ymd(dateStr)+'T00:00:00').getTime();
   if(isNaN(base)) return '';
@@ -1712,7 +1712,7 @@ function eventSelectHTML(id, dateStr, selectedId){
   const list = allEventsData
     .filter(e=>e.start)
     .map(e=>({ e, diff: Math.abs(new Date(ymd(e.start)+'T00:00:00').getTime() - base) }))
-    .filter(x=>x.e.id===selectedId || (!isNaN(x.diff) && x.diff <= 7*DAY))
+    .filter(x=>x.e.id===selectedId || (!isNaN(x.diff) && x.diff <= 5*DAY))
     .sort((a,b)=>ymd(a.e.start).localeCompare(ymd(b.e.start)) || String(a.e.title).localeCompare(String(b.e.title)));
   if(!list.length) return '';
   const opts = list.map(({e})=>{
