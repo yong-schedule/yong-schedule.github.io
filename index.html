@@ -705,7 +705,8 @@ footer.site-footer{
   text-decoration:none;
 }
 
-.feed-add-form{margin-top:6px;border-top:1px solid var(--line);padding-top:12px;}
+/* 등록 폼은 달력 바로 아래(목록 위)에 고정 — 떡밥이 늘어나도 폼 위치는 그대로 */
+.feed-add-form{margin:10px 0 18px;}
 .feed-add-form select,.feed-add-form input,.feed-add-form textarea{
   width:100%;
   padding:8px 10px;
@@ -1482,8 +1483,6 @@ function renderFeedPanel(dateStr){
 
   feedPanel.innerHTML = `
     <div class="feed-panel-date">${d.getMonth()+1}월 ${d.getDate()}일</div>
-    <div class="feed-panel-sub">${items.length}개의 떡밥</div>
-    ${itemsHTML}
     <div class="feed-add-form">
       <select id="feedNewCat">${feedCatOptionsHTML(feedCategories[0])}</select>
       ${eventSelectHTML('feedNewEvent', dateStr, preselectEventId)}
@@ -1491,6 +1490,8 @@ function renderFeedPanel(dateStr){
       <textarea id="feedNewMemo" placeholder="메모" rows="2"></textarea>
       <button class="feed-add-btn" id="feedAddBtn">+ 떡밥 추가</button>
     </div>
+    <div class="feed-panel-sub">${items.length}개의 떡밥</div>
+    ${itemsHTML}
   `;
 
   // X(트위터) 임베드 다시 렌더링 (widgets.js가 이미 로드돼 있으면 새로 추가된 blockquote만 처리)
