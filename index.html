@@ -491,6 +491,22 @@ footer.site-footer{
   width:6px;height:6px;border-radius:50%;
   flex:none;
 }
+.feed-chips{display:flex;flex-direction:column;gap:2px;padding:0 3px;margin-top:2px;min-width:0;}
+.feed-chip{
+  display:block;padding:1px 2px;
+  color:var(--ink);font-size:8pt;font-weight:500;line-height:1.35;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.feed-chip-dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  margin-right:4px;vertical-align:0;
+}
+.feed-chips .feed-more{font-size:8.5px;font-weight:700;color:var(--ink-soft);line-height:1;padding-left:2px;}
+@media (max-width:600px){
+  .feed-chips{gap:1px;padding:0 2px;}
+  .feed-chip{font-size:7px;padding:1px 1px;}
+  .feed-chip-dot{width:5px;height:5px;margin-right:3px;}
+}
 .fc-daygrid-day.feed-has-entry{cursor:pointer;}
 .fc-daygrid-day.feed-selected{background:var(--accent-soft)!important;}
 
@@ -1138,7 +1154,7 @@ deleteBtn.onclick=async()=>{
 };
 
 // ============ 떡밥(Feed) 기능 ============
-const feedCategories = ['직캠','직찍','꿀잼','팬아트','라이브','메시지','기타'];
+const feedCategories = ['직캠','직찍','꿀잼','라이브','메시지','팬아트','기타'];
 const feedCategoryColor = { '직캠':'#3E8FD9', '직찍':'#F0578F', '꿀잼':'#F0A227', '팬아트':'#22A559', '라이브':'#8B6BD9', '메시지':'#14A3A3', '기타':'#9C9488' };
 let feedData = [];
 let feedByDate = {};
@@ -1424,28 +1440,34 @@ function refreshFeedDots(){
     const dateStr = cell.getAttribute('data-date');
     if(!dateStr) return;
     cell.classList.remove('feed-has-entry');
-    const oldDots = cell.querySelector('.feed-dots');
+    const oldDots = cell.querySelector('.feed-dots, .feed-chips');
     if(oldDots) oldDots.remove();
     const items = (feedByDate[dateStr]||[]).filter(i=>isFeedVisible(i.category));
     if(items && items.length){
       cell.classList.add('feed-has-entry');
       const dayTop = cell.querySelector('.fc-daygrid-day-top');
-      const cats = [...new Set(items.map(i=>i.category))];
+      const maxShow = 5;
       const dotsWrap = document.createElement('div');
-      dotsWrap.className = 'feed-dots';
-      const dotsRow = document.createElement('div');
-      dotsRow.className = 'feed-dots-row';
-      cats.forEach(cat=>{
+      dotsWrap.className = 'feed-chips';
+      items.slice(0, maxShow).forEach(it=>{
+        const chip = document.createElement('div');
+        chip.className = 'feed-chip';
         const dot = document.createElement('span');
-        dot.className = 'feed-dot';
-        dot.style.background = feedCategoryColor[cat] || '#9C9488';
-        dotsRow.appendChild(dot);
+        dot.className = 'feed-chip-dot';
+        dot.style.background = feedCategoryColor[it.category] || '#9C9488';
+        chip.appendChild(dot);
+        const memoText = (it.memo||'').trim();
+        // 메모가 있으면 메모 첫 줄, 없으면 카테고리 이름
+        chip.appendChild(document.createTextNode(memoText ? memoText.split('\n')[0] : it.category));
+        chip.title = memoText || it.category;
+        dotsWrap.appendChild(chip);
       });
-      dotsWrap.appendChild(dotsRow);
-      const countLabel = document.createElement('span');
-      countLabel.className = 'feed-count';
-      countLabel.textContent = `${items.length}개`;
-      dotsWrap.appendChild(countLabel);
+      if(items.length > maxShow){
+        const more = document.createElement('span');
+        more.className = 'feed-more';
+        more.textContent = `+${items.length - maxShow}개`;
+        dotsWrap.appendChild(more);
+      }
       if(dayTop) dayTop.insertAdjacentElement('afterend', dotsWrap);
       else (cell.querySelector('.fc-daygrid-day-frame') || cell).appendChild(dotsWrap);
     }
