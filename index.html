@@ -1191,6 +1191,17 @@ calendar.render();
 
 // ============ 이벤트 클릭 ============
 calendar.on('eventClick', info => {
+  // 모바일(터치)에서는 브라우저의 click 이벤트가 발생하기 전에 FullCalendar가 자체적으로
+  // eventClick을 바로 호출하기 때문에, #calendar에 달아둔 클릭 캡처 리스너(PC 전용 경로)를
+  // 거치지 않고 곧장 여기로 들어온다. 그래서 배지 클릭 여부를 여기서도 한 번 더 확인해서
+  // 모바일에서도 연결된 떡밥 모달이 뜨도록 한다. (PC는 기존 캡처 리스너가 먼저 처리하고
+  // stopPropagation으로 막아서 여기까지 오지 않으므로 중복 실행되지 않는다.)
+  const badgeEl = info.jsEvent && info.jsEvent.target && info.jsEvent.target.closest && info.jsEvent.target.closest('.event-feed-badge');
+  if (badgeEl) {
+    openEventArchive(badgeEl.dataset.eventId);
+    return;
+  }
+
   const e = info.event;
   const { type, link, memo } = e.extendedProps;
 
@@ -1305,8 +1316,8 @@ deleteBtn.onclick=async()=>{
 };
 
 // ============ 떡밥(Feed) 기능 ============
-const feedCategories = ['직캠','직찍','꿀잼','라이브','메시지','팬아트','기타'];
-const feedCategoryColor = { '직캠':'#3E8FD9', '직찍':'#F0578F', '꿀잼':'#F0A227', '팬아트':'#22A559', '라이브':'#8B6BD9', '메시지':'#14A3A3', '기타':'#9C9488' };
+const feedCategories = ['영상','사진','꿀잼','라이브','메시지','팬아트','기타'];
+const feedCategoryColor = { '영상':'#3E8FD9', '사진':'#F0578F', '꿀잼':'#F0A227', '팬아트':'#22A559', '라이브':'#8B6BD9', '메시지':'#14A3A3', '기타':'#9C9488' };
 let feedData = [];
 let feedByDate = {};
 let feedByEvent = {};
@@ -1953,13 +1964,14 @@ feedUiReady = true;
 
 (async()=>{
   feedData = await loadCollection('feed');
-  // 기존 '기사' 카테고리로 저장된 데이터를 '팬아트'로 마이그레이션
-  const legacyItems = feedData.filter(f => f.category === '기사');
+  // 기존 카테고리명으로 저장된 데이터를 새 카테고리명으로 마이그레이션
+  const categoryMigrations = { '기사':'팬아트', '직캠':'영상', '직찍':'사진' };
+  const legacyItems = feedData.filter(f => categoryMigrations[f.category]);
   if(legacyItems.length){
     await Promise.all(legacyItems.map(item =>
-      db.collection('feed').doc(item.id).update({ category: '팬아트' })
+      db.collection('feed').doc(item.id).update({ category: categoryMigrations[item.category] })
     ));
-    feedData = feedData.map(f => f.category === '기사' ? { ...f, category: '팬아트' } : f);
+    feedData = feedData.map(f => categoryMigrations[f.category] ? { ...f, category: categoryMigrations[f.category] } : f);
   }
   rebuildFeedByDate();
   refreshFeedDots();
