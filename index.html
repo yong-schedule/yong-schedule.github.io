@@ -155,35 +155,39 @@ body{
 }
 .filter-row{
   display:flex;
-  gap:7px;
+  gap:18px;
   overflow-x:auto;
   scrollbar-width:none;
   width:100%;
   max-width:100%;
   min-width:0;
+  padding:0 2px;
 }
 .filter-row::-webkit-scrollbar{display:none;}
+/* 알약 대신 "점 + 글자" 텍스트 탭. 선택되면 굵어지고 색 밑줄이 생김 */
 .filter-chip{
   flex:none;
   display:flex;
   align-items:center;
-  gap:4px;
-  padding:5px 10px;
-  border-radius:999px;
-  border:1px solid var(--line-strong);
-  background:var(--surface);
-  font-size:10.5px;
+  gap:6px;
+  padding:6px 0 7px;
+  border:none;
+  border-bottom:2px solid transparent;
+  border-radius:0;
+  background:none;
+  font-size:12.5px;
   font-weight:600;
   color:var(--ink-soft);
   cursor:pointer;
   user-select:none;
-  transition:all .15s ease;
+  transition:color .15s ease, border-color .15s ease;
   white-space:nowrap;
 }
-.filter-chip .dot{width:5px;height:5px;border-radius:50%;flex:none;}
-.filter-chip.active{color:#fff;border-color:transparent;}
-.filter-chip.all{font-weight:700;}
-.filter-chip.all.active{background:var(--ink);color:#fff;}
+.filter-chip:hover{color:var(--ink);}
+.filter-chip .dot{width:6px;height:6px;border-radius:50%;flex:none;}
+.filter-chip.active{color:var(--ink);font-weight:700;border-bottom-color:var(--chip-color,var(--ink));}
+.filter-chip.all{color:var(--ink);}
+.filter-chip.all:not(.active){color:var(--ink-soft);}
 
 .search-box{
   position:relative;
@@ -192,18 +196,19 @@ body{
   flex:none;
   width:100%;
 }
-.search-box i{position:absolute;left:13px;font-size:12px;color:var(--ink-faint);}
+.search-box i{position:absolute;left:2px;font-size:12px;color:var(--ink-faint);}
 .search-box input{
   width:100%;
-  padding:9px 12px 9px 32px;
-  border:1px solid var(--line-strong);
-  border-radius:999px;
-  background:var(--surface);
+  padding:9px 4px 9px 26px;
+  border:none;
+  border-bottom:1px solid var(--line-strong);
+  border-radius:0;
+  background:transparent;
   font-family:inherit;
   font-size:12.5px;
   color:var(--ink);
 }
-.search-box input:focus{border-color:var(--accent);}
+.search-box input:focus{border-bottom-color:var(--ink);}
 .search-box input::placeholder{color:var(--ink-faint);}
 
 /* ============ 아바타 스택 (사진 버전용) ============ */
@@ -236,29 +241,56 @@ body{
 .fc-event{border:none!important;box-shadow:none!important;border-radius:6px!important;}
 .fc .fc-toolbar-title{
   font-weight:800;
-  font-size:16.5px;
+  font-size:18px;
   letter-spacing:-0.01em;
   color:var(--ink);
 }
+.fc .fc-toolbar.fc-header-toolbar{margin-bottom:14px;}
+.fc .fc-toolbar-chunk{display:flex;align-items:center;gap:4px;}
+.fc .fc-button-group{display:inline-flex;gap:2px;}
+.fc .fc-button-group>.fc-button{margin-left:0!important;}
+/* 기본 버튼: 테두리·배경 없는 텍스트 버튼 */
 .fc .fc-button{
   font-family:inherit;
-  font-size:11.5px;
-  font-weight:700;
-  padding:6px 12px;
-  background:var(--surface);
-  color:var(--ink);
-  border:1px solid var(--line-strong);
-  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  padding:6px 7px;
+  background:transparent!important;
+  color:var(--ink-soft);
+  border:none!important;
+  border-radius:0;
 }
-.fc .fc-button:focus,.fc .fc-button:active{background:var(--surface);}
-.fc .fc-button:hover{background:#F5F4F1;}
-.fc .fc-customAddBtn-button{background:var(--ink)!important;color:#fff!important;border-color:var(--ink)!important;}
-.fc .fc-customAddBtn-button:hover{filter:brightness(1.2);}
-.fc .fc-modifyBtn-button{background:var(--surface)!important;color:var(--ink)!important;}
+.fc .fc-button:focus,.fc .fc-button:active{background:transparent!important;}
+.fc .fc-button:hover{background:transparent!important;color:var(--ink);}
+.fc .fc-button:disabled{opacity:.35;}
+.fc .fc-button .fc-icon{font-size:1.35em;}
+/* 유일한 강조 버튼: 일정 추가 (진한 알약) */
+.fc .fc-customAddBtn-button{
+  background:var(--ink)!important;color:#fff!important;
+  border-radius:999px!important;padding:6px 13px;font-size:11.5px;font-weight:700;
+  letter-spacing:-0.01em;line-height:1;margin-left:0;
+}
+.fc .fc-customAddBtn-button:hover{background:var(--ink)!important;color:#fff!important;filter:brightness(1.2);}
+/* 수정 / 오늘: 일정 추가와 같은 알약 모양 (색으로 구분) */
+.fc .fc-modifyBtn-button,
+.fc .fc-today-button{
+  border-radius:999px!important;padding:5px 12px;font-size:11.5px;font-weight:700;
+  letter-spacing:-0.01em;line-height:1;
+}
+.fc .fc-modifyBtn-button{
+  background:var(--surface)!important;color:var(--ink)!important;
+  border:1px solid var(--line-strong)!important;
+}
+.fc .fc-modifyBtn-button:hover{background:#F5F4F1!important;color:var(--ink)!important;}
 /* 수정모드 ON 상태 표시: 버튼 DOM을 직접 건드리지 않고 상위 컨테이너 클래스로만 제어.
    (캘린더가 검색/필터 등으로 다시 그려져도 항상 정확하게 유지됨) */
 #calendar.modify-active .fc-modifyBtn-button{background:#E8556B!important;color:#fff!important;border-color:#E8556B!important;}
-.fc .fc-today-button{color:var(--danger)!important;border-color:var(--danger-soft)!important;background:var(--danger-soft)!important;}
+.fc .fc-today-button{
+  background:var(--danger-soft)!important;color:var(--danger)!important;
+  border:1px solid var(--danger-soft)!important;
+}
+.fc .fc-today-button:hover{background:var(--danger-soft)!important;color:var(--danger)!important;filter:brightness(.96);}
+.fc .fc-today-button:disabled{opacity:.65;}
 .fc-daygrid-day-number{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
 .fc-col-header-cell-cushion{
   font-size:10.5px;
@@ -278,6 +310,86 @@ body{
 
 .event-icon{width:1em;height:1em;object-fit:contain;vertical-align:middle;margin-left:2px;}
 .event-icon.bstage{width:calc(1em + 1pt);height:calc(1em + 1pt);}
+
+/* ============ 달력 ↔ 떡밥 연동 ============ */
+.search-line{display:flex;align-items:center;gap:16px;width:100%;min-width:0;}
+.search-line .search-box{flex:1;min-width:0;width:auto;}
+.overlay-toggle{
+  flex:none;display:flex;align-items:center;gap:5px;
+  padding:8px 2px 7px;border:none;border-bottom:2px solid transparent;border-radius:0;background:none;
+  font-family:inherit;font-size:12px;font-weight:600;color:var(--ink-soft);
+  cursor:pointer;white-space:nowrap;transition:color .15s ease, border-color .15s ease;
+}
+.overlay-toggle:hover{color:var(--ink);}
+.overlay-toggle.active{color:var(--ink);font-weight:700;border-bottom-color:var(--ink);}
+
+.search-results{
+  border:1px solid var(--line);border-radius:var(--radius-md);
+  padding:8px 10px;max-height:260px;overflow-y:auto;background:var(--surface);
+}
+.sr-head{font-size:11px;font-weight:700;color:var(--ink-faint);margin:6px 2px 4px;}
+.sr-head b{color:var(--ink-soft);}
+.sr-row{
+  display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:8px;
+  cursor:pointer;font-size:12px;min-width:0;
+}
+.sr-row:hover{background:#F5F4F1;}
+.sr-dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.sr-date{flex:none;width:34px;font-size:11px;font-weight:700;color:var(--ink-soft);}
+.sr-main{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--ink);}
+.sr-tag{flex:none;font-size:10.5px;font-weight:600;color:var(--ink-soft);}
+.sr-more,.sr-empty{font-size:11px;color:var(--ink-faint);padding:4px 6px;}
+
+.sched-feed-dots{
+  display:flex;align-items:center;gap:3px;
+  margin:2px 3px 0;padding:1px 2px;cursor:pointer;
+  font-size:9px;color:var(--ink-soft);line-height:1;
+}
+.sched-feed-dots i{font-size:9px;color:var(--ink-faint);}
+.sched-feed-dots .sfd-dot{width:5px;height:5px;border-radius:50%;flex:none;}
+.sched-feed-dots .sfd-count{font-weight:700;margin-left:1px;}
+.event-feed-badge{
+  margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:2px;
+  padding:0 4px;border-radius:999px;background:rgba(255,255,255,.3);
+  font-size:.85em;line-height:1.4;cursor:pointer;
+}
+
+.feed-item-event{
+  display:inline-flex;align-items:center;gap:4px;max-width:100%;
+  margin-top:3px;padding:1px 8px;border-radius:999px;
+  background:var(--accent-soft);color:var(--ink-soft);
+  font-size:10.5px;font-weight:600;cursor:pointer;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.feed-item-event i{font-size:9px;}
+
+.efm-sub{font-size:11.5px;color:var(--ink-soft);margin:-8px 0 14px;}
+.efm-item{margin:8px 0 0;padding:9px 10px 9px 12px;border-left:3px solid transparent;border-radius:8px;}
+.efm-item.clickable{cursor:pointer;}
+.efm-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.efm-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;}
+.efm-goto{font-size:10.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
+.efm-goto i{font-size:8px;}
+.efm-memo{font-size:12px;color:var(--ink-soft);margin-top:3px;word-break:break-word;white-space:pre-wrap;}
+
+.month-summary{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);}
+.ms-head{display:flex;align-items:baseline;gap:8px;margin-bottom:12px;}
+.ms-title{font-weight:800;font-size:14.5px;color:var(--ink);}
+.ms-year{font-size:11px;color:var(--ink-faint);}
+.ms-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:6px;}
+.ms-tile{background:#F7F6F3;border-radius:var(--radius-md);padding:10px 12px;min-width:0;}
+.ms-tile.clickable{cursor:pointer;}
+.ms-tile.clickable:hover{background:#F0EEEA;}
+.ms-num{font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--ink);}
+.ms-lab{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+.ms-block{margin-top:12px;}
+.ms-block-title{font-size:11px;font-weight:700;color:var(--ink-faint);margin-bottom:6px;}
+.ms-bar{display:flex;height:8px;border-radius:999px;overflow:hidden;gap:2px;}
+.ms-seg{min-width:4px;}
+.ms-chips{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;}
+.ms-chip{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--ink-soft);}
+.ms-chip .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.ms-empty{font-size:12px;color:var(--ink-faint);padding:4px 0;}
 
 /* ============ 모달 ============ */
 .modal{
@@ -397,8 +509,15 @@ footer.site-footer{
   .dday-strip{padding:10px 14px;gap:10px;}
   .dday-number{font-size:17px;min-width:40px;}
   .fc-daygrid-day-number{font-size:9px!important;}
-  .fc .fc-toolbar-title{font-size:14px;}
-  .fc .fc-button{font-size:10px;padding:4px 9px;}
+  .fc .fc-toolbar-title{font-size:15px;}
+  .fc .fc-button{font-size:11px;padding:5px 5px;}
+  .fc .fc-toolbar-chunk{gap:3px;}
+  .fc .fc-customAddBtn-button{padding:5px 10px;font-size:11px;margin-left:0;}
+  .fc .fc-modifyBtn-button,.fc .fc-today-button{padding:4px 9px;font-size:11px;}
+  .filter-row{gap:14px;}
+  .filter-chip{font-size:12px;}
+  .search-line{gap:12px;}
+  .overlay-toggle{font-size:11.5px;}
   .fc-col-header-cell-cushion{font-size:9px;}
   .avatar-stack img{width:28px;height:28px;}
   .modal input,.modal select,.modal textarea{font-size:16px;}
@@ -512,10 +631,8 @@ footer.site-footer{
 
 /* ============ 떡밥 탭: 오른쪽(또는 하단) 패널 ============ */
 .feed-panel{
-  background:var(--surface);
-  border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-soft);
-  padding:16px;
+  border-top:1px solid var(--line);
+  padding:18px 0 0;
 }
 .feed-panel-date{
   font-weight:800;
@@ -679,16 +796,22 @@ footer.site-footer{
     </div>
 
     <div class="toolbar-row">
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input id="searchInput" placeholder="일정 검색">
+      <div class="search-line">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="searchInput" placeholder="일정·떡밥 검색">
+        </div>
+        <button type="button" class="overlay-toggle" id="feedOverlayBtn" title="달력에 떡밥 표시"><i class="fa-solid fa-camera-retro"></i> 떡밥 표시</button>
       </div>
+      <div class="search-results" id="searchResults" style="display:none;"></div>
       <div class="filter-row" id="filterRow"></div>
     </div>
 
     <div class="calendar-wrap">
       <div id="calendar"></div>
     </div>
+
+    <div class="month-summary" id="monthSummary"></div>
 
   </div>
 
@@ -768,6 +891,16 @@ footer.site-footer{
   </div>
 </div>
 
+<div id="eventFeedModal" class="modal">
+  <button class="close-btn">&times;</button>
+  <h3 id="efmTitle"></h3>
+  <div class="efm-sub" id="efmSub"></div>
+  <div id="efmList"></div>
+  <div class="modal-actions">
+    <button id="efmAddBtn" class="btn btn-primary">이 일정에 떡밥 추가</button>
+  </div>
+</div>
+
 <div id="memoViewModal" class="modal">
   <button class="close-btn">&times;</button>
   <h3 class="memo-title"><i class="fa-regular fa-note-sticky"></i> Memo</h3>
@@ -841,37 +974,24 @@ let activeTypes = new Set();
 const isTypeVisible = t => activeTypes.size === 0 || activeTypes.has(t);
 
 function renderFilterChips(){
-  const allChip = `<div class="filter-chip all active" data-all="1">전체</div>`;
+  const allActive = activeTypes.size === 0 || activeTypes.size === Object.keys(eventColorHex).length;
+  const allChip = `<div class="filter-chip all${allActive?' active':''}" data-all="1">전체</div>`;
   const chips = Object.keys(eventColorHex).map(k=>{
     const isActive = activeTypes.has(k);
-    const style = isActive
-      ? `background:${eventColorHex[k]};border-color:${eventColorHex[k]};`
-      : '';
-    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="${style}">
-      <span class="dot" style="background:${isActive?'#fff':eventColorHex[k]}"></span>${k}
+    const c = eventColorHex[k];
+    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="--chip-color:${c};">
+      <span class="dot" style="background:${c}"></span>${k}
     </div>`;
   }).join('');
   filterRow.innerHTML = allChip + chips;
-  syncAllChip();
-}
-
-function syncAllChip(){
-  const allChip = filterRow.querySelector('.filter-chip.all');
-  if(activeTypes.size === Object.keys(eventColorHex).length){
-    allChip.classList.add('active');
-  } else {
-    allChip.classList.remove('active');
-  }
 }
 
 filterRow.addEventListener('click', (e)=>{
   const chip = e.target.closest('.filter-chip');
   if(!chip) return;
   if(chip.dataset.all){
-    // 전체 칩: 전부 선택돼 있으면 전체 해제, 아니면 전체 선택
-    activeTypes = (activeTypes.size === Object.keys(eventColorHex).length)
-      ? new Set()
-      : new Set(Object.keys(eventColorHex));
+    // 전체: 선택을 모두 해제 = 모든 일정 표시
+    activeTypes = new Set();
   } else {
     const t = chip.dataset.type;
     if(activeTypes.has(t)) activeTypes.delete(t);
@@ -931,7 +1051,7 @@ function openAddEventModal(){
 function setModifyMode(active){
   modifyMode = active;
   calendar.setOption('customButtons', {
-    customAddBtn:{text:'＋ 일정 추가', click: openAddEventModal},
+    customAddBtn:{text:'+ 일정 추가', click: openAddEventModal},
     modifyBtn:{text: active ? '수정 모드 ON' : '수정', click: toggleModifyMode}
   });
   document.getElementById('calendar').classList.toggle('modify-active', active);
@@ -941,14 +1061,18 @@ function toggleModifyMode(){
   setModifyMode(!modifyMode);
 }
 
+let feedUiReady = false;
+
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight: window.innerWidth <= 600 ? 66 : 104,
-  headerToolbar:{left:'title',right:'prev,next today customAddBtn modifyBtn'},
+  headerToolbar:{left:'title',right:'prev,next today modifyBtn customAddBtn'},
   customButtons:{
-    customAddBtn:{text:'＋ 일정 추가', click: openAddEventModal},
+    customAddBtn:{text:'+ 일정 추가', click: openAddEventModal},
     modifyBtn:{text:'수정', click: toggleModifyMode}
   },
   events:[],
+  datesSet: () => { if(feedUiReady){ renderMonthSummary(); scheduleOverlayRefresh(); } },
+  eventsSet: () => { if(feedUiReady) scheduleOverlayRefresh(); },
   dayCellDidMount: arg => {
     const cell = arg.el;
     let pressTimer = null;
@@ -965,7 +1089,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     };
 
     const startPress = e => {
-      if (e.target.closest && e.target.closest('.fc-event')) return;
+      if (e.target.closest && e.target.closest('.fc-event, .sched-feed-dots')) return;
       cell.style.transition = `background-color ${HOLD_MS}ms linear`;
       cell.style.backgroundColor = 'var(--accent-soft)';
       pressTimer = setTimeout(()=>{
@@ -1030,9 +1154,11 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
       fontSize = '8pt';
       wrapStyle = 'white-space:normal;overflow:visible;';
     }
+    const feedCnt = feedUiReady ? ((feedByEvent[arg.event.id]||[]).length) : 0;
+    const feedBadge = feedCnt ? `<span class="event-feed-badge" data-event-id="${arg.event.id}" title="연결된 떡밥 ${feedCnt}개 보기"><i class="fa-solid fa-camera-retro"></i>${feedCnt}</span>` : '';
     return {
       html: `<div title="${arg.event.title.replace(/"/g,'&quot;')}" style="display:flex;align-items:center;gap:2px;padding:2px 4px;background:${bgColor};color:#ffffff;border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;${wrapStyle}">
-               ${iconHTML} ${memoIcon} ${arg.event.title}
+               ${iconHTML} ${memoIcon} ${arg.event.title}${feedBadge}
              </div>`
     };
   }
@@ -1074,6 +1200,7 @@ function refreshCalendarEvents(){
   );
   calendar.addEventSource(filtered);
   updateDday();
+  if(feedUiReady){ renderSearchResults(); renderMonthSummary(); scheduleOverlayRefresh(); }
 }
 
 // ============ D-day 계산 ============
@@ -1158,6 +1285,8 @@ const feedCategories = ['직캠','직찍','꿀잼','라이브','메시지','팬�
 const feedCategoryColor = { '직캠':'#3E8FD9', '직찍':'#F0578F', '꿀잼':'#F0A227', '팬아트':'#22A559', '라이브':'#8B6BD9', '메시지':'#14A3A3', '기타':'#9C9488' };
 let feedData = [];
 let feedByDate = {};
+let feedByEvent = {};
+let pendingLinkEventId = null;
 let selectedFeedDate = null;
 let editingFeedId = null;
 // 선택된 범례가 없으면(기본) 모든 떡밥 표시, 선택하면 해당 범례의 떡밥만 표시
@@ -1167,14 +1296,13 @@ const isFeedVisible = c => activeFeedTypes.size === 0 || activeFeedTypes.has(c);
 // ============ 떡밥 필터 칩 ============
 const feedFilterRow = document.getElementById('feedFilterRow');
 function renderFeedFilterChips(){
-  const allActive = activeFeedTypes.size === feedCategories.length;
+  const allActive = activeFeedTypes.size === 0 || activeFeedTypes.size === feedCategories.length;
   const allChip = `<div class="filter-chip all${allActive?' active':''}" data-all="1">전체</div>`;
   const chips = feedCategories.map(k=>{
     const isActive = activeFeedTypes.has(k);
     const color = feedCategoryColor[k];
-    const style = isActive ? `background:${color};border-color:${color};` : '';
-    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="${style}">
-      <span class="dot" style="background:${isActive?'#fff':color}"></span>${k}
+    return `<div class="filter-chip${isActive?' active':''}" data-type="${k}" style="--chip-color:${color};">
+      <span class="dot" style="background:${color}"></span>${k}
     </div>`;
   }).join('');
   feedFilterRow.innerHTML = allChip + chips;
@@ -1183,10 +1311,8 @@ feedFilterRow.addEventListener('click', (e)=>{
   const chip = e.target.closest('.filter-chip');
   if(!chip) return;
   if(chip.dataset.all){
-    // 전체 칩: 전부 선택돼 있으면 전체 해제, 아니면 전체 선택
-    activeFeedTypes = (activeFeedTypes.size === feedCategories.length)
-      ? new Set()
-      : new Set(feedCategories);
+    // 전체: 선택을 모두 해제 = 모든 떡밥 표시
+    activeFeedTypes = new Set();
   } else {
     const t = chip.dataset.type;
     if(activeFeedTypes.has(t)) activeFeedTypes.delete(t);
@@ -1200,9 +1326,14 @@ renderFeedFilterChips();
 
 function rebuildFeedByDate(){
   feedByDate = {};
+  feedByEvent = {};
   feedData.forEach(item=>{
     if(!feedByDate[item.date]) feedByDate[item.date] = [];
     feedByDate[item.date].push(item);
+    if(item.eventId){
+      if(!feedByEvent[item.eventId]) feedByEvent[item.eventId] = [];
+      feedByEvent[item.eventId].push(item);
+    }
   });
 }
 
@@ -1271,6 +1402,7 @@ function feedItemHTML(item, embedWidth){
     const memoVal = item.memo||'';
     return `<div class="feed-item feed-item-editing" style="border-left-color:${color};">
       <select id="feedEditCat-${item.id}">${feedCatOptionsHTML(item.category)}</select>
+      ${eventSelectHTML('feedEditEvent-'+item.id, item.date, item.eventId)}
       <input id="feedEditLink-${item.id}" placeholder="링크 (선택)" value="${linkVal}">
       <textarea id="feedEditMemo-${item.id}" placeholder="메모" rows="2">${memoVal}</textarea>
       <div class="feed-edit-actions">
@@ -1281,6 +1413,8 @@ function feedItemHTML(item, embedWidth){
   }
 
   const memoHTML = item.memo ? `<div class="feed-item-memo">${item.memo.replace(/</g,'&lt;')}</div>` : '';
+  const linkedEvent = item.eventId ? allEventsData.find(e=>e.id===item.eventId) : null;
+  const eventTagHTML = linkedEvent ? `<div class="feed-item-event" data-open-event="${escHTML(linkedEvent.id)}"><i class="fa-solid fa-link"></i>${escHTML(linkedEvent.title)}</div>` : '';
   const embedHTML = feedEmbedHTML(item, embedWidth);
 
   if(embedHTML){
@@ -1292,6 +1426,7 @@ function feedItemHTML(item, embedWidth){
       <div class="feed-item-top">
         <span class="feed-item-cat"><span class="dot" style="background:${color}"></span>${item.category}</span>
       </div>
+      ${eventTagHTML}
       ${memoHTML}
       ${embedHTML}
     </div>`;
@@ -1304,6 +1439,7 @@ function feedItemHTML(item, embedWidth){
     <span class="dot" style="background:${color}"></span>
     <div class="feed-item-body">
       <div class="feed-item-cat">${linkIcon}${item.category}</div>
+      ${eventTagHTML}
       ${memoHTML}
     </div>
     <div class="feed-item-actions">
@@ -1317,15 +1453,17 @@ const feedPanel = document.getElementById('feedPanel');
 
 function renderFeedPanel(dateStr){
   selectedFeedDate = dateStr;
+  const preselectEventId = pendingLinkEventId;
+  pendingLinkEventId = null;
   const d = new Date(dateStr+'T00:00:00');
   const items = (feedByDate[dateStr]||[])
     .filter(i=>isFeedVisible(i.category))
     .slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
 
-  // 카드 안에서 실제로 임베드가 차지할 수 있는 폭(패널 패딩 16px*2, 아이템 패딩 12+10)을 계산해서
+  // 카드 안에서 실제로 임베드가 차지할 수 있는 폭(아이템 패딩 12+10)을 계산해서
   // 트위터 위젯이 스스로 재는 값이 어긋나 카드 밖으로 삐져나오지 않게 못박아둠.
   const panelWidth = feedPanel.clientWidth || 280;
-  const embedWidth = Math.max(220, panelWidth - 32 - 22);
+  const embedWidth = Math.max(220, panelWidth - 22);
 
   const itemsHTML = items.length
     ? items.map(item=>feedItemHTML(item, embedWidth)).join('')
@@ -1337,6 +1475,7 @@ function renderFeedPanel(dateStr){
     ${itemsHTML}
     <div class="feed-add-form">
       <select id="feedNewCat">${feedCatOptionsHTML(feedCategories[0])}</select>
+      ${eventSelectHTML('feedNewEvent', dateStr, preselectEventId)}
       <input id="feedNewLink" placeholder="링크 (선택)">
       <textarea id="feedNewMemo" placeholder="메모" rows="2"></textarea>
       <button class="feed-add-btn" id="feedAddBtn">+ 떡밥 추가</button>
@@ -1353,6 +1492,13 @@ function renderFeedPanel(dateStr){
       if(e.target.closest('.feed-item-actions')) return;
       const link = el.dataset.link;
       if(link) window.open(link, '_blank');
+    });
+  });
+
+  feedPanel.querySelectorAll('[data-open-event]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      openEventArchive(el.dataset.openEvent);
     });
   });
 
@@ -1377,13 +1523,17 @@ function renderFeedPanel(dateStr){
       const link = document.getElementById(`feedEditLink-${id}`).value.trim();
       const memo = document.getElementById(`feedEditMemo-${id}`).value.trim();
       if(!link && !memo) return alert('링크나 메모 중 하나는 입력해주세요.');
-      await db.collection('feed').doc(id).update({ category, link, memo });
+      const evSel = document.getElementById(`feedEditEvent-${id}`);
+      const cur = feedData.find(f=>f.id===id) || {};
+      const eventId = evSel ? evSel.value : (cur.eventId || '');
+      await db.collection('feed').doc(id).update({ category, link, memo, eventId });
       const idx = feedData.findIndex(f=>f.id===id);
-      if(idx>-1) feedData[idx] = { ...feedData[idx], category, link, memo };
+      if(idx>-1) feedData[idx] = { ...feedData[idx], category, link, memo, eventId };
       rebuildFeedByDate();
       editingFeedId = null;
       renderFeedPanel(dateStr);
       refreshFeedDots();
+      refreshCalendarEvents();
     });
   });
 
@@ -1397,6 +1547,7 @@ function renderFeedPanel(dateStr){
       if(editingFeedId === id) editingFeedId = null;
       renderFeedPanel(dateStr);
       refreshFeedDots();
+      refreshCalendarEvents();
     });
   });
 
@@ -1405,12 +1556,15 @@ function renderFeedPanel(dateStr){
     const link = document.getElementById('feedNewLink').value.trim();
     const memo = document.getElementById('feedNewMemo').value.trim();
     if(!link && !memo) return alert('링크나 메모 중 하나는 입력해주세요.');
-    const data = { date: dateStr, category, link, memo, createdAt: Date.now() };
+    const evSel = document.getElementById('feedNewEvent');
+    const eventId = evSel ? evSel.value : '';
+    const data = { date: dateStr, category, link, memo, eventId, createdAt: Date.now() };
     const r = await db.collection('feed').add(data);
     feedData.push({id:r.id, ...data});
     rebuildFeedByDate();
     renderFeedPanel(dateStr);
     refreshFeedDots();
+    refreshCalendarEvents();
   };
 }
 
@@ -1491,8 +1645,289 @@ window.addEventListener('resize', ()=>{
     feedCalendar.setOption('dayMinHeight', window.innerWidth <= 600 ? 50 : 90);
     feedCalendar.render();
     refreshFeedDots();
+    scheduleOverlayRefresh();
   }, 200);
 });
+
+// ============ 달력 ↔ 떡밥 연동 ============
+function escHTML(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ymd(v){ return String(v||'').slice(0,10); }
+function shortDate(v){
+  const m = ymd(v).split('-');
+  return m.length===3 ? `${+m[1]}/${+m[2]}` : '';
+}
+
+function openCalendarDate(dateStr){
+  activateTab(document.querySelector('.tab-btn[data-tab="calendar"]'));
+  calendar.updateSize();
+  calendar.gotoDate(ymd(dateStr));
+  setTimeout(()=>document.getElementById('calendar').scrollIntoView({behavior:'smooth', block:'start'}), 60);
+}
+
+function openFeedDate(dateStr){
+  dateStr = ymd(dateStr);
+  activateTab(document.querySelector('.tab-btn[data-tab="feed"]'));
+  feedCalendar.gotoDate(dateStr);
+  setTimeout(()=>{
+    document.querySelectorAll('#feedCalendar .fc-daygrid-day.feed-selected').forEach(el=>el.classList.remove('feed-selected'));
+    const cell = document.querySelector(`#feedCalendar .fc-daygrid-day[data-date="${dateStr}"]`);
+    if(cell) cell.classList.add('feed-selected');
+    editingFeedId = null;
+    renderFeedPanel(dateStr);
+    (cell || feedView).scrollIntoView({behavior:'smooth', block:'center'});
+  }, 60);
+}
+
+// 떡밥을 연결할 수 있는 일정 목록: 해당 날짜 기준 앞뒤 14일 이내 (현재 연결된 일정은 항상 포함)
+function eventSelectHTML(id, dateStr, selectedId){
+  const base = new Date(ymd(dateStr)+'T00:00:00').getTime();
+  if(isNaN(base)) return '';
+  const DAY = 86400000;
+  const list = allEventsData
+    .filter(e=>e.start)
+    .map(e=>({ e, diff: Math.abs(new Date(ymd(e.start)+'T00:00:00').getTime() - base) }))
+    .filter(x=>x.e.id===selectedId || (!isNaN(x.diff) && x.diff <= 14*DAY))
+    .sort((a,b)=>(a.diff||0)-(b.diff||0) || String(a.e.title).localeCompare(String(b.e.title)));
+  if(!list.length) return '';
+  const opts = list.map(({e})=>{
+    const same = ymd(e.start)===ymd(dateStr);
+    const label = (same ? '' : shortDate(e.start)+' ') + (e.title||'');
+    return `<option value="${escHTML(e.id)}"${e.id===selectedId?' selected':''}>${escHTML(label)}</option>`;
+  }).join('');
+  return `<select id="${id}"><option value="">연결할 일정 (선택)</option>${opts}</select>`;
+}
+
+// ---------- 일정별 떡밥 모아보기 모달 ----------
+const eventFeedModal = document.getElementById('eventFeedModal');
+const efmList = document.getElementById('efmList');
+let archiveEventId = null;
+eventFeedModal.querySelector('.close-btn').onclick = ()=> eventFeedModal.classList.remove('show');
+
+function openEventArchive(eventId){
+  const ev = allEventsData.find(e=>e.id===eventId);
+  if(!ev) return;
+  archiveEventId = eventId;
+  const items = (feedByEvent[eventId]||[]).slice()
+    .sort((a,b)=> String(a.date).localeCompare(String(b.date)) || (a.createdAt||0)-(b.createdAt||0));
+  document.getElementById('efmTitle').textContent = ev.title || '';
+  document.getElementById('efmSub').textContent =
+    `${shortDate(ev.start)} · ${ev.type||'일정'} · 연결된 떡밥 ${items.length}개`;
+  efmList.innerHTML = items.length ? items.map(it=>{
+    const color = feedCategoryColor[it.category] || '#9C9488';
+    const memo = (it.memo||'').trim();
+    const icon = it.link ? getLinkIcon(it.link, 'feed-item-icon') : '';
+    return `<div class="efm-item${it.link?' clickable':''}" data-link="${escHTML(it.link||'')}" style="border-left-color:${color};background:${hexToRgba(color,0.09)};">
+      <div class="efm-top">
+        <span class="efm-cat">${icon}${escHTML(it.category)}</span>
+        <span class="efm-goto" data-date="${escHTML(it.date)}">${shortDate(it.date)} <i class="fa-solid fa-chevron-right"></i></span>
+      </div>
+      ${memo ? `<div class="efm-memo">${escHTML(memo)}</div>` : ''}
+    </div>`;
+  }).join('') : `<div class="feed-empty">아직 연결된 떡밥이 없어요.</div>`;
+  eventFeedModal.classList.add('show');
+}
+
+efmList.addEventListener('click', (e)=>{
+  const go = e.target.closest('.efm-goto');
+  if(go){
+    eventFeedModal.classList.remove('show');
+    openFeedDate(go.dataset.date);
+    return;
+  }
+  const item = e.target.closest('.efm-item.clickable');
+  if(item && item.dataset.link) window.open(item.dataset.link, '_blank');
+});
+
+document.getElementById('efmAddBtn').onclick = ()=>{
+  const ev = allEventsData.find(e=>e.id===archiveEventId);
+  if(!ev) return;
+  eventFeedModal.classList.remove('show');
+  pendingLinkEventId = ev.id;
+  openFeedDate(ev.start);
+};
+
+// ---------- 일정 달력 위 떡밥 표시(겹쳐 보기) ----------
+let feedOverlayOn = true;
+try{
+  const saved = localStorage.getItem('solarFeedOverlay');
+  if(saved !== null) feedOverlayOn = saved === '1';
+}catch(e){}
+const feedOverlayBtn = document.getElementById('feedOverlayBtn');
+feedOverlayBtn.classList.toggle('active', feedOverlayOn);
+feedOverlayBtn.addEventListener('click', ()=>{
+  feedOverlayOn = !feedOverlayOn;
+  feedOverlayBtn.classList.toggle('active', feedOverlayOn);
+  try{ localStorage.setItem('solarFeedOverlay', feedOverlayOn ? '1' : '0'); }catch(e){}
+  refreshScheduleFeedDots();
+});
+
+let overlayRaf = 0;
+function scheduleOverlayRefresh(){
+  if(overlayRaf) return;
+  overlayRaf = requestAnimationFrame(()=>{ overlayRaf = 0; refreshScheduleFeedDots(); });
+}
+
+function refreshScheduleFeedDots(){
+  document.querySelectorAll('#calendar .sched-feed-dots').forEach(el=>el.remove());
+  if(!feedOverlayOn) return;
+  document.querySelectorAll('#calendar .fc-daygrid-day').forEach(cell=>{
+    const dateStr = cell.getAttribute('data-date');
+    if(!dateStr) return;
+    const items = feedByDate[dateStr];
+    if(!items || !items.length) return;
+    const cats = [...new Set(items.map(i=>i.category))].slice(0, 6);
+    const wrap = document.createElement('div');
+    wrap.className = 'sched-feed-dots';
+    wrap.dataset.date = dateStr;
+    wrap.title = `떡밥 ${items.length}개 · 누르면 떡밥 탭으로 이동`;
+    wrap.innerHTML = `<i class="fa-solid fa-camera-retro"></i>` +
+      cats.map(c=>`<span class="sfd-dot" style="background:${feedCategoryColor[c]||'#9C9488'}"></span>`).join('') +
+      `<span class="sfd-count">${items.length}</span>`;
+    const evBox = cell.querySelector('.fc-daygrid-day-events');
+    if(evBox) evBox.insertAdjacentElement('afterend', wrap);
+    else (cell.querySelector('.fc-daygrid-day-frame') || cell).appendChild(wrap);
+  });
+}
+
+// 캡처 단계에서 가로채서 일정 클릭(링크 열기/수정)과 겹치지 않게 처리
+document.getElementById('calendar').addEventListener('click', (e)=>{
+  const badge = e.target.closest('.event-feed-badge');
+  if(badge){
+    e.stopPropagation(); e.preventDefault();
+    openEventArchive(badge.dataset.eventId);
+    return;
+  }
+  const dots = e.target.closest('.sched-feed-dots');
+  if(dots){
+    e.stopPropagation(); e.preventDefault();
+    openFeedDate(dots.dataset.date);
+  }
+}, true);
+
+// ---------- 통합 검색 (일정 + 떡밥) ----------
+function feedMatches(item, q){
+  const ev = item.eventId ? allEventsData.find(e=>e.id===item.eventId) : null;
+  return [item.memo, item.link, item.category, ev && ev.title]
+    .some(v=> String(v||'').toLowerCase().includes(q));
+}
+
+function renderSearchResults(){
+  const box = document.getElementById('searchResults');
+  const q = searchInput.value.trim().toLowerCase();
+  if(!q){ box.style.display='none'; box.innerHTML=''; return; }
+
+  const evs = allEventsData
+    .filter(e=>e.start && isTypeVisible(e.type) && (e.title||'').toLowerCase().includes(q))
+    .sort((a,b)=> ymd(b.start).localeCompare(ymd(a.start)));
+  const fds = feedData
+    .filter(f=>feedMatches(f, q))
+    .sort((a,b)=> String(b.date).localeCompare(String(a.date)) || (b.createdAt||0)-(a.createdAt||0));
+
+  const MAX = 30;
+  const evRows = evs.slice(0, MAX).map(e=>{
+    const color = eventColorHex[e.type] || '#D9D5CE';
+    return `<div class="sr-row" data-kind="event" data-date="${escHTML(ymd(e.start))}">
+      <span class="sr-dot" style="background:${color}"></span>
+      <span class="sr-date">${shortDate(e.start)}</span>
+      <span class="sr-main">${escHTML(e.title)}</span>
+      <span class="sr-tag">${escHTML(e.type||'')}</span>
+    </div>`;
+  }).join('');
+  const fdRows = fds.slice(0, MAX).map(f=>{
+    const color = feedCategoryColor[f.category] || '#9C9488';
+    const memo = (f.memo||'').trim().split('\n')[0];
+    const text = memo || f.link || f.category;
+    return `<div class="sr-row" data-kind="feed" data-date="${escHTML(f.date)}">
+      <span class="sr-dot" style="background:${color}"></span>
+      <span class="sr-date">${shortDate(f.date)}</span>
+      <span class="sr-main">${escHTML(text)}</span>
+      <span class="sr-tag">${escHTML(f.category)}</span>
+    </div>`;
+  }).join('');
+
+  let html = '';
+  if(evs.length) html += `<div class="sr-head">일정 <b>${evs.length}</b></div>${evRows}` +
+    (evs.length>MAX ? `<div class="sr-more">외 ${evs.length-MAX}개 더 있어요</div>` : '');
+  if(fds.length) html += `<div class="sr-head">떡밥 <b>${fds.length}</b></div>${fdRows}` +
+    (fds.length>MAX ? `<div class="sr-more">외 ${fds.length-MAX}개 더 있어요</div>` : '');
+  if(!html) html = `<div class="sr-empty">검색 결과가 없어요.</div>`;
+  box.innerHTML = html;
+  box.style.display = 'block';
+}
+
+document.getElementById('searchResults').addEventListener('click', (e)=>{
+  const row = e.target.closest('.sr-row');
+  if(!row) return;
+  if(row.dataset.kind === 'feed') openFeedDate(row.dataset.date);
+  else openCalendarDate(row.dataset.date);
+});
+
+// ---------- 월간 요약 ----------
+function countBy(list, keyFn){
+  const m = {};
+  list.forEach(x=>{ const k = keyFn(x); m[k] = (m[k]||0) + 1; });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+
+function breakdownHTML(title, entries, colorOf){
+  if(!entries.length) return '';
+  const segs = entries.map(([k,n])=>
+    `<span class="ms-seg" style="flex:${n};background:${colorOf(k)}" title="${escHTML(k)} ${n}"></span>`).join('');
+  const chips = entries.map(([k,n])=>
+    `<span class="ms-chip"><span class="dot" style="background:${colorOf(k)}"></span>${escHTML(k)} ${n}</span>`).join('');
+  return `<div class="ms-block">
+    <div class="ms-block-title">${title}</div>
+    <div class="ms-bar">${segs}</div>
+    <div class="ms-chips">${chips}</div>
+  </div>`;
+}
+
+function renderMonthSummary(){
+  const box = document.getElementById('monthSummary');
+  if(!box) return;
+  let cs = null;
+  try{ cs = calendar.view && calendar.view.currentStart; }catch(e){}
+  if(!cs) return;
+  const y = cs.getFullYear(), m = cs.getMonth() + 1;
+  const key = `${y}-${String(m).padStart(2,'0')}`;
+
+  const evs = allEventsData.filter(e=>ymd(e.start).slice(0,7) === key);
+  const fds = feedData.filter(f=>String(f.date||'').slice(0,7) === key);
+  const head = `<div class="ms-head"><span class="ms-title">${m}월 요약</span><span class="ms-year">${y}</span></div>`;
+
+  if(!evs.length && !fds.length){
+    box.innerHTML = head + `<div class="ms-empty">이 달은 아직 기록이 없어요.</div>`;
+    return;
+  }
+
+  const recorded = evs.filter(e=>(feedByEvent[e.id]||[]).length > 0).length;
+  const perDay = {};
+  fds.forEach(f=>{ perDay[f.date] = (perDay[f.date]||0) + 1; });
+  let bestDate = null, bestN = 0;
+  Object.keys(perDay).sort().forEach(d=>{ if(perDay[d] > bestN){ bestN = perDay[d]; bestDate = d; } });
+
+  const tiles = `<div class="ms-tiles">
+    <div class="ms-tile"><div class="ms-num">${evs.length}</div><div class="ms-lab">일정</div></div>
+    <div class="ms-tile"><div class="ms-num">${fds.length}</div><div class="ms-lab">떡밥</div></div>
+    <div class="ms-tile"><div class="ms-num">${evs.length ? `${recorded}/${evs.length}` : '–'}</div><div class="ms-lab">떡밥을 연결한 일정</div></div>
+    ${bestDate
+      ? `<div class="ms-tile clickable" data-date="${bestDate}"><div class="ms-num">${shortDate(bestDate)}</div><div class="ms-lab">떡밥이 가장 많은 날 · ${bestN}개</div></div>`
+      : `<div class="ms-tile"><div class="ms-num">–</div><div class="ms-lab">떡밥이 가장 많은 날</div></div>`}
+  </div>`;
+
+  box.innerHTML = head + tiles +
+    breakdownHTML('일정 종류', countBy(evs, e=>e.type||'기타'), k=>eventColorHex[k] || '#D9D5CE') +
+    breakdownHTML('떡밥 카테고리', countBy(fds, f=>f.category||'기타'), k=>feedCategoryColor[k] || '#9C9488');
+}
+
+document.getElementById('monthSummary').addEventListener('click', (e)=>{
+  const tile = e.target.closest('.ms-tile.clickable');
+  if(tile) openFeedDate(tile.dataset.date);
+});
+
+feedUiReady = true;
 
 (async()=>{
   feedData = await loadCollection('feed');
@@ -1506,6 +1941,7 @@ window.addEventListener('resize', ()=>{
   }
   rebuildFeedByDate();
   refreshFeedDots();
+  refreshCalendarEvents();
 })();
 
 </script>
