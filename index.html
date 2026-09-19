@@ -1242,16 +1242,16 @@ calendar.on('eventClick', info => {
   } else if (link) {
     window.open(link, '_blank');
   } else if (feedCnt) {
-    openFeedDate(e.startStr);
+    openEventFeed(e.id);
   }
 });
 
 // 링크/떡밥이 모두 연결된 일정을 눌렀을 때 선택하게 하는 모달
 const linkFeedChoiceModal = document.getElementById('linkFeedChoiceModal');
 linkFeedChoiceModal.querySelector('.close-btn').onclick = ()=> linkFeedChoiceModal.classList.remove('show');
-let choiceEventStart = null, choiceEventLink = null;
+let choiceEventId = null, choiceEventLink = null;
 function openLinkOrFeedChoice(e, link){
-  choiceEventStart = e.startStr;
+  choiceEventId = e.id;
   choiceEventLink = link;
   document.getElementById('lfcTitle').textContent = e.title || '';
   linkFeedChoiceModal.classList.add('show');
@@ -1262,7 +1262,7 @@ document.getElementById('lfcLinkBtn').onclick = ()=>{
 };
 document.getElementById('lfcFeedBtn').onclick = ()=>{
   linkFeedChoiceModal.classList.remove('show');
-  if(choiceEventStart) openFeedDate(choiceEventStart);
+  if(choiceEventId) openEventFeed(choiceEventId);
 };
 
 // ============ 필터 / 검색 반영 ============
@@ -1782,6 +1782,17 @@ const eventFeedModal = document.getElementById('eventFeedModal');
 const efmList = document.getElementById('efmList');
 let archiveEventId = null;
 eventFeedModal.querySelector('.close-btn').onclick = ()=> eventFeedModal.classList.remove('show');
+
+// 일정에 연결된 떡밥 보러 가기.
+// 떡밥은 일정 날짜와 다른 날에 등록됐을 수 있으므로(예: 해외 일정 시차), 일정 날짜가 아니라
+// '연결된 떡밥이 실제로 등록된 날짜'로 이동한다. 떡밥이 여러 날에 흩어져 있으면 모아보기 창에서 고른다.
+function openEventFeed(eventId){
+  const items = feedByEvent[eventId] || [];
+  if(!items.length) return;
+  const dates = [...new Set(items.map(i=>i.date))].sort();
+  if(dates.length === 1) openFeedDate(dates[0]);
+  else openEventArchive(eventId);
+}
 
 function openEventArchive(eventId){
   const ev = allEventsData.find(e=>e.id===eventId);
