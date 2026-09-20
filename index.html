@@ -648,18 +648,21 @@ footer.site-footer{
   margin-right:4px;vertical-align:0;
 }
 .feed-chips .feed-more{font-size:8.5px;font-weight:700;color:var(--ink-soft);line-height:1;padding-left:2px;}
+/* 달력 탭의 떡밥 점(.sched-feed-dots)과 똑같은 위치·여백값: 목록 ↔ 점 간격이 두 탭에서 같도록 맞춤 */
 .feed-cal-dots{
-  position:absolute;left:4px;right:4px;bottom:3px;
+  position:absolute;left:5px;right:5px;bottom:4px;height:9px;
   display:flex;align-items:center;gap:3px;
   overflow:hidden;pointer-events:none;
 }
+.fc-daygrid-day-frame:has(> .feed-cal-dots){padding-bottom:22px;}
 .feed-cal-dots .fcd-dot{width:5px;height:5px;border-radius:50%;flex:none;}
 @media (max-width:600px){
   .feed-chips{gap:1px;padding:0 2px;}
   .feed-chip{font-size:7px;padding:1px 1px;}
   .feed-chip-dot{width:5px;height:5px;margin-right:3px;}
-  .feed-cal-dots{left:3px;right:3px;bottom:2px;gap:2px;}
+  .feed-cal-dots{left:3px;right:3px;bottom:2px;height:auto;gap:2px;}
   .feed-cal-dots .fcd-dot{width:4.5px;height:4.5px;}
+  .fc-daygrid-day-frame:has(> .feed-cal-dots){padding-bottom:15px;}
 }
 .fc-daygrid-day.feed-has-entry{cursor:pointer;}
 .fc-daygrid-day.feed-selected{background:var(--accent-soft)!important;}
@@ -1820,8 +1823,12 @@ function refreshFeedDots(){
         more.textContent = `+${items.length - maxShow}개`;
         chipsWrap.appendChild(more);
       }
+      // 달력 탭의 일정처럼 '일정 영역' 안에 넣는다 → 비어 있는 칸은 달력 탭과 똑같은 높이,
+      // 목록이 있는 칸은 목록 높이만큼만 차지해서 목록과 점 사이에 빈 영역이 따로 생기지 않음.
+      const evBox = cell.querySelector('.fc-daygrid-day-events');
       const dayTop = cell.querySelector('.fc-daygrid-day-top');
-      if(dayTop) dayTop.insertAdjacentElement('afterend', chipsWrap);
+      if(evBox) evBox.appendChild(chipsWrap);
+      else if(dayTop) dayTop.insertAdjacentElement('afterend', chipsWrap);
       else (cell.querySelector('.fc-daygrid-day-frame') || cell).appendChild(chipsWrap);
 
       // 칸 맨 아래: 어떤 카테고리가 있는지 색 점으로 표시 (기존 그대로)
