@@ -647,6 +647,8 @@ footer.site-footer{
   display:inline-block;width:6px;height:6px;border-radius:50%;
   margin-right:4px;vertical-align:0;
 }
+.feed-chip .feed-chip-icon{display:inline-block;width:11px;margin-right:4px;font-size:9.5px;text-align:center;line-height:1;vertical-align:-1px;}
+.feed-chip img.feed-chip-icon{width:10px;height:10px;object-fit:contain;vertical-align:-1px;}
 .feed-chips .feed-more{font-size:8.5px;font-weight:700;color:var(--ink-soft);line-height:1;padding-left:2px;}
 /* 달력 탭의 떡밥 점(.sched-feed-dots)과 똑같은 위치·여백값: 목록 ↔ 점 간격이 두 탭에서 같도록 맞춤 */
 .feed-cal-dots{
@@ -660,6 +662,8 @@ footer.site-footer{
   .feed-chips{gap:1px;padding:0 2px;}
   .feed-chip{font-size:7px;padding:1px 1px;}
   .feed-chip-dot{width:5px;height:5px;margin-right:3px;}
+  .feed-chip .feed-chip-icon{width:8px;margin-right:3px;font-size:7px;}
+  .feed-chip img.feed-chip-icon{width:7px;height:7px;}
   .feed-cal-dots{left:3px;right:3px;bottom:2px;height:auto;gap:2px;}
   .feed-cal-dots .fcd-dot{width:4.5px;height:4.5px;}
   .fc-daygrid-day-frame:has(> .feed-cal-dots){padding-bottom:15px;}
@@ -1807,10 +1811,19 @@ function refreshFeedDots(){
       items.slice(0, maxShow).forEach(it=>{
         const chip = document.createElement('div');
         chip.className = 'feed-chip';
-        const cdot = document.createElement('span');
-        cdot.className = 'feed-chip-dot';
-        cdot.style.background = feedCategoryColor[it.category] || '#8A8A8A';
-        chip.appendChild(cdot);
+        const catColor = feedCategoryColor[it.category] || '#8A8A8A';
+        if(it.link){
+          // 링크가 있으면 플랫폼(X, 유튜브, 인스타 등)에 맞는 아이콘, 색은 카테고리 색
+          chip.insertAdjacentHTML('beforeend', getLinkIcon(it.link, 'feed-chip-icon'));
+          const ic = chip.lastElementChild;
+          if(ic && ic.tagName === 'I') ic.style.color = catColor;
+        } else {
+          // 링크 없이 메모만 있으면 카테고리 색 점
+          const cdot = document.createElement('span');
+          cdot.className = 'feed-chip-dot';
+          cdot.style.background = catColor;
+          chip.appendChild(cdot);
+        }
         const memoText = (it.memo||'').trim();
         // 메모가 있으면 메모 첫 줄, 없으면 카테고리 이름
         chip.appendChild(document.createTextNode(memoText ? memoText.split('\n')[0] : it.category));
