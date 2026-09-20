@@ -693,10 +693,11 @@ footer.site-footer{
 }
 /* 모든 행의 위 여백을 똑같이 두고 목록 전체만 위로 당겨서, 1열/2열 모두 첫 줄 높이가 맞도록 함 */
 .feed-list{margin-top:-10px;}
-/* 폭이 넓으면 2열로 나눠서 세로 스크롤을 줄임 */
+/* 화면이 넓을 때(820px 이상)만 2열로 나눠서 세로 스크롤을 줄임. 모바일은 1열 */
+.feed-list .feed-item{break-inside:avoid;}
 @media (min-width:820px){
   .feed-list{column-count:2;column-gap:28px;}
-  .feed-list .feed-item{break-inside:avoid;}
+  .feed-list .feed-item.feed-item-editing{column-span:all;}
 }
 
 /* 트위터(X) 스타일 카드 - 임베드 유무와 상관없이 전부 통일 */
@@ -716,16 +717,16 @@ footer.site-footer{
 .feed-item-clickable{cursor:pointer;transition:filter .15s ease;}
 .feed-item-clickable:hover{filter:brightness(0.97);}
 .feed-item-clickable:active{filter:brightness(0.93);}
-.feed-item-actions{display:flex;gap:28px;flex:none;margin-top:10px;}
-.feed-item-actions i{font-size:13px;color:var(--ink-faint);cursor:pointer;}
+.feed-item-actions{display:flex;gap:14px;flex:none;margin-left:auto;}
+.feed-item-actions i{font-size:12px;color:var(--ink-faint);cursor:pointer;}
 .feed-item-actions .fa-trash:hover{color:var(--danger);}
 .feed-item-actions .fa-pen:hover{color:var(--accent);}
+
 .feed-empty{font-size:12px;color:var(--ink-faint);padding:8px 0 14px;}
 .feed-filter-row{margin:0 0 14px;}
 
 .feed-embed{margin-top:10px;max-width:360px;}
-/* 세로가 긴 임베드는 살짝 축소해서 스크롤 부담을 줄임 (zoom 미지원 브라우저는 원래 크기) */
-.feed-embed-ig,.feed-embed-th,.feed-embed-tt,.feed-embed-fb{zoom:.85;}
+/* 임베드 폭/축소(zoom)는 JS(fitEmbed)가 열 폭에 맞춰 인라인으로 지정 (zoom 미지원 브라우저는 원래 크기) */
 .feed-embed-yt{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;}
 .feed-embed-yt iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
 .feed-embed-tw{max-width:100%;overflow:hidden;}
@@ -1488,6 +1489,17 @@ function getYoutubeEmbedId(link){
   return m ? m[1] : null;
 }
 
+// 임베드 위젯마다 '이보다 좁으면 깨지는' 최소 폭이 있어서, 열이 그보다 좁으면
+// 최소 폭으로 그린 뒤 zoom으로 통째로 줄여서 열 폭에 맞춘다.
+// shrink: 세로가 긴 임베드는 넉넉한 곳에서도 살짝(0.85) 줄여서 스크롤 부담을 줄임.
+function fitEmbed(minW, avail, shrink){
+  avail = avail || minW;
+  let z = shrink || 1;
+  let w = Math.round(avail / z);
+  if(w < minW){ w = minW; z = avail / minW; }
+  return { w, z: Math.round(z * 1000) / 1000 };
+}
+
 function feedEmbedHTML(item, embedWidth){
   const platform = getLinkPlatform(item.link);
   if(platform === 'youtube'){
@@ -1501,40 +1513,43 @@ function feedEmbedHTML(item, embedWidth){
   if(platform === 'twitter'){
     // data-width를 카드의 실제 가용 너비로 못박아둬야, 트위터 위젯이 자체적으로
     // 재는 폭이 틀어져서(예: 처음 측정 시점이 안 맞는 경우) 카드 밖으로 삐져나오는 걸 막을 수 있음.
-    const w = embedWidth ? ` data-width="${embedWidth}"` : '';
-    return `<div class="feed-embed feed-embed-tw">
-      <blockquote class="twitter-tweet" data-dnt="true" data-conversation="none"${w}>
+    const f = fitEmbed(250, embedWidth, 1);
+    return `<div class="feed-embed feed-embed-tw" style="width:${f.w}px;max-width:none;zoom:${f.z};">
+      <blockquote class="twitter-tweet" data-dnt="true" data-conversation="none" data-width="${f.w}">
         <a href="${item.link}"></a>
       </blockquote>
     </div>`;
   }
   if(platform === 'instagram'){
-    return `<div class="feed-embed feed-embed-ig">
+    const f = fitEmbed(326, embedWidth, .85);
+    return `<div class="feed-embed feed-embed-ig" style="width:${f.w}px;max-width:none;zoom:${f.z};">
       <blockquote class="instagram-media" data-instgrm-permalink="${item.link}" data-instgrm-version="14" style="margin:0;width:100%;min-width:0;max-width:100%;"></blockquote>
     </div>`;
   }
   if(platform === 'threads'){
-    return `<div class="feed-embed feed-embed-th">
+    const f = fitEmbed(300, embedWidth, .85);
+    return `<div class="feed-embed feed-embed-th" style="width:${f.w}px;max-width:none;zoom:${f.z};">
       <blockquote class="text-post-media" data-text-post-permalink="${item.link}" data-text-post-version="0" style="margin:0;width:100%;min-width:0;max-width:100%;"></blockquote>
     </div>`;
   }
   if(platform === 'tiktok'){
     const idm = item.link.match(/\/video\/(\d+)/);
     if(!idm) return ''; // vm.tiktok.com 같은 단축 링크는 영상 ID를 못 뽑아서 링크 카드로 대체
-    const w = embedWidth ? Math.min(325, embedWidth) : 325;
-    return `<div class="feed-embed feed-embed-tt">
-      <blockquote class="tiktok-embed" cite="${item.link}" data-video-id="${idm[1]}" style="max-width:${w}px;min-width:220px;">
+    const f = fitEmbed(325, embedWidth, .85);
+    return `<div class="feed-embed feed-embed-tt" style="width:${f.w}px;max-width:none;zoom:${f.z};">
+      <blockquote class="tiktok-embed" cite="${item.link}" data-video-id="${idm[1]}" style="max-width:325px;min-width:325px;">
         <section></section>
       </blockquote>
     </div>`;
   }
   if(platform === 'facebook-post' || platform === 'facebook-video'){
     const isVideo = platform === 'facebook-video';
-    const w = embedWidth ? Math.max(220, Math.min(500, embedWidth)) : 350;
+    const f = fitEmbed(220, embedWidth, .85);
+    const w = Math.min(500, f.w);
     const h = isVideo ? Math.round(w*9/16) + 60 : 480;
     const href = encodeURIComponent(item.link);
     const kind = isVideo ? 'video' : 'post';
-    return `<div class="feed-embed feed-embed-fb">
+    return `<div class="feed-embed feed-embed-fb" style="width:${w}px;max-width:none;zoom:${f.z};">
       <iframe src="https://www.facebook.com/plugins/${kind}.php?href=${href}&width=${w}&show_text=false"
         width="${w}" height="${h}" style="border:none;overflow:hidden;" scrolling="no" frameborder="0"
         allowTransparency="true" ${isVideo?'allowFullScreen':''}></iframe>
@@ -1595,13 +1610,13 @@ function feedItemHTML(item, embedWidth){
         <span class="ftw-name">${item.category}</span>
         ${item.createdAt ? `<span class="ftw-time">· ${feedTimeLabel(item.createdAt)}</span>` : ''}
         ${eventTagHTML}
+        <div class="feed-item-actions">
+          <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
+          <i class="fa-solid fa-trash" data-del="${item.id}"></i>
+        </div>
       </div>
       ${memoHTML}
       ${embedHTML}
-      <div class="feed-item-actions">
-        <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
-        <i class="fa-solid fa-trash" data-del="${item.id}"></i>
-      </div>
     </div>
   </div>`;
 }
@@ -1617,13 +1632,13 @@ function renderFeedPanel(dateStr){
     .filter(i=>isFeedVisible(i.category))
     .slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
 
-  // 본문에서 실제로 임베드가 차지할 수 있는 폭(아바타 40 + 간격 12)을 계산해서
-  // 트위터 위젯이 스스로 재는 값이 어긋나 밖으로 삐져나오지 않게 못박아둠.
-  // 폭이 넓으면 2열이라 열 폭 기준으로 계산하고, 너무 커지지 않게 최대 360px로 제한.
+  // 본문에서 실제로 임베드가 차지할 수 있는 폭(아바타 40 + 간격 12)을 열 폭 기준으로 계산해서
+  // 위젯이 스스로 재는 값이 어긋나 밖으로 삐져나오지 않게 못박아둠. (최대 360px)
+  // 화면이 넓으면(820px 이상) 2열이라 열 폭 기준, 아니면 1열.
   const panelWidth = feedPanel.clientWidth || 280;
   const cols = window.innerWidth >= 820 ? 2 : 1;
   const colWidth = (panelWidth - (cols - 1) * 28) / cols;
-  const embedWidth = Math.max(220, Math.min(360, Math.floor(colWidth - 54)));
+  const embedWidth = Math.max(100, Math.min(360, Math.floor(colWidth - 54)));
 
   const itemsHTML = items.length
     ? `<div class="feed-list">${items.map(item=>feedItemHTML(item, embedWidth)).join('')}</div>`
