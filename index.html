@@ -12,6 +12,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script async src="https://www.instagram.com/embed.js"></script>
+<script async src="https://www.threads.net/embed.js"></script>
+<script async src="https://www.tiktok.com/embed.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
@@ -528,12 +531,13 @@ footer.site-footer{
   .filter-chip{font-size:12px;}
   .search-line{gap:12px;}
   .event-feed-badge{margin-top:2px;padding-top:1px;}
-  /* 모바일: 떡밥 종류(색 점)는 숨기고 "카메라 아이콘 + 개수"만 표시 */
+  /* 모바일: 카메라 아이콘+숫자 대신, 어떤 떡밥 종류가 있는지 작은 색 점으로만 표시 */
   .sched-feed-dots{left:3px;right:3px;bottom:2px;gap:2px;overflow:hidden;}
-  .sched-feed-dots i{font-size:8px;}
-  .sched-feed-dots .sfd-dots{display:none;}
-  .sched-feed-dots .sfd-count{font-size:8.5px;margin-left:0;}
-  .fc-daygrid-day-frame:has(> .sched-feed-dots){padding-bottom:13px;}
+  .sched-feed-dots i{display:none;}
+  .sched-feed-dots .sfd-dots{display:flex;}
+  .sched-feed-dots .sfd-dot{width:4.5px;height:4.5px;}
+  .sched-feed-dots .sfd-count{display:none;}
+  .fc-daygrid-day-frame:has(> .sched-feed-dots){padding-bottom:11px;}
   .overlay-toggle{font-size:11.5px;}
   .fc-col-header-cell-cushion{font-size:9px;}
   .avatar-stack img{width:28px;height:28px;}
@@ -632,6 +636,7 @@ footer.site-footer{
   width:6px;height:6px;border-radius:50%;
   flex:none;
 }
+/* 떡밥 탭 캘린더: 칸 안에는 메모 목록(최대 5개 + 나머지는 +N개), 칸 맨 아래에는 카테고리별 점 */
 .feed-chips{display:flex;flex-direction:column;gap:2px;padding:0 3px;margin-top:2px;min-width:0;}
 .feed-chip{
   display:block;padding:1px 2px;
@@ -643,10 +648,20 @@ footer.site-footer{
   margin-right:4px;vertical-align:0;
 }
 .feed-chips .feed-more{font-size:8.5px;font-weight:700;color:var(--ink-soft);line-height:1;padding-left:2px;}
+.fc-daygrid-day-frame:has(> .feed-cal-dots){padding-bottom:12px;}
+.feed-cal-dots{
+  position:absolute;left:4px;right:4px;bottom:3px;
+  display:flex;align-items:center;gap:3px;
+  overflow:hidden;pointer-events:none;
+}
+.feed-cal-dots .fcd-dot{width:5px;height:5px;border-radius:50%;flex:none;}
 @media (max-width:600px){
   .feed-chips{gap:1px;padding:0 2px;}
   .feed-chip{font-size:7px;padding:1px 1px;}
   .feed-chip-dot{width:5px;height:5px;margin-right:3px;}
+  .fc-daygrid-day-frame:has(> .feed-cal-dots){padding-bottom:10px;}
+  .feed-cal-dots{left:3px;right:3px;bottom:2px;gap:2px;}
+  .feed-cal-dots .fcd-dot{width:4.5px;height:4.5px;}
 }
 .fc-daygrid-day.feed-has-entry{cursor:pointer;}
 .fc-daygrid-day.feed-selected{background:var(--accent-soft)!important;}
@@ -669,47 +684,60 @@ footer.site-footer{
 }
 .feed-item{
   position:relative;
-  margin:8px 0 0;
-  padding:10px 10px 10px 12px;
-  border-left:3px solid transparent;
-  border-radius:8px;
-  background:var(--surface);
+  margin:0;
+  padding:14px 0;
+  border:none;
+  border-bottom:1px solid var(--line);
+  border-radius:0;
+  background:transparent;
 }
-.feed-item:first-of-type{margin-top:0;}
-.feed-item .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+/* 모든 행의 위 여백을 똑같이 두고 목록 전체만 위로 당겨서, 1열/2열 모두 첫 줄 높이가 맞도록 함 */
+.feed-list{margin-top:-10px;}
+/* 폭이 넓으면 2열로 나눠서 세로 스크롤을 줄임 */
+@media (min-width:820px){
+  .feed-list{column-count:2;column-gap:28px;}
+  .feed-list .feed-item{break-inside:avoid;}
+}
 
-/* 컴팩트 카드 (임베드 불가 링크 / 메모만) */
-.feed-item-compact{display:flex;align-items:flex-start;gap:9px;padding-top:10px;padding-bottom:10px;}
-.feed-item-compact .dot{margin-top:5px;}
-.feed-item-body{flex:1;min-width:0;}
-.feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;}
+/* 트위터(X) 스타일 카드 - 임베드 유무와 상관없이 전부 통일 */
+.feed-item-tw{display:flex;align-items:flex-start;gap:12px;}
+.feed-item-tw .ftw-avatar{
+  width:40px;height:40px;border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.feed-item-tw .ftw-avatar-icon{color:#fff;font-size:16px;}
 .feed-item-icon{font-size:11px;color:var(--ink-soft);margin-right:5px;width:1em;height:1em;object-fit:contain;}
-.feed-item-memo{font-size:12px;color:var(--ink-soft);margin-top:2px;word-break:break-word;}
+.feed-item-tw .ftw-body{flex:1;min-width:0;}
+.feed-item-tw .ftw-head{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.feed-item-tw .ftw-name{font-size:14px;font-weight:700;color:var(--ink);}
+.feed-item-tw .ftw-time{font-size:12.5px;color:var(--ink-soft);}
+.feed-item-tw .feed-item-event{margin-top:0;}
+.feed-item-memo{font-size:14px;color:var(--ink);line-height:1.5;margin-top:2px;word-break:break-word;white-space:pre-wrap;}
 .feed-item-clickable{cursor:pointer;transition:filter .15s ease;}
 .feed-item-clickable:hover{filter:brightness(0.97);}
 .feed-item-clickable:active{filter:brightness(0.93);}
-.feed-item-actions{display:flex;gap:10px;flex:none;}
-.feed-item-actions i{font-size:12px;color:var(--ink-faint);cursor:pointer;}
+.feed-item-actions{display:flex;gap:28px;flex:none;margin-top:10px;}
+.feed-item-actions i{font-size:13px;color:var(--ink-faint);cursor:pointer;}
 .feed-item-actions .fa-trash:hover{color:var(--danger);}
 .feed-item-actions .fa-pen:hover{color:var(--accent);}
 .feed-empty{font-size:12px;color:var(--ink-faint);padding:8px 0 14px;}
 .feed-filter-row{margin:0 0 14px;}
 
-/* 임베드 카드 (유튜브 / X) */
-.feed-item-embed{display:block;}
-.feed-item-embed .feed-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
-.feed-item-embed .feed-item-cat{font-size:11.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
-.feed-item-embed .feed-item-actions{
-  position:absolute;top:8px;right:8px;
-  background:rgba(255,255,255,.9);
-  border-radius:999px;padding:3px 7px;
-}
-.feed-embed{margin-top:8px;}
-.feed-embed-yt{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:10px;overflow:hidden;}
+.feed-embed{margin-top:10px;max-width:360px;}
+/* 세로가 긴 임베드는 살짝 축소해서 스크롤 부담을 줄임 (zoom 미지원 브라우저는 원래 크기) */
+.feed-embed-ig,.feed-embed-th,.feed-embed-tt,.feed-embed-fb{zoom:.85;}
+.feed-embed-yt{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;}
 .feed-embed-yt iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0;}
 .feed-embed-tw{max-width:100%;overflow:hidden;}
 .feed-embed-tw .twitter-tweet{margin:0!important;max-width:100%!important;}
 .feed-embed-tw iframe{max-width:100%!important;}
+.feed-embed-ig{max-width:100%;overflow:hidden;display:flex;justify-content:center;}
+.feed-embed-ig iframe{max-width:100%!important;}
+.feed-embed-th{max-width:100%;overflow:hidden;}
+.feed-embed-th iframe{max-width:100%!important;}
+.feed-embed-tt{max-width:100%;overflow-x:auto;display:flex;justify-content:center;}
+.feed-embed-fb{max-width:100%;overflow-x:auto;}
+.feed-embed-fb iframe{max-width:100%;}
 .feed-embed-fallback{
   display:inline-flex;align-items:center;gap:6px;
   margin-top:4px;font-size:11.5px;color:var(--accent);
@@ -746,8 +774,10 @@ footer.site-footer{
 .feed-panel-placeholder{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:26px 0;}
 
 /* ============ 떡밥 아이템 수정 폼 ============ */
-.feed-item-editing{
+.feed-item.feed-item-editing{
   background:var(--page-bg)!important;
+  padding:12px;margin:10px 0;
+  border:0.5px solid var(--line);border-radius:14px;
 }
 .feed-item-editing select,.feed-item-editing input,.feed-item-editing textarea{
   width:100%;
@@ -1431,13 +1461,25 @@ function hexToRgba(hex, alpha){
 // 유튜브: 공식 iframe 임베드, API 키 없이 항상 동작.
 // X(트위터): blockquote + widgets.js 공개 임베드, API 키 불필요하지만
 //   비공개/삭제된 게시물이거나 X 쪽 사정으로 가끔 렌더링에 실패할 수 있음 → 그 경우 링크로 대체.
-// 인스타그램/스레드: 2025년 4월 메타가 무료 client-side 임베드(embed.js)를 종료하고
-//   앱 심사 + 액세스 토큰이 필요한 Graph API 방식으로 바꿔서, 서버 없이는 실제 임베드가 불가능함.
-//   디시인사이드 등도 공식 임베드가 없음 → 이런 링크는 아이콘 카드로 대체.
+// 인스타그램/스레드: 2020~2026년 초까지는 메타가 oEmbed에 액세스 토큰+앱 심사를 요구해서
+//   서버 없이는 임베드가 불가능했지만, 2026년 6월 15일부로 메타가 이 정책을 되돌려서
+//   Instagram/Threads oEmbed가 다시 토큰 없이 동작함. 그래서 트위터와 동일한 방식
+//   (blockquote + 공식 embed.js) 으로 클라이언트에서 바로 임베드 가능.
+// 틱톡: 원래부터 API 키/토큰 없이 blockquote + embed.js로 항상 임베드 가능.
+// 페이스북: 게시물/영상 모두 앱 등록 없이 공개 iframe(plugins/post.php, plugins/video.php)으로
+//   임베드 가능하지만, 트위터/인스타처럼 높이를 자동으로 못 맞춰서 내용에 따라 살짝
+//   잘리거나 여백이 남을 수 있음 (공식 SDK의 알려진 한계).
+// 그 외(웨이보, 샤오홍슈/레드노트, 카카오톡, 네이버 등): 공개 client-side 임베드 위젯이
+//   없어서(로그인 필요/비공개 API) 임베드가 불가능함 → 기존처럼 아이콘+링크로 대체.
 function getLinkPlatform(link){
   if(!link) return null;
   if(/youtube\.com|youtu\.be/.test(link)) return 'youtube';
   if(/(^|\/\/)(www\.)?(twitter\.com|x\.com)\//.test(link)) return 'twitter';
+  if(/(^|\/\/)(www\.)?instagram\.com\/(p|reel|tv)\//.test(link)) return 'instagram';
+  if(/(^|\/\/)(www\.)?threads\.(net|com)\//.test(link)) return 'threads';
+  if(/(^|\/\/)(www\.)?tiktok\.com\/@[^/]+\/video\//.test(link)) return 'tiktok';
+  if(/(^|\/\/)(www\.)?facebook\.com\/[^/]+\/posts\//.test(link)) return 'facebook-post';
+  if(/(^|\/\/)(www\.)?facebook\.com\/[^/]+\/videos\//.test(link)) return 'facebook-video';
   return null;
 }
 
@@ -1466,12 +1508,56 @@ function feedEmbedHTML(item, embedWidth){
       </blockquote>
     </div>`;
   }
+  if(platform === 'instagram'){
+    return `<div class="feed-embed feed-embed-ig">
+      <blockquote class="instagram-media" data-instgrm-permalink="${item.link}" data-instgrm-version="14" style="margin:0;width:100%;min-width:0;max-width:100%;"></blockquote>
+    </div>`;
+  }
+  if(platform === 'threads'){
+    return `<div class="feed-embed feed-embed-th">
+      <blockquote class="text-post-media" data-text-post-permalink="${item.link}" data-text-post-version="0" style="margin:0;width:100%;min-width:0;max-width:100%;"></blockquote>
+    </div>`;
+  }
+  if(platform === 'tiktok'){
+    const idm = item.link.match(/\/video\/(\d+)/);
+    if(!idm) return ''; // vm.tiktok.com 같은 단축 링크는 영상 ID를 못 뽑아서 링크 카드로 대체
+    const w = embedWidth ? Math.min(325, embedWidth) : 325;
+    return `<div class="feed-embed feed-embed-tt">
+      <blockquote class="tiktok-embed" cite="${item.link}" data-video-id="${idm[1]}" style="max-width:${w}px;min-width:220px;">
+        <section></section>
+      </blockquote>
+    </div>`;
+  }
+  if(platform === 'facebook-post' || platform === 'facebook-video'){
+    const isVideo = platform === 'facebook-video';
+    const w = embedWidth ? Math.max(220, Math.min(500, embedWidth)) : 350;
+    const h = isVideo ? Math.round(w*9/16) + 60 : 480;
+    const href = encodeURIComponent(item.link);
+    const kind = isVideo ? 'video' : 'post';
+    return `<div class="feed-embed feed-embed-fb">
+      <iframe src="https://www.facebook.com/plugins/${kind}.php?href=${href}&width=${w}&show_text=false"
+        width="${w}" height="${h}" style="border:none;overflow:hidden;" scrolling="no" frameborder="0"
+        allowTransparency="true" ${isVideo?'allowFullScreen':''}></iframe>
+    </div>`;
+  }
   return '';
 }
+
 
 const feedCatOptionsHTML = sel => feedCategories.map(c=>
   `<option value="${c}" ${c===sel?'selected':''}>${c}</option>`
 ).join('');
+
+function feedTimeLabel(ts){
+  if(!ts) return '';
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if(m < 1) return '방금';
+  if(m < 60) return `${m}분`;
+  const h = Math.floor(m / 60);
+  if(h < 24) return `${h}시간`;
+  const d = new Date(ts);
+  return `${d.getMonth()+1}월 ${d.getDate()}일`;
+}
 
 function feedItemHTML(item, embedWidth){
   const color = feedCategoryColor[item.category] || '#8A8A8A';
@@ -1493,37 +1579,29 @@ function feedItemHTML(item, embedWidth){
 
   const memoHTML = item.memo ? `<div class="feed-item-memo">${item.memo.replace(/</g,'&lt;')}</div>` : '';
   const linkedEvent = item.eventId ? allEventsData.find(e=>e.id===item.eventId) : null;
-  const eventTagHTML = linkedEvent ? `<div class="feed-item-event" data-open-event="${escHTML(linkedEvent.id)}"><i class="fa-solid fa-link"></i>${escHTML(linkedEvent.title)}</div>` : '';
+  const eventTagHTML = linkedEvent ? `<span class="feed-item-event" data-open-event="${escHTML(linkedEvent.id)}"><i class="fa-solid fa-link"></i>${escHTML(linkedEvent.title)}</span>` : '';
   const embedHTML = feedEmbedHTML(item, embedWidth);
+  const avatarIcon = item.link ? getLinkIcon(item.link, 'ftw-avatar-icon') : '<i class="fa-solid fa-camera-retro ftw-avatar-icon"></i>';
 
-  if(embedHTML){
-    return `<div class="feed-item feed-item-embed" style="border-left-color:${color};">
+  // 임베드가 없고 링크만 있는 경우, 카드 전체를 눌러서 바로 그 링크로 이동 (임베드가 있으면
+  // 임베드 자체가 이미 클릭 가능해서 카드 전체 클릭은 걸지 않음)
+  const linkAttr = (!embedHTML && item.link) ? ` data-link="${item.link.replace(/"/g,'&quot;')}"` : '';
+  const clickableClass = (!embedHTML && item.link) ? ' feed-item-clickable' : '';
+
+  return `<div class="feed-item feed-item-tw${clickableClass}"${linkAttr}>
+    <div class="ftw-avatar" style="background:${color}">${avatarIcon}</div>
+    <div class="ftw-body">
+      <div class="ftw-head">
+        <span class="ftw-name">${item.category}</span>
+        ${item.createdAt ? `<span class="ftw-time">· ${feedTimeLabel(item.createdAt)}</span>` : ''}
+        ${eventTagHTML}
+      </div>
+      ${memoHTML}
+      ${embedHTML}
       <div class="feed-item-actions">
         <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
         <i class="fa-solid fa-trash" data-del="${item.id}"></i>
       </div>
-      <div class="feed-item-top">
-        <span class="feed-item-cat"><span class="dot" style="background:${color}"></span>${item.category}</span>
-      </div>
-      ${eventTagHTML}
-      ${memoHTML}
-      ${embedHTML}
-    </div>`;
-  }
-
-  const linkIcon = item.link ? getLinkIcon(item.link, 'feed-item-icon') : '';
-  const linkAttr = item.link ? ` data-link="${item.link.replace(/"/g,'&quot;')}"` : '';
-  const clickableClass = item.link ? ' feed-item-clickable' : '';
-  return `<div class="feed-item feed-item-compact${clickableClass}" style="background:${hexToRgba(color,0.09)};border-left-color:${color};"${linkAttr}>
-    <span class="dot" style="background:${color}"></span>
-    <div class="feed-item-body">
-      <div class="feed-item-cat">${linkIcon}${item.category}</div>
-      ${eventTagHTML}
-      ${memoHTML}
-    </div>
-    <div class="feed-item-actions">
-      <i class="fa-solid fa-pen" data-edit="${item.id}"></i>
-      <i class="fa-solid fa-trash" data-del="${item.id}"></i>
     </div>
   </div>`;
 }
@@ -1539,13 +1617,16 @@ function renderFeedPanel(dateStr){
     .filter(i=>isFeedVisible(i.category))
     .slice().sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
 
-  // 카드 안에서 실제로 임베드가 차지할 수 있는 폭(아이템 패딩 12+10)을 계산해서
-  // 트위터 위젯이 스스로 재는 값이 어긋나 카드 밖으로 삐져나오지 않게 못박아둠.
+  // 본문에서 실제로 임베드가 차지할 수 있는 폭(아바타 40 + 간격 12)을 계산해서
+  // 트위터 위젯이 스스로 재는 값이 어긋나 밖으로 삐져나오지 않게 못박아둠.
+  // 폭이 넓으면 2열이라 열 폭 기준으로 계산하고, 너무 커지지 않게 최대 360px로 제한.
   const panelWidth = feedPanel.clientWidth || 280;
-  const embedWidth = Math.max(220, panelWidth - 22);
+  const cols = window.innerWidth >= 820 ? 2 : 1;
+  const colWidth = (panelWidth - (cols - 1) * 28) / cols;
+  const embedWidth = Math.max(220, Math.min(360, Math.floor(colWidth - 54)));
 
   const itemsHTML = items.length
-    ? items.map(item=>feedItemHTML(item, embedWidth)).join('')
+    ? `<div class="feed-list">${items.map(item=>feedItemHTML(item, embedWidth)).join('')}</div>`
     : `<div class="feed-empty">아직 등록된 떡밥이 없어요.</div>`;
 
   feedPanel.innerHTML = `
@@ -1561,9 +1642,32 @@ function renderFeedPanel(dateStr){
     ${itemsHTML}
   `;
 
-  // X(트위터) 임베드 다시 렌더링 (widgets.js가 이미 로드돼 있으면 새로 추가된 blockquote만 처리)
+  // 소셜 임베드 다시 렌더링 (각 스크립트가 이미 로드돼 있으면 새로 추가된 blockquote만 처리)
   if(window.twttr && window.twttr.widgets){
     window.twttr.widgets.load(feedPanel);
+  }
+  if(window.instgrm && window.instgrm.Embeds && window.instgrm.Embeds.process){
+    window.instgrm.Embeds.process();
+  }
+  // 스레드/틱톡은 트위터/인스타처럼 "새로 추가된 것만 다시 처리"하는 공식 함수가 없어서,
+  // 아직 렌더링 안 된 블록쿼트가 남아있으면 각 embed.js를 다시 불러와 강제로 재스캔시킴.
+  if(feedPanel.querySelector('blockquote.text-post-media')){
+    const oldTh = document.getElementById('threads-embed-script');
+    if(oldTh) oldTh.remove();
+    const th = document.createElement('script');
+    th.id = 'threads-embed-script';
+    th.async = true;
+    th.src = 'https://www.threads.net/embed.js';
+    document.body.appendChild(th);
+  }
+  if(feedPanel.querySelector('blockquote.tiktok-embed')){
+    const oldTt = document.getElementById('tiktok-embed-script');
+    if(oldTt) oldTt.remove();
+    const tt = document.createElement('script');
+    tt.id = 'tiktok-embed-script';
+    tt.async = true;
+    tt.src = 'https://www.tiktok.com/embed.js';
+    document.body.appendChild(tt);
   }
 
   feedPanel.querySelectorAll('.feed-item-clickable').forEach(el=>{
@@ -1673,36 +1777,52 @@ function refreshFeedDots(){
     const dateStr = cell.getAttribute('data-date');
     if(!dateStr) return;
     cell.classList.remove('feed-has-entry');
-    const oldDots = cell.querySelector('.feed-dots, .feed-chips');
-    if(oldDots) oldDots.remove();
+    const old = cell.querySelector('.feed-cal-dots');
+    if(old) old.remove();
+    const oldChips = cell.querySelector('.feed-chips');
+    if(oldChips) oldChips.remove();
     const items = (feedByDate[dateStr]||[]).filter(i=>isFeedVisible(i.category));
     if(items && items.length){
       cell.classList.add('feed-has-entry');
-      const dayTop = cell.querySelector('.fc-daygrid-day-top');
+      // 칸 안: 메모 목록 최대 5개 + 나머지는 +N개
       const maxShow = 5;
-      const dotsWrap = document.createElement('div');
-      dotsWrap.className = 'feed-chips';
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'feed-chips';
       items.slice(0, maxShow).forEach(it=>{
         const chip = document.createElement('div');
         chip.className = 'feed-chip';
-        const dot = document.createElement('span');
-        dot.className = 'feed-chip-dot';
-        dot.style.background = feedCategoryColor[it.category] || '#8A8A8A';
-        chip.appendChild(dot);
+        const cdot = document.createElement('span');
+        cdot.className = 'feed-chip-dot';
+        cdot.style.background = feedCategoryColor[it.category] || '#8A8A8A';
+        chip.appendChild(cdot);
         const memoText = (it.memo||'').trim();
         // 메모가 있으면 메모 첫 줄, 없으면 카테고리 이름
         chip.appendChild(document.createTextNode(memoText ? memoText.split('\n')[0] : it.category));
         chip.title = memoText || it.category;
-        dotsWrap.appendChild(chip);
+        chipsWrap.appendChild(chip);
       });
       if(items.length > maxShow){
         const more = document.createElement('span');
         more.className = 'feed-more';
         more.textContent = `+${items.length - maxShow}개`;
-        dotsWrap.appendChild(more);
+        chipsWrap.appendChild(more);
       }
-      if(dayTop) dayTop.insertAdjacentElement('afterend', dotsWrap);
-      else (cell.querySelector('.fc-daygrid-day-frame') || cell).appendChild(dotsWrap);
+      const dayTop = cell.querySelector('.fc-daygrid-day-top');
+      if(dayTop) dayTop.insertAdjacentElement('afterend', chipsWrap);
+      else (cell.querySelector('.fc-daygrid-day-frame') || cell).appendChild(chipsWrap);
+
+      // 칸 맨 아래: 어떤 카테고리가 있는지 색 점으로 표시 (기존 그대로)
+      const cats = [...new Set(items.map(i=>i.category))].slice(0, 6);
+      const wrap = document.createElement('div');
+      wrap.className = 'feed-cal-dots';
+      wrap.title = items.map(i=>i.category).join(', ');
+      cats.forEach(c=>{
+        const dot = document.createElement('span');
+        dot.className = 'fcd-dot';
+        dot.style.background = feedCategoryColor[c] || '#8A8A8A';
+        wrap.appendChild(dot);
+      });
+      (cell.querySelector('.fc-daygrid-day-frame') || cell).appendChild(wrap);
     }
   });
 }
