@@ -1380,7 +1380,7 @@ function toggleModifyMode(){
 function schedCustomButtons(active){
   return {
     customAddBtn:{text:'+ 일정 추가', click: openAddEventModal},
-    modifyBtn:{text: active ? '수정 ON' : '수정', click: toggleModifyMode},
+    modifyBtn:{text:'수정', click: toggleModifyMode},   // 켜짐 표시는 글자 대신 색(#calendar.modify-active)으로만
     // 글자는 CSS(font-size:0)로 숨기고 달력 아이콘만 보이게 함. 버튼 DOM은 직접 건드리지 않음.
     jumpBtn:{text:'\u200B', hint:'날짜로 이동', click: (ev, el) => openJumpPicker((el && el.closest && el.closest('.fc-jumpBtn-button')) || (ev && ev.target && ev.target.closest && ev.target.closest('.fc-jumpBtn-button')) || document.querySelector('#calendar .fc-jumpBtn-button'))}
   };
