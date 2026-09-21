@@ -145,6 +145,50 @@ body{
 .dday-title{font-size:13.5px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .dday-date{font-size:11.5px;color:var(--ink-soft);}
 
+/* ============ 오늘의 캐스트 스트립 ============ */
+.cast-strip{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--accent-soft);
+  border-radius:var(--radius-lg);
+  padding:12px 18px;
+  margin-bottom:10px;
+}
+.cast-head{display:flex;flex-direction:column;gap:1px;flex:none;max-width:45%;}
+.cast-sub{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--accent);}
+.cast-title{font-size:15px;font-weight:800;color:var(--accent);line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;}
+.cast-list{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.cast-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 8px;min-width:0;}
+.cast-dot{width:6px;height:6px;border-radius:50%;flex:none;background:var(--c-musical);align-self:center;}
+.cast-time{font-size:14px;font-weight:800;color:var(--ink);}
+.cast-names{font-size:13px;color:var(--ink-soft);white-space:pre-wrap;word-break:break-word;min-width:0;}
+.cast-badge{background:#FEF08A;color:#713F12;border-radius:999px;padding:0 8px;font-size:11px;font-weight:700;line-height:1.6;}
+
+/* ============ 뮤지컬 공연 정보 입력칸(모달) ============ */
+.musical-fields{
+  display:none;
+  background:#FEFCE8;
+  border:1px solid #FDE047;
+  border-radius:var(--radius-md);
+  padding:2px 12px 12px;
+  margin-top:12px;
+}
+.musical-fields.show{display:block;}
+.check-row{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;cursor:pointer;}
+.modal .check-row input{width:18px;height:18px;padding:0;margin:0;accent-color:var(--ink);cursor:pointer;}
+
+/* 커튼콜이 있는 날: 달력 칸 왼쪽 위 모서리에 뮤지컬 색 삼각 리본 (날짜 숫자는 오른쪽에 있어서 겹치지 않음) */
+#calendar .fc-daygrid-day.curtain-day .fc-daygrid-day-frame::after{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  width:0;height:0;
+  border-top:18px solid var(--c-musical);
+  border-right:18px solid transparent;
+  pointer-events:none;
+}
+
 /* ============ 툴바 ============ */
 .toolbar-row{
   display:flex;
@@ -520,6 +564,12 @@ footer.site-footer{
   .wordmark{font-size:21px;}
   .dday-strip{padding:10px 14px;gap:10px;}
   .dday-number{font-size:17px;min-width:40px;}
+  .cast-strip{padding:10px 14px;gap:10px;}
+  .cast-head{max-width:96px;}
+  .cast-title{font-size:13px;}
+  .cast-time{font-size:13px;}
+  .cast-names{font-size:12px;}
+  #calendar .fc-daygrid-day.curtain-day .fc-daygrid-day-frame::after{border-top-width:13px;border-right-width:13px;}
   .fc-daygrid-day-number{font-size:9px!important;}
   .fc .fc-toolbar-title{font-size:15px;}
   .fc .fc-button{font-size:11px;padding:5px 5px;}
@@ -864,6 +914,8 @@ footer.site-footer{
       </div>
     </div>
 
+    <div id="castCard" style="display:none;"></div>
+
     <div id="ddayCard" class="dday-strip" style="display:none;">
       <div class="dday-number" id="ddayNumber">–</div>
       <div class="dday-divider"></div>
@@ -960,6 +1012,16 @@ footer.site-footer{
     <option value="기타">기타</option>
   </select>
 
+  <div id="musicalFields" class="musical-fields">
+    <span class="field-label">공연 시간</span>
+    <input id="eventShowTime" type="time">
+
+    <span class="field-label">캐스트</span>
+    <textarea id="eventCast" placeholder="예: 솔라 · ○○○ · ○○○" rows="2"></textarea>
+
+    <label class="check-row"><input id="eventCurtain" type="checkbox"> 커튼콜 있음</label>
+  </div>
+
   <span class="field-label">링크 (선택)</span>
   <input id="eventLink" placeholder="https://...">
 
@@ -984,7 +1046,7 @@ footer.site-footer{
 
 <div id="memoViewModal" class="modal">
   <button class="close-btn">&times;</button>
-  <h3 class="memo-title"><i class="fa-regular fa-note-sticky"></i> Memo</h3>
+  <h3 class="memo-title"><i class="fa-regular fa-note-sticky"></i> <span id="memoViewTitle">Memo</span></h3>
   <p id="memoViewContent" style="white-space:pre-wrap;"></p>
 </div>
 
@@ -1128,6 +1190,39 @@ let selectedEvent=null;
 let modifyMode=false;
 let allEventsData=[];
 
+// ============ 뮤지컬 공연 정보(시간·캐스트·커튼콜) ============
+// 뮤지컬 일정에 공연 시간/캐스트/커튼콜 여부를 따로 저장한다.
+// 예전에 메모에만 캐스트를 적어둔 일정도 그대로 보이도록, 캐스트가 비어 있으면 메모를 캐스트로 대신 쓰고,
+// 커튼콜 체크를 한 번도 저장한 적 없는 일정은 메모에 '커튼콜'이 들어 있으면 커튼콜로 본다.
+const hasMusicalInfo = e => !!(((e.showTime||'').trim()) || ((e.cast||'').trim()) || ((e.memo||'').trim()));
+const isCurtainCall = e => e.type==='뮤지컬' && (e.curtainCall==null ? /커튼콜/.test(e.memo||'') : !!e.curtainCall);
+
+function syncMusicalFields(){
+  document.getElementById('musicalFields').classList.toggle('show', eventType.value==='뮤지컬');
+}
+function resetMusicalFields(){
+  eventShowTime.value='';
+  eventCast.value='';
+  eventCurtain.checked=false;
+  syncMusicalFields();
+}
+eventType.addEventListener('change', syncMusicalFields);
+
+function showMusicalInfo(ev){
+  const x = ev.extendedProps;
+  const cast = (x.cast||'').trim();
+  const memo = (x.memo||'').trim();
+  const structured = !!((x.showTime||'').trim() || cast);
+  const head = [(x.showTime||'').trim(), isCurtainCall({...x, type:'뮤지컬'}) ? '커튼콜' : ''].filter(Boolean).join(' · ');
+  const parts = [];
+  if(head) parts.push(head);
+  if(cast) parts.push(cast);
+  if(memo) parts.push((parts.length ? '\n' : '') + memo);
+  document.getElementById('memoViewTitle').textContent = structured ? '공연 정보' : 'Memo';
+  memoViewContent.textContent = parts.join('\n');
+  memoViewModal.classList.add('show');
+}
+
 // ============ 일정 추가 모달 열기 ============
 function openAddEventModal(){
   selectedEvent=null;
@@ -1136,6 +1231,7 @@ function openAddEventModal(){
   eventLink.value='';
   eventType.value='';
   eventMemo.value='';
+  resetMusicalFields();
   deleteBtn.style.display='none';
   modal.classList.add('show');
 }
@@ -1203,6 +1299,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
         eventLink.value='';
         eventType.value='';
         eventMemo.value='';
+        resetMusicalFields();
         deleteBtn.style.display='none';
         modal.classList.add('show');
       }, HOLD_MS);
@@ -1226,6 +1323,14 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     cell.addEventListener('touchmove', cancelPress);
     cell.addEventListener('contextmenu', e => e.preventDefault());
   },
+  eventDidMount: info => {
+    // 커튼콜이 있는 뮤지컬이 있는 날짜 칸에 리본 표시용 클래스를 붙인다 (refreshCalendarEvents에서 매번 먼저 지움)
+    const x = info.event.extendedProps;
+    if(x.type==='뮤지컬' && isCurtainCall({...x, type:'뮤지컬'})){
+      const cell = info.el.closest('.fc-daygrid-day');
+      if(cell) cell.classList.add('curtain-day');
+    }
+  },
   eventContent: arg => {
     const type = arg.event.extendedProps.type;
     const link = arg.event.extendedProps.link;
@@ -1237,8 +1342,10 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     let iconHTML = '';
 
     let memoIcon = '';
-    if (type === '뮤지컬' && hasMemo) {
-      memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
+    if (type === '뮤지컬') {
+      if (hasMusicalInfo({...arg.event.extendedProps, type})) {
+        memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
+      }
     }
 
     iconHTML = getLinkIcon(link, 'event-icon');
@@ -1288,14 +1395,17 @@ calendar.on('eventClick', info => {
     eventLink.value = link || '';
     eventType.value = type || '';
     eventMemo.value = memo || '';
+    eventShowTime.value = e.extendedProps.showTime || '';
+    eventCast.value = e.extendedProps.cast || '';
+    eventCurtain.checked = type==='뮤지컬' && isCurtainCall({...e.extendedProps, type});
+    syncMusicalFields();
     deleteBtn.style.display='inline-block';
     modal.classList.add('show');
     return;
   }
 
-  if (type === '뮤지컬' && !link && memo && memo.trim()) {
-    memoViewContent.textContent = memo;
-    memoViewModal.classList.add('show');
+  if (type === '뮤지컬' && !link && hasMusicalInfo(e.extendedProps)) {
+    showMusicalInfo(e);
     return;
   }
 
@@ -1333,6 +1443,7 @@ document.getElementById('lfcFeedBtn').onclick = ()=>{
 
 // ============ 필터 / 검색 반영 ============
 function refreshCalendarEvents(){
+  document.querySelectorAll('#calendar .fc-daygrid-day.curtain-day').forEach(c=>c.classList.remove('curtain-day'));
   calendar.removeAllEvents();
   const q = searchInput.value.trim().toLowerCase();
   const filtered = allEventsData.filter(e=>
@@ -1344,18 +1455,86 @@ function refreshCalendarEvents(){
 }
 
 // ============ D-day 계산 ============
+// ============ 오늘의 캐스트 ============
+// 오늘 날짜의 뮤지컬(공연 시간·캐스트·메모가 하나라도 있는 것)을 시간순으로 보여준다.
+// 반환값: 이 카드에 표시된 일정 id들 (다가오는 일정에서 같은 공연이 겹쳐 나오지 않도록 제외하는 데 씀)
+function updateTodayCast(){
+  const card = document.getElementById('castCard');
+  const t = new Date();
+  const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+
+  const shows = allEventsData
+    .filter(e=>e.type==='뮤지컬' && String(e.start||'').slice(0,10)===todayStr && isTypeVisible(e.type) && hasMusicalInfo(e))
+    .sort((a,b)=>{
+      const ta=(a.showTime||'99:99'), tb=(b.showTime||'99:99');
+      return ta<tb ? -1 : ta>tb ? 1 : 0;
+    });
+
+  card.textContent = '';
+  if(shows.length===0){ card.style.display='none'; return new Set(); }
+
+  // 같은 제목의 공연(낮/밤 공연 등)은 카드 하나에 묶고, 제목이 다르면 카드를 따로 만든다
+  const groups = new Map();
+  shows.forEach(e=>{
+    const key = (e.title||'').trim();
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(e);
+  });
+
+  groups.forEach((items, title)=>{
+    const strip = document.createElement('div');
+    strip.className = 'cast-strip';
+
+    const head = document.createElement('div');
+    head.className = 'cast-head';
+    const sub = document.createElement('span'); sub.className = 'cast-sub'; sub.textContent = '오늘의 캐스트';
+    const ttl = document.createElement('span'); ttl.className = 'cast-title'; ttl.textContent = title;
+    head.appendChild(sub); head.appendChild(ttl);
+    strip.appendChild(head);
+
+    const divider = document.createElement('div'); divider.className = 'dday-divider';
+    strip.appendChild(divider);
+
+    const list = document.createElement('div'); list.className = 'cast-list';
+    items.forEach(e=>{
+      const row = document.createElement('div');
+      row.className = 'cast-row';
+      const dot = document.createElement('span'); dot.className = 'cast-dot'; row.appendChild(dot);
+      const time = (e.showTime||'').trim();
+      if(time){ const el=document.createElement('span'); el.className='cast-time'; el.textContent=time; row.appendChild(el); }
+      const names = (e.cast||'').trim() || (e.memo||'').trim();
+      if(names){ const el=document.createElement('span'); el.className='cast-names'; el.textContent=names; row.appendChild(el); }
+      if(isCurtainCall(e)){ const el=document.createElement('span'); el.className='cast-badge'; el.textContent='커튼콜'; row.appendChild(el); }
+      list.appendChild(row);
+    });
+    strip.appendChild(list);
+    card.appendChild(strip);
+  });
+  card.style.display='block';
+  return new Set(shows.map(e=>e.id));
+}
+
+// 캐스트 카드만 보일 때는 마지막 카드 아래 간격을 원래(18px)대로, 다가오는 일정 카드가 함께 보일 때는 좁게(10px)
+function syncTopCards(){
+  const cast = document.getElementById('castCard');
+  const dday = document.getElementById('ddayCard');
+  const last = cast.lastElementChild;
+  if(last) last.style.marginBottom = (dday.style.display==='none') ? '18px' : '';
+}
+
 function updateDday(){
   const card = document.getElementById('ddayCard');
   const today = new Date(); today.setHours(0,0,0,0);
+  const castIds = updateTodayCast();
 
   const ddayExcludedTypes = new Set(['공식','SNS']);
   const upcoming = allEventsData
-    .filter(e=>e.start && isTypeVisible(e.type) && !ddayExcludedTypes.has(e.type))
+    .filter(e=>e.start && isTypeVisible(e.type) && !ddayExcludedTypes.has(e.type) && !castIds.has(e.id))
     .map(e=>({...e, dateObj:new Date(e.start)}))
     .filter(e=>!isNaN(e.dateObj) && e.dateObj>=today)
     .sort((a,b)=>a.dateObj-b.dateObj);
 
-  if(upcoming.length===0){ card.style.display='none'; return; }
+  if(upcoming.length===0){ card.style.display='none'; syncTopCards(); return; }
 
   const next = upcoming[0];
   const diffDays = Math.round((next.dateObj - today)/86400000);
@@ -1367,6 +1546,7 @@ function updateDday(){
   document.getElementById('ddayDot').style.background = 'var(--accent)';
   document.getElementById('ddayNumber').style.color = 'var(--accent)';
   document.getElementById('ddayLabel').style.color = 'var(--accent)';
+  syncTopCards();
 }
 
 // ============ Firestore 데이터 로드 ============
@@ -1391,12 +1571,16 @@ async function loadCollection(name){
 // ============ 저장 ============
 saveBtn.onclick=async()=>{
   if(!eventTitle.value||!eventDate.value) return alert('제목과 날짜를 입력해주세요.');
+  const isMusical = eventType.value==='뮤지컬';
   const data = {
     title: eventTitle.value,
     start: eventDate.value,
     link: eventLink.value,
     type: eventType.value,
-    memo: eventMemo.value
+    memo: eventMemo.value,
+    showTime: isMusical ? eventShowTime.value : '',
+    cast: isMusical ? eventCast.value.trim() : '',
+    curtainCall: isMusical ? eventCurtain.checked : false
   };
 
   if(selectedEvent){
