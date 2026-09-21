@@ -16,6 +16,7 @@
 <script async src="https://www.threads.net/embed.js"></script>
 <script async src="https://www.tiktok.com/embed.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
 <style>
 /* ============ 디자인 토큰 ============ */
@@ -177,17 +178,6 @@ body{
 .musical-fields.show{display:block;}
 .check-row{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;cursor:pointer;}
 .modal .check-row input{width:18px;height:18px;padding:0;margin:0;accent-color:var(--ink);cursor:pointer;}
-
-/* 커튼콜이 있는 날: 달력 칸 왼쪽 위 모서리에 뮤지컬 색 삼각 리본 (날짜 숫자는 오른쪽에 있어서 겹치지 않음) */
-#calendar .fc-daygrid-day.curtain-day .fc-daygrid-day-frame::after{
-  content:'';
-  position:absolute;
-  top:0;left:0;
-  width:0;height:0;
-  border-top:18px solid var(--c-musical);
-  border-right:18px solid transparent;
-  pointer-events:none;
-}
 
 /* ============ 툴바 ============ */
 .toolbar-row{
@@ -569,7 +559,6 @@ footer.site-footer{
   .cast-title{font-size:13px;}
   .cast-time{font-size:13px;}
   .cast-names{font-size:12px;}
-  #calendar .fc-daygrid-day.curtain-day .fc-daygrid-day-frame::after{border-top-width:13px;border-right-width:13px;}
   .fc-daygrid-day-number{font-size:9px!important;}
   .fc .fc-toolbar-title{font-size:15px;}
   .fc .fc-button{font-size:11px;padding:5px 5px;}
@@ -1323,14 +1312,6 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     cell.addEventListener('touchmove', cancelPress);
     cell.addEventListener('contextmenu', e => e.preventDefault());
   },
-  eventDidMount: info => {
-    // 커튼콜이 있는 뮤지컬이 있는 날짜 칸에 리본 표시용 클래스를 붙인다 (refreshCalendarEvents에서 매번 먼저 지움)
-    const x = info.event.extendedProps;
-    if(x.type==='뮤지컬' && isCurtainCall({...x, type:'뮤지컬'})){
-      const cell = info.el.closest('.fc-daygrid-day');
-      if(cell) cell.classList.add('curtain-day');
-    }
-  },
   eventContent: arg => {
     const type = arg.event.extendedProps.type;
     const link = arg.event.extendedProps.link;
@@ -1343,8 +1324,8 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
 
     let memoIcon = '';
     if (type === '뮤지컬') {
-      if (hasMusicalInfo({...arg.event.extendedProps, type})) {
-        memoIcon = '<i class="fa-solid fa-note-sticky event-icon"></i>';
+      if (isCurtainCall({...arg.event.extendedProps, type})) {
+        memoIcon = '<i class="ti ti-confetti event-icon"></i>';
       }
     }
 
@@ -1443,7 +1424,6 @@ document.getElementById('lfcFeedBtn').onclick = ()=>{
 
 // ============ 필터 / 검색 반영 ============
 function refreshCalendarEvents(){
-  document.querySelectorAll('#calendar .fc-daygrid-day.curtain-day').forEach(c=>c.classList.remove('curtain-day'));
   calendar.removeAllEvents();
   const q = searchInput.value.trim().toLowerCase();
   const filtered = allEventsData.filter(e=>
