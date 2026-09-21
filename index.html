@@ -327,6 +327,16 @@ body{
 }
 .fc .fc-today-button:hover{background:var(--danger-soft)!important;color:var(--danger)!important;filter:brightness(.96);}
 .fc .fc-today-button:disabled{opacity:.65;}
+/* 날짜 이동 버튼: < > 사이의 달력 아이콘 (글자 대신 아이콘만 표시) */
+.fc .fc-jumpBtn-button{
+  font-size:0!important;padding:6px 4px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.fc .fc-jumpBtn-button::before{
+  content:'';display:block;width:16px;height:16px;background-color:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M4 11h16'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M4 11h16'/%3E%3C/svg%3E") center/contain no-repeat;
+}
 .fc-daygrid-day-number{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
 .fc-col-header-cell-cushion{
   font-size:10.5px;
@@ -527,6 +537,90 @@ body{
   letter-spacing:.08em;
 }
 #memoViewContent{font-size:13px;line-height:1.7;color:var(--ink);}
+
+/* 뮤지컬 메모 팝업: 노란 헤더 띠 + 흰 배경 타임라인 (기본 모달보다 조금 크게) */
+#memoViewModal{
+  width:400px;
+  padding:0;
+  background:#FFFFFF;
+  border:1px solid var(--mv-head,#FDE047);
+}
+#memoViewModal .close-btn{color:var(--mv-ink,#713F12);top:15px;right:18px;font-size:20px;line-height:1;z-index:1;}
+.mv-head{
+  background:var(--mv-head,#FDE047);
+  padding:15px 54px 15px 22px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+#memoViewModal .memo-title{
+  margin:0;font-size:15px;font-weight:800;color:var(--mv-ink,#713F12);
+  letter-spacing:0;text-transform:none;gap:8px;
+}
+#memoViewModal .memo-title i{font-size:20px;}
+.mv-body{padding:22px 24px 24px;}
+.mv-item{position:relative;padding-left:36px;padding-bottom:18px;}
+.mv-item:last-child{padding-bottom:0;}
+.mv-item:not(:last-child)::before{
+  content:'';position:absolute;left:11px;top:26px;bottom:2px;width:2px;background:var(--mv-head,#FDE047);
+}
+.mv-dot{
+  position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;
+  background:var(--mv-dot,#FACC15);color:var(--mv-ink,#713F12);font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+}
+.mv-text{white-space:pre-wrap;word-break:break-word;}
+.mv-time{font-size:19px;font-weight:800;color:var(--mv-ink,#713F12);line-height:24px;}
+.mv-curtain,
+.mv-cast{font-size:16px;color:var(--mv-ink,#713F12);line-height:1.7;padding-top:0;}
+.mv-memo{font-size:14px;color:var(--mv-sub,#854D0E);line-height:1.75;}
+
+/* ============ 날짜 이동 달력 (스케줄 툴바 달력 아이콘) ============ */
+.jump-pop{
+  display:none;position:absolute;z-index:9998;
+  width:264px;max-width:calc(100vw - 16px);
+  background:var(--surface);border:1px solid var(--line-strong);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);
+  padding:12px 12px 8px;color:var(--ink);
+  -webkit-user-select:none;user-select:none;
+}
+.jump-pop.show{display:block;}
+.jp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.jp-label{
+  border:none;background:none;font:inherit;font-size:13px;font-weight:800;color:var(--ink);
+  display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:8px;cursor:pointer;
+}
+.jp-label i{font-size:11px;color:var(--ink-soft);}
+.jp-label:hover{background:var(--accent-soft);}
+.jp-label.static{cursor:default;}
+.jp-label.static:hover{background:none;}
+.jp-nav{display:flex;gap:2px;}
+.jp-nav button{
+  width:28px;height:28px;border:none;background:none;border-radius:50%;cursor:pointer;
+  color:var(--ink-soft);font-size:16px;display:inline-flex;align-items:center;justify-content:center;padding:0;
+}
+.jp-nav button:hover{background:var(--accent-soft);color:var(--ink);}
+.jp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;}
+.jp-dow{font-size:10.5px;font-weight:700;color:var(--ink-faint);padding:4px 0;}
+.jp-day{
+  border:none;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);
+  height:32px;border-radius:50%;cursor:pointer;padding:0;
+}
+.jp-day.out{color:var(--ink-faint);}
+.jp-day:hover{background:var(--accent-soft);}
+.jp-day.today{background:var(--ink);color:#fff;}
+.jp-grid.jp-months{grid-template-columns:repeat(3,1fr);gap:6px;padding:4px 0;}
+.jp-month{
+  border:none;background:none;font:inherit;font-size:13px;font-weight:700;color:var(--ink);
+  height:40px;border-radius:12px;cursor:pointer;padding:0;
+}
+.jp-month:hover{background:var(--accent-soft);}
+.jp-month.cur{background:var(--ink);color:#fff;}
+.jp-foot{display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid var(--line);}
+.jp-foot button{
+  border:none;background:none;font:inherit;font-size:12px;font-weight:700;color:var(--ink-soft);
+  padding:5px 8px;border-radius:8px;cursor:pointer;
+}
+.jp-foot button:hover{background:var(--accent-soft);}
+.jp-foot .jp-today{color:var(--danger);}
 
 /* ============ 범례 ============ */
 .legend{
@@ -1006,7 +1100,7 @@ footer.site-footer{
     <input id="eventShowTime" type="time">
 
     <span class="field-label">캐스트</span>
-    <textarea id="eventCast" placeholder="예: 솔라 · ○○○ · ○○○" rows="2"></textarea>
+    <textarea id="eventCast" placeholder="예: 솔라 ○○○ ○○○" rows="2"></textarea>
 
     <label class="check-row"><input id="eventCurtain" type="checkbox"> 커튼콜 있음</label>
   </div>
@@ -1035,8 +1129,10 @@ footer.site-footer{
 
 <div id="memoViewModal" class="modal">
   <button class="close-btn">&times;</button>
-  <h3 class="memo-title"><i class="fa-regular fa-note-sticky"></i> <span id="memoViewTitle">Memo</span></h3>
-  <p id="memoViewContent" style="white-space:pre-wrap;"></p>
+  <div class="mv-head">
+    <h3 class="memo-title"><i id="memoViewIcon" class="ti ti-masks-theater" aria-hidden="true"></i> <span id="memoViewTitle">Memo</span></h3>
+  </div>
+  <div id="memoViewContent" class="mv-body"></div>
 </div>
 
 <div id="linkFeedChoiceModal" class="modal">
@@ -1197,18 +1293,53 @@ function resetMusicalFields(){
 }
 eventType.addEventListener('change', syncMusicalFields);
 
-function showMusicalInfo(ev){
+// ============ 메모 팝업 색상: 일정 종류(범례) 색을 기준으로 함 ============
+// head=헤더 띠·테두리·세로선, dot=아이콘 원, ink=제목·본문 진한 글자, sub=메모 글자
+const memoThemes = {
+  '공식':        {head:'#FCA5A5', dot:'#F87171', ink:'#7F1D1D', sub:'#991B1B'},
+  '방송':        {head:'#7DD3FC', dot:'#38BDF8', ink:'#0C4A6E', sub:'#075985'},
+  'SNS':         {head:'#C4B5FD', dot:'#A78BFA', ink:'#4C1D95', sub:'#5B21B6'},
+  '뮤지컬':      {head:'#FDE047', dot:'#FACC15', ink:'#713F12', sub:'#854D0E'},
+  '콘서트·팬미팅':{head:'#FDBA74', dot:'#FB923C', ink:'#7C2D12', sub:'#9A3412'},
+  '행사':        {head:'#BEF264', dot:'#A3E635', ink:'#365314', sub:'#3F6212'},
+  '팬사인회':    {head:'#86EFAC', dot:'#4ADE80', ink:'#14532D', sub:'#166534'},
+  '솔라시도':    {head:'#F9A8D4', dot:'#F472B6', ink:'#831843', sub:'#9D174D'},
+  '발매·기념일': {head:'#A5B4FC', dot:'#818CF8', ink:'#312E81', sub:'#3730A3'},
+  '기타':        {head:'#D1D5DB', dot:'#9CA3AF', ink:'#111827', sub:'#374151'}
+};
+
+function showEventMemo(ev){
   const x = ev.extendedProps;
-  const cast = (x.cast||'').trim();
+  const isMusical = x.type === '뮤지컬';
+  const showTime = isMusical ? (x.showTime||'').trim() : '';
+  const cast = isMusical ? (x.cast||'').trim() : '';
   const memo = (x.memo||'').trim();
-  const structured = !!((x.showTime||'').trim() || cast);
-  const head = [(x.showTime||'').trim(), isCurtainCall({...x, type:'뮤지컬'}) ? '커튼콜' : ''].filter(Boolean).join(' · ');
-  const parts = [];
-  if(head) parts.push(head);
-  if(cast) parts.push(cast);
-  if(memo) parts.push((parts.length ? '\n' : '') + memo);
+  const structured = !!(showTime || cast);
+
+  const th = memoThemes[x.type] || memoThemes['기타'];
+  memoViewModal.style.setProperty('--mv-head', th.head);
+  memoViewModal.style.setProperty('--mv-dot',  th.dot);
+  memoViewModal.style.setProperty('--mv-ink',  th.ink);
+  memoViewModal.style.setProperty('--mv-sub',  th.sub);
+
   document.getElementById('memoViewTitle').textContent = structured ? '공연 정보' : 'Memo';
-  memoViewContent.textContent = parts.join('\n');
+  document.getElementById('memoViewIcon').className = structured ? 'ti ti-masks-theater' : 'ti ti-note';
+
+  // 시간 → 커튼콜 → 캐스트 → 메모 순서로 타임라인 항목을 만든다 (값이 있는 것만)
+  memoViewContent.textContent = '';
+  const addItem = (icon, cls, text) => {
+    const item = document.createElement('div'); item.className = 'mv-item';
+    const dot = document.createElement('span'); dot.className = 'mv-dot';
+    const ic = document.createElement('i'); ic.className = 'ti ' + icon; ic.setAttribute('aria-hidden','true');
+    dot.appendChild(ic);
+    const tx = document.createElement('div'); tx.className = 'mv-text ' + cls; tx.textContent = text;
+    item.appendChild(dot); item.appendChild(tx);
+    memoViewContent.appendChild(item);
+  };
+  if(showTime) addItem('ti-clock', 'mv-time', showTime);
+  if(isMusical && isCurtainCall({...x, type:'뮤지컬'})) addItem('ti-confetti', 'mv-curtain', '커튼콜 데이');
+  if(cast) addItem('ti-users', 'mv-cast', cast);
+  if(memo) addItem('ti-note', 'mv-memo', memo);
   memoViewModal.classList.add('show');
 }
 
@@ -1237,10 +1368,7 @@ function openAddEventModal(){
 // 캘린더가 버튼을 새로 그려도(검색/필터 등으로 다시 렌더링돼도) 항상 정확하게 유지된다.
 function setModifyMode(active){
   modifyMode = active;
-  calendar.setOption('customButtons', {
-    customAddBtn:{text:'+ 일정 추가', click: openAddEventModal},
-    modifyBtn:{text: active ? '수정 모드 ON' : '수정', click: toggleModifyMode}
-  });
+  calendar.setOption('customButtons', schedCustomButtons(active));
   document.getElementById('calendar').classList.toggle('modify-active', active);
 }
 
@@ -1248,15 +1376,128 @@ function toggleModifyMode(){
   setModifyMode(!modifyMode);
 }
 
+// ============ 스케줄 툴바 커스텀 버튼 (setOption으로 덮어써도 jumpBtn이 사라지지 않게 한 곳에서 관리) ============
+function schedCustomButtons(active){
+  return {
+    customAddBtn:{text:'+ 일정 추가', click: openAddEventModal},
+    modifyBtn:{text: active ? '수정 ON' : '수정', click: toggleModifyMode},
+    // 글자는 CSS(font-size:0)로 숨기고 달력 아이콘만 보이게 함. 버튼 DOM은 직접 건드리지 않음.
+    jumpBtn:{text:'\u200B', hint:'날짜로 이동', click: (ev, el) => openJumpPicker((el && el.closest && el.closest('.fc-jumpBtn-button')) || (ev && ev.target && ev.target.closest && ev.target.closest('.fc-jumpBtn-button')) || document.querySelector('#calendar .fc-jumpBtn-button'))}
+  };
+}
+
+// ============ 달력 아이콘 → 날짜 선택 달력 → 해당 날짜로 이동 ============
+// 브라우저 기본 날짜 달력은 뜨는 위치를 제어할 수 없어서, 아이콘 바로 아래에 고정되는 자체 달력을 사용한다.
+// 문서(body)에 붙여 두고 아이콘의 페이지 좌표에 맞춰 놓기 때문에 스크롤해도 아이콘 밑에 그대로 붙어 있다.
+const jumpPop = document.createElement('div');
+jumpPop.id = 'jumpPop';
+jumpPop.className = 'jump-pop';
+document.body.appendChild(jumpPop);
+let jumpY = 0, jumpM = 0, jumpMode = 'days';   // jumpMode: 'days'(날짜) | 'months'(달 선택)
+
+function jumpISO(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+function jumpRender(){
+  const now = new Date();
+  const todayISO = jumpISO(now.getFullYear(), now.getMonth(), now.getDate());
+  const cs = calendar.view.currentStart;               // 지금 보고 있는 달(1일)
+  const viewY = cs.getFullYear(), viewM = cs.getMonth();
+  let body = '';
+  if(jumpMode === 'months'){
+    let cells = '';
+    for(let i=0;i<12;i++){
+      const cur = (jumpY===viewY && i===viewM) ? ' cur' : '';
+      cells += `<button type="button" class="jp-month${cur}" data-act="month" data-m="${i}">${i+1}월</button>`;
+    }
+    body = `<div class="jp-head">
+        <span class="jp-label static">${jumpY}년</span>
+        <div class="jp-nav">
+          <button type="button" data-act="prev" aria-label="이전 해"><i class="ti ti-chevron-up"></i></button>
+          <button type="button" data-act="next" aria-label="다음 해"><i class="ti ti-chevron-down"></i></button>
+        </div>
+      </div>
+      <div class="jp-grid jp-months">${cells}</div>`;
+  } else {
+    const first = new Date(jumpY, jumpM, 1);
+    const offset = (first.getDay() + 6) % 7;            // 월요일 시작 (메인 달력과 동일)
+    const dim = new Date(jumpY, jumpM+1, 0).getDate();
+    const rows = Math.ceil((offset + dim) / 7);
+    let cells = ['월','화','수','목','금','토','일'].map(w=>`<span class="jp-dow">${w}</span>`).join('');
+    for(let i=0;i<rows*7;i++){
+      const d = new Date(jumpY, jumpM, 1 - offset + i);
+      const iso = jumpISO(d.getFullYear(), d.getMonth(), d.getDate());
+      const cls = 'jp-day' + (d.getMonth()!==jumpM ? ' out' : '') + (iso===todayISO ? ' today' : '');
+      cells += `<button type="button" class="${cls}" data-act="day" data-date="${iso}">${d.getDate()}</button>`;
+    }
+    body = `<div class="jp-head">
+        <button type="button" class="jp-label" data-act="label" aria-label="달 선택">${jumpY}년 ${jumpM+1}월 <i class="ti ti-caret-down-filled"></i></button>
+        <div class="jp-nav">
+          <button type="button" data-act="prev" aria-label="이전 달"><i class="ti ti-chevron-up"></i></button>
+          <button type="button" data-act="next" aria-label="다음 달"><i class="ti ti-chevron-down"></i></button>
+        </div>
+      </div>
+      <div class="jp-grid">${cells}</div>`;
+  }
+  jumpPop.innerHTML = body + `<div class="jp-foot">
+      <button type="button" data-act="close">닫기</button>
+      <button type="button" class="jp-today" data-act="today">오늘</button>
+    </div>`;
+}
+
+function closeJumpPicker(){ jumpPop.classList.remove('show'); }
+
+function openJumpPicker(btn){
+  if(!btn) return;
+  if(jumpPop.classList.contains('show')){ closeJumpPicker(); return; }   // 아이콘을 다시 누르면 닫힘
+  const cs = calendar.view.currentStart;
+  jumpY = cs.getFullYear(); jumpM = cs.getMonth(); jumpMode = 'days';
+  jumpRender();
+  jumpPop.classList.add('show');
+  // 아이콘 바로 아래, 가로는 아이콘 중앙에 맞추되 화면 밖으로 나가지 않게 보정
+  const r = btn.getBoundingClientRect();
+  const w = jumpPop.offsetWidth;
+  const pageW = document.documentElement.clientWidth;
+  let left = r.left + window.scrollX + r.width/2 - w/2;
+  left = Math.max(8 + window.scrollX, Math.min(left, window.scrollX + pageW - w - 8));
+  jumpPop.style.left = Math.round(left) + 'px';
+  jumpPop.style.top  = Math.round(r.bottom + window.scrollY + 6) + 'px';
+}
+
+jumpPop.addEventListener('click', e => {
+  e.stopPropagation();   // 안쪽 클릭이 문서 '바깥 클릭' 처리로 넘어가 달력이 닫히지 않게 함
+  const t = e.target.closest('[data-act]');
+  if(!t) return;
+  const act = t.dataset.act;
+  if(act === 'day'){ calendar.gotoDate(t.dataset.date); closeJumpPicker(); return; }
+  if(act === 'today'){ calendar.gotoDate(new Date()); closeJumpPicker(); return; }
+  if(act === 'close'){ closeJumpPicker(); return; }
+  if(act === 'label'){ jumpMode = 'months'; }
+  else if(act === 'month'){ jumpM = +t.dataset.m; jumpMode = 'days'; }
+  else if(act === 'prev' || act === 'next'){
+    const step = act === 'prev' ? -1 : 1;
+    if(jumpMode === 'months') jumpY += step;
+    else { const d = new Date(jumpY, jumpM + step, 1); jumpY = d.getFullYear(); jumpM = d.getMonth(); }
+  }
+  jumpRender();
+});
+document.addEventListener('click', e => {
+  if(!jumpPop.classList.contains('show')) return;
+  // 달력 안 버튼(연도/월 화살표 등)을 누르면 jumpRender()가 버튼을 새로 그려서 e.target이 문서에서 떨어져 나간다.
+  // 그래서 contains(e.target)만 보면 '바깥 클릭'으로 오인해 닫혀 버림 → 클릭 시점의 이벤트 경로(composedPath)로 판단한다.
+  const path = e.composedPath ? e.composedPath() : [];
+  if(path.includes(jumpPop)) return;
+  if(e.target.closest && e.target.closest('.fc-jumpBtn-button')) return;
+  closeJumpPicker();
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeJumpPicker(); });
+window.addEventListener('resize', closeJumpPicker);
+
 let feedUiReady = false;
 
 const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
   locale:'ko', firstDay:1, fixedWeekCount:false, height:'auto', dayMinHeight: window.innerWidth <= 600 ? 66 : 104,
-  headerToolbar:{left:'title',right:'prev,next today modifyBtn customAddBtn'},
-  customButtons:{
-    customAddBtn:{text:'+ 일정 추가', click: openAddEventModal},
-    modifyBtn:{text:'수정', click: toggleModifyMode}
-  },
+  headerToolbar:{left:'title',right:'prev,jumpBtn,next today modifyBtn customAddBtn'},
+  customButtons: schedCustomButtons(false),
   events:[],
   datesSet: () => { if(feedUiReady){ renderMonthSummary(); scheduleOverlayRefresh(); } },
   eventsSet: () => { if(feedUiReady) scheduleOverlayRefresh(); },
@@ -1386,7 +1627,7 @@ calendar.on('eventClick', info => {
   }
 
   if (type === '뮤지컬' && !link && hasMusicalInfo(e.extendedProps)) {
-    showMusicalInfo(e);
+    showEventMemo(e);
     return;
   }
 
@@ -1394,6 +1635,13 @@ calendar.on('eventClick', info => {
   // 하나만 있으면 그쪽으로 바로 이동한다. (배지처럼 작은 영역을 정확히 눌러야 하는
   // 방식은 모바일에서 오탭이 잦아서, 일정 전체를 눌러도 동일하게 동작하도록 통일함)
   const feedCnt = (feedByEvent[e.id]||[]).length;
+
+  // 뮤지컬 외 일정도 링크·연결된 떡밥이 없고 메모만 있으면, 그 종류(범례) 색의 메모 팝업을 띄운다
+  if (!link && !feedCnt && (memo||'').trim()) {
+    showEventMemo(e);
+    return;
+  }
+
   if (link && feedCnt) {
     openLinkOrFeedChoice(e, link);
   } else if (link) {
