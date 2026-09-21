@@ -588,34 +588,55 @@ footer.site-footer{
 }
 .back-link svg{flex-shrink:0;}
 
-/* ============ 탭 바 (달력 / 떡밥) ============ */
+/* ============ 탭 바 (스케줄 / 떡밥) - 슬라이드 토글 ============ */
 .tab-bar{
   display:flex;
   justify-content:center;
-  gap:8px;
   max-width:960px;
   margin:0 auto;
   padding:14px 18px 0;
-  margin-bottom:26px;
+  margin-bottom:18px;
 }
+.tab-toggle{
+  position:relative;
+  display:flex;
+  width:min(320px,100%);
+  padding:3px;
+  border-radius:999px;
+  background:var(--accent-soft);
+}
+.tab-slider{
+  position:absolute;
+  top:3px;bottom:3px;left:3px;
+  width:calc(50% - 3px);
+  border-radius:999px;
+  background:var(--surface);
+  border:0.5px solid var(--line-strong);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+.tab-bar[data-active="feed"] .tab-slider{transform:translateX(100%);}
 .tab-btn{
-  flex:none;
+  position:relative;
+  z-index:1;
+  flex:1;
   display:flex;
   align-items:center;
-  gap:7px;
-  padding:10px 18px;
+  justify-content:center;
+  gap:6px;
+  padding:9px 0;
+  border:none;
   border-radius:999px;
-  border:1px solid var(--line-strong);
-  background:var(--surface);
+  background:transparent;
   color:var(--ink-soft);
   font-family:inherit;
   font-size:13px;
   font-weight:700;
   cursor:pointer;
   box-shadow:none;
+  transition:color .2s ease;
 }
-.tab-btn i{font-size:14px;}
-.tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.tab-btn i{font-size:13px;}
+.tab-btn.active{color:var(--ink);background:transparent;}
 
 /* ============ 떡밥 탭: 달력 + 패널 (PC/모바일 모두 세로 배치) ============ */
 .feed-shell{
@@ -813,7 +834,7 @@ footer.site-footer{
 
 @media(max-width:600px){
   .back-link-wrap{padding:16px 10px 0;}
-  .tab-bar{padding:10px 10px 0;margin-bottom:18px;}
+  .tab-bar{padding:10px 10px 0;margin-bottom:12px;}
   .feed-add-form select,.feed-add-form input,.feed-add-form textarea{font-size:16px;}
 }
 </style>
@@ -825,9 +846,12 @@ footer.site-footer{
     처음으로
   </a>
 </div>
-<div class="tab-bar">
-  <button class="tab-btn active" data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> 달력</button>
-  <button class="tab-btn" data-tab="feed"><i class="fa-solid fa-camera-retro"></i> 떡밥</button>
+<div class="tab-bar" id="tabBar" data-active="calendar">
+  <div class="tab-toggle">
+    <span class="tab-slider"></span>
+    <button class="tab-btn active" data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> 스케줄</button>
+    <button class="tab-btn" data-tab="feed"><i class="fa-solid fa-camera-retro"></i> 떡밥</button>
+  </div>
 </div>
 <div id="calendarView">
 <div class="page-outer">
@@ -927,11 +951,11 @@ footer.site-footer{
     <option value="공식">공식</option>
     <option value="방송">방송</option>
     <option value="SNS">SNS</option>
-    <option value="솔라시도">솔라시도</option>
     <option value="뮤지컬">뮤지컬</option>
-    <option value="콘서트">콘서트</option>
+    <option value="콘서트·팬미팅">콘서트·팬미팅</option>
     <option value="행사">행사</option>
     <option value="팬사인회">팬사인회</option>
+    <option value="솔라시도">솔라시도</option>
     <option value="발매·기념일">발매·기념일</option>
     <option value="기타">기타</option>
   </select>
@@ -988,6 +1012,8 @@ const feedView = document.getElementById('feedView');
 function activateTab(btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  const tabBarEl = document.getElementById('tabBar');
+  if(tabBarEl) tabBarEl.dataset.active = btn.dataset.tab;
   calendarView.style.display='none';
   feedView.style.display='none';
   if(btn.dataset.tab==='feed'){
@@ -999,7 +1025,12 @@ function activateTab(btn){
 }
 
 document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
-  btn.addEventListener('click', ()=> activateTab(btn));
+  btn.addEventListener('click', ()=>{
+    if(btn.classList.contains('active')) return;
+    navSave();                 // 떠나기 전 현재 위치를 히스토리에 저장
+    activateTab(btn);
+    navPush(captureNavState()); // 새 탭을 히스토리에 쌓아서 뒤로가기로 돌아올 수 있게
+  });
 });
 
 // ============ 링크 → 아이콘 매핑 (일정 / 떡밥 공용) ============
@@ -1022,9 +1053,9 @@ function getLinkIcon(link, iconClass){
 
 // ============ 색상 정의 ============
 const eventColorHex = {
-  '공식':'#EF4444','방송':'#0EA5E9','SNS':'#8B5CF6','솔라시도':'#F472B6',
-  '뮤지컬':'#FACC15','콘서트':'#F97316','행사':'#84CC16','팬사인회':'#0E8F4F',
-  '발매·기념일':'#4C63D2','기타':'#4B5563'
+  '공식':'#EF4444','방송':'#0EA5E9','SNS':'#8B5CF6',
+  '뮤지컬':'#FACC15','콘서트·팬미팅':'#F97316','행사':'#84CC16','팬사인회':'#0E8F4F',
+  '솔라시도':'#F472B6','발매·기념일':'#4C63D2','기타':'#4B5563'
 };
 
 const legendTypes = Object.keys(eventColorHex);
@@ -1348,7 +1379,8 @@ async function loadCollection(name){
 (async()=>{
   allEventsData = await loadCollection('schedules');
   allEventsData.forEach(e=>{
-    if(e.type==='공연') e.type='콘서트';
+    if(e.type==='공연') e.type='콘서트·팬미팅';
+    if(e.type==='콘서트') e.type='콘서트·팬미팅';
     if(e.type==='축하') e.type='발매·기념일';
     if(e.type==='발매') e.type='발매·기념일';
     if(e.type==='기념일') e.type='발매·기념일';
@@ -1893,25 +1925,78 @@ function shortDate(v){
 }
 
 function openCalendarDate(dateStr){
+  dateStr = ymd(dateStr);
+  navSave();
   activateTab(document.querySelector('.tab-btn[data-tab="calendar"]'));
   calendar.updateSize();
-  calendar.gotoDate(ymd(dateStr));
+  calendar.gotoDate(dateStr);
+  navPush({ tab:'calendar', calDate: dateStr.slice(0,7)+'-01', scrollY:0 });
   setTimeout(()=>document.getElementById('calendar').scrollIntoView({behavior:'smooth', block:'start'}), 60);
+}
+
+// 떡밥 탭에서 특정 날짜를 선택해 패널을 보여줌 (이동/복원 공용)
+function showFeedDate(dateStr, scroll){
+  document.querySelectorAll('#feedCalendar .fc-daygrid-day.feed-selected').forEach(el=>el.classList.remove('feed-selected'));
+  const cell = document.querySelector(`#feedCalendar .fc-daygrid-day[data-date="${dateStr}"]`);
+  if(cell) cell.classList.add('feed-selected');
+  editingFeedId = null;
+  renderFeedPanel(dateStr);
+  if(scroll) (cell || feedView).scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 function openFeedDate(dateStr){
   dateStr = ymd(dateStr);
+  navSave();
   activateTab(document.querySelector('.tab-btn[data-tab="feed"]'));
   feedCalendar.gotoDate(dateStr);
-  setTimeout(()=>{
-    document.querySelectorAll('#feedCalendar .fc-daygrid-day.feed-selected').forEach(el=>el.classList.remove('feed-selected'));
-    const cell = document.querySelector(`#feedCalendar .fc-daygrid-day[data-date="${dateStr}"]`);
-    if(cell) cell.classList.add('feed-selected');
-    editingFeedId = null;
-    renderFeedPanel(dateStr);
-    (cell || feedView).scrollIntoView({behavior:'smooth', block:'center'});
-  }, 60);
+  navPush({ tab:'feed', feedDate: dateStr, feedMonth: dateStr.slice(0,7)+'-01', scrollY:0 });
+  setTimeout(()=>showFeedDate(dateStr, true), 60);
 }
+
+// ---------- 뒤로가기(히스토리) ----------
+// 탭 전환이나 '일정 → 연결된 떡밥' 같은 이동을 히스토리에 쌓아서,
+// 폰/브라우저의 뒤로가기를 눌렀을 때 홈으로 나가지 않고 직전 화면(탭, 달, 선택한 날짜, 스크롤)으로 돌아오게 함.
+let navRestoring = false;
+
+function dateToYmd(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function captureNavState(){
+  const active = document.querySelector('.tab-btn.active');
+  const st = { tab: active ? active.dataset.tab : 'calendar', scrollY: window.scrollY, feedDate: selectedFeedDate || null };
+  try{ st.calDate = dateToYmd(calendar.view.currentStart); }catch(e){}
+  try{ st.feedMonth = dateToYmd(feedCalendar.view.currentStart); }catch(e){}
+  return st;
+}
+function navSave(){
+  if(navRestoring) return;
+  try{ history.replaceState(captureNavState(), ''); }catch(e){}
+}
+function navPush(state){
+  if(navRestoring) return;
+  try{ history.pushState(state, ''); }catch(e){}
+}
+
+function applyNavState(st){
+  navRestoring = true;
+  const btn = document.querySelector(`.tab-btn[data-tab="${st.tab}"]`);
+  if(btn) activateTab(btn);
+  if(st.tab === 'calendar'){
+    calendar.updateSize();
+    if(st.calDate) calendar.gotoDate(st.calDate);
+  } else {
+    feedCalendar.updateSize();
+    if(st.feedMonth) feedCalendar.gotoDate(st.feedMonth);
+    if(st.feedDate) setTimeout(()=>showFeedDate(st.feedDate, false), 60);
+  }
+  setTimeout(()=>{ window.scrollTo(0, st.scrollY || 0); navRestoring = false; }, 160);
+}
+
+try{ history.scrollRestoration = 'manual'; history.replaceState({ tab:'calendar', scrollY:0 }, ''); }catch(e){}
+window.addEventListener('popstate', (e)=>{
+  if(e.state && e.state.tab) applyNavState(e.state);
+});
 
 // 떡밥을 연결할 수 있는 일정 목록: 해당 날짜 기준 앞뒤 3일 이내 (현재 연결된 일정은 항상 포함)
 function eventSelectHTML(id, dateStr, selectedId){
