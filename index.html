@@ -506,6 +506,25 @@ body{
 .modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--accent);}
 .modal textarea{resize:vertical;}
 
+.memo-list{display:flex;flex-direction:column;gap:6px;}
+.memo-row{position:relative;}
+.memo-row textarea{padding-right:34px;}
+.memo-row-remove{
+  position:absolute;top:8px;right:6px;width:22px;height:22px;
+  border:none;border-radius:50%;background:var(--accent-soft);color:var(--ink-soft);
+  font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-family:inherit;padding:0;
+}
+.memo-row-remove:hover{background:var(--danger-soft);color:var(--danger);}
+.memo-add-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;margin-top:6px;padding:8px;
+  border:1px dashed var(--line-strong);border-radius:var(--radius-sm);
+  background:none;color:var(--ink-soft);font-size:12.5px;font-weight:700;
+  cursor:pointer;font-family:inherit;
+}
+.memo-add-btn:hover{background:var(--accent-soft);color:var(--ink);border-color:var(--accent);}
+
 .modal-actions{display:flex;gap:8px;margin-top:20px;}
 .btn{
   flex:1;
@@ -1109,7 +1128,8 @@ footer.site-footer{
   <input id="eventLink" placeholder="https://...">
 
   <span class="field-label">메모</span>
-  <textarea id="eventMemo" placeholder="메모" rows="3"></textarea>
+  <div id="eventMemoList" class="memo-list"></div>
+  <button type="button" id="addMemoBtn" class="memo-add-btn"><i class="fa-solid fa-plus"></i> 메모 추가</button>
 
   <div class="modal-actions">
     <button id="deleteBtn" class="btn btn-danger">삭제</button>
@@ -1339,9 +1359,55 @@ function showEventMemo(ev){
   if(showTime) addItem('ti-clock', 'mv-time', showTime);
   if(isMusical && isCurtainCall({...x, type:'뮤지컬'})) addItem('ti-confetti', 'mv-curtain', '커튼콜 데이');
   if(cast) addItem('ti-users', 'mv-cast', cast);
-  if(memo) addItem('ti-note', 'mv-memo', memo);
+  memo.split('\n').map(s=>s.trim()).filter(Boolean).forEach(line => addItem('ti-note', 'mv-memo', line));
   memoViewModal.classList.add('show');
 }
+
+// ============ 메모: 여러 개 추가/삭제 가능한 목록 ============
+const eventMemoList = document.getElementById('eventMemoList');
+
+function createMemoRow(value){
+  const row = document.createElement('div');
+  row.className = 'memo-row';
+  const ta = document.createElement('textarea');
+  ta.className = 'memo-input';
+  ta.placeholder = '메모';
+  ta.rows = 2;
+  ta.value = value || '';
+  const rm = document.createElement('button');
+  rm.type = 'button';
+  rm.className = 'memo-row-remove';
+  rm.innerHTML = '&times;';
+  rm.onclick = () => {
+    // 마지막 하나 남은 줄은 지우지 않고 비우기만 함 (입력칸 자체는 유지)
+    if(eventMemoList.children.length > 1) row.remove();
+    else ta.value = '';
+  };
+  row.appendChild(ta);
+  row.appendChild(rm);
+  return row;
+}
+
+// memo 문자열(줄바꿈으로 구분된 값)을 여러 개의 입력칸으로 펼쳐서 보여줌
+function renderMemoRows(memoText){
+  eventMemoList.innerHTML = '';
+  const lines = (memoText || '').split('\n');
+  (lines.length ? lines : ['']).forEach(line => eventMemoList.appendChild(createMemoRow(line)));
+}
+
+// 입력칸들을 다시 하나의 memo 문자열로 합침 (빈 줄은 제외)
+function collectMemoValue(){
+  return Array.from(eventMemoList.querySelectorAll('.memo-input'))
+    .map(t => t.value)
+    .filter(v => v.trim() !== '')
+    .join('\n');
+}
+
+document.getElementById('addMemoBtn').onclick = () => {
+  const row = createMemoRow('');
+  eventMemoList.appendChild(row);
+  row.querySelector('textarea').focus();
+};
 
 // ============ 일정 추가 모달 열기 ============
 function openAddEventModal(){
@@ -1350,7 +1416,7 @@ function openAddEventModal(){
   eventDate.value='';
   eventLink.value='';
   eventType.value='';
-  eventMemo.value='';
+  renderMemoRows('');
   resetMusicalFields();
   deleteBtn.style.display='none';
   modal.classList.add('show');
@@ -1528,7 +1594,7 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
         eventDate.value=toISODate(arg.date);
         eventLink.value='';
         eventType.value='';
-        eventMemo.value='';
+        renderMemoRows('');
         resetMusicalFields();
         deleteBtn.style.display='none';
         modal.classList.add('show');
@@ -1616,7 +1682,7 @@ calendar.on('eventClick', info => {
     eventDate.value = e.startStr;
     eventLink.value = link || '';
     eventType.value = type || '';
-    eventMemo.value = memo || '';
+    renderMemoRows(memo || '');
     eventShowTime.value = e.extendedProps.showTime || '';
     eventCast.value = e.extendedProps.cast || '';
     eventCurtain.checked = type==='뮤지컬' && isCurtainCall({...e.extendedProps, type});
@@ -1805,7 +1871,7 @@ saveBtn.onclick=async()=>{
     start: eventDate.value,
     link: eventLink.value,
     type: eventType.value,
-    memo: eventMemo.value,
+    memo: collectMemoValue(),
     showTime: isMusical ? eventShowTime.value : '',
     cast: isMusical ? eventCast.value.trim() : '',
     curtainCall: isMusical ? eventCurtain.checked : false
