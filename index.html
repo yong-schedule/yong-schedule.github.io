@@ -422,6 +422,7 @@ body{
 .event-sub-row .event-feed-badge{margin:0;padding:0;border-top:0;font-size:1em;}
 .event-sub-ic{display:inline-flex;align-items:center;gap:3px;}
 .event-sub-ic i{font-size:.95em;}
+.event-sub-ic img{width:.95em;height:.95em;object-fit:contain;}
 
 .feed-item-event{
   display:inline-flex;align-items:center;gap:4px;max-width:100%;
@@ -1702,18 +1703,19 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     const textColor = '#ffffff';
     let iconHTML = '';
 
-    // 제목 앞에는 아이콘 하나만 둔다 (링크 > 커튼콜 > 메모).
-    // 링크가 있으면서 메모/커튼콜도 있으면, 나머지는 떡밥 배지처럼 막대 맨 아래 구분선 줄에 작은 아이콘으로 표시한다.
+    // 제목 앞에는 아이콘 하나만 둔다. 우선순위: 커튼콜 > 링크 > 메모
+    // (뮤지컬 커튼콜 일정은 링크가 있어도 커튼콜 아이콘이 맨 앞)
+    // 앞에 오지 못한 링크/메모 아이콘은 떡밥 배지처럼 막대 맨 아래 구분선 줄에 작은 아이콘으로 표시한다.
     // (자세한 내용은 눌렀을 때 모달에서 확인)
     const isCurtain = type === '뮤지컬' && isCurtainCall({...arg.event.extendedProps, type});
     let memoIcon = '';
     const subIcons = [];
-    if (link) {
-      iconHTML = getLinkIcon(link, 'event-icon');
-      if (isCurtain) subIcons.push('<i class="ti ti-confetti"></i>');
-      if (hasMemo) subIcons.push('<i class="ti ti-note"></i>');
-    } else if (isCurtain) {
+    if (isCurtain) {
       iconHTML = '<i class="ti ti-confetti event-icon"></i>';
+      if (link) subIcons.push(getLinkIcon(link, 'event-sub-link'));
+      if (hasMemo) subIcons.push('<i class="ti ti-note"></i>');
+    } else if (link) {
+      iconHTML = getLinkIcon(link, 'event-icon');
       if (hasMemo) subIcons.push('<i class="ti ti-note"></i>');
     } else if (hasMemo) {
       iconHTML = '<i class="ti ti-note event-icon" aria-hidden="true"></i>';
