@@ -412,6 +412,16 @@ body{
   font-size:.85em;font-weight:700;line-height:1.2;cursor:pointer;
 }
 .event-feed-badge i{font-size:.9em;}
+/* 일정 막대 맨 아래 구분선 줄: 메모/커튼콜 아이콘 + 떡밥 배지를 한 줄에 */
+.event-sub-row{
+  display:flex;align-items:center;justify-content:flex-end;gap:5px;
+  margin-top:3px;padding-top:2px;
+  border-top:0.5px solid rgba(255,255,255,.45);
+  font-size:.85em;font-weight:700;line-height:1.2;
+}
+.event-sub-row .event-feed-badge{margin:0;padding:0;border-top:0;font-size:1em;}
+.event-sub-ic{display:inline-flex;align-items:center;gap:3px;}
+.event-sub-ic i{font-size:.95em;}
 
 .feed-item-event{
   display:inline-flex;align-items:center;gap:4px;max-width:100%;
@@ -597,8 +607,6 @@ body{
 .mv-cast{font-size:16px;color:var(--mv-ink,#713F12);line-height:1.7;padding-top:0;}
 .mv-memo{font-size:14px;color:var(--mv-sub,#854D0E);line-height:1.75;}
 
-.ev-ic-stk{display:inline-flex;align-items:center;margin-right:2px;}
-.ev-ic-front{display:inline-flex;align-items:center;margin-left:-4px;padding:1px;border-radius:50%;background:var(--ev-bg,#888);position:relative;}
 /* 링크 + 메모가 둘 다 있는 일정: 위에 LINK 구역, 아래에 MEMO 구역 */
 #memoViewLinkSec{display:none;padding:18px 24px;border-bottom:1px solid var(--line);}
 #memoViewMemoLabel{display:none;padding:18px 24px 0;}
@@ -709,6 +717,7 @@ footer.site-footer{
   .filter-chip{font-size:12px;}
   .search-line{gap:12px;}
   .event-feed-badge{margin-top:2px;padding-top:1px;}
+  .event-sub-row{margin-top:2px;padding-top:1px;}
   /* 모바일: 카메라 아이콘+숫자 대신, 어떤 떡밥 종류가 있는지 작은 색 점으로만 표시 */
   .sched-feed-dots{left:3px;right:3px;bottom:2px;gap:2px;overflow:hidden;}
   .sched-feed-dots i{display:none;}
@@ -1693,19 +1702,21 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     const textColor = '#ffffff';
     let iconHTML = '';
 
-    // 링크 / 커튼콜 / 메모 아이콘을 해당되는 것만 모아서, 2개 이상이면 살짝 겹쳐서 한 덩어리로 표시한다.
-    // (칸이 복잡해지지 않게 폭을 줄임. 자세한 내용은 눌렀을 때 모달에서 확인)
+    // 제목 앞에는 아이콘 하나만 둔다 (링크 > 커튼콜 > 메모).
+    // 링크가 있으면서 메모/커튼콜도 있으면, 나머지는 떡밥 배지처럼 막대 맨 아래 구분선 줄에 작은 아이콘으로 표시한다.
+    // (자세한 내용은 눌렀을 때 모달에서 확인)
     const isCurtain = type === '뮤지컬' && isCurtainCall({...arg.event.extendedProps, type});
     let memoIcon = '';
-    const iconList = [];
-    if (isCurtain) iconList.push('<i class="ti ti-confetti event-icon"></i>');
-    if (link) iconList.push(getLinkIcon(link, 'event-icon'));
-    if (hasMemo) iconList.push('<i class="ti ti-note event-icon" aria-hidden="true"></i>');
-    if (iconList.length === 1) {
-      iconHTML = iconList[0];
-    } else if (iconList.length > 1) {
-      iconHTML = `<span class="ev-ic-stk" style="--ev-bg:${bgColor}">` +
-        iconList.map((h,i) => i === 0 ? h : `<span class="ev-ic-front">${h}</span>`).join('') + `</span>`;
+    const subIcons = [];
+    if (link) {
+      iconHTML = getLinkIcon(link, 'event-icon');
+      if (isCurtain) subIcons.push('<i class="ti ti-confetti"></i>');
+      if (hasMemo) subIcons.push('<i class="ti ti-note"></i>');
+    } else if (isCurtain) {
+      iconHTML = '<i class="ti ti-confetti event-icon"></i>';
+      if (hasMemo) subIcons.push('<i class="ti ti-note"></i>');
+    } else if (hasMemo) {
+      iconHTML = '<i class="ti ti-note event-icon" aria-hidden="true"></i>';
     }
 
     let len = arg.event.title.length;
@@ -1724,15 +1735,17 @@ const calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
     }
     const feedCnt = feedUiReady ? ((feedByEvent[arg.event.id]||[]).length) : 0;
     const feedBadge = feedCnt ? `<span class="event-feed-badge" data-event-id="${arg.event.id}" title="연결된 떡밥 ${feedCnt}개 보기"><i class="fa-solid fa-camera-retro"></i>${feedCnt}</span>` : '';
+    const extraIcons = subIcons.length ? `<span class="event-sub-ic">${subIcons.join('')}</span>` : '';
+    const subRow = (extraIcons || feedBadge) ? `<div class="event-sub-row">${extraIcons}${feedBadge}</div>` : '';
     const baseStyle = `padding:2px 4px;background:${bgColor};color:${textColor};border-radius:6px !important;font-size:${fontSize};font-weight:700;word-break:break-word;${wrapStyle}`;
     const titleAttr = arg.event.title.replace(/"/g,'&quot;');
     const iconsHTML = (iconHTML || memoIcon) ? `<span class="ev-ic">${iconHTML}${memoIcon}</span>` : '';
     const rowHTML = `${iconsHTML} ${arg.event.title}`;
     // 떡밥이 연결된 일정: 제목 줄 아래에 배지 줄을 따로 둬서 제목이 쓰는 폭은 그대로 유지
     return {
-      html: feedCnt
+      html: subRow
         ? `<div class="feed-linked" title="${titleAttr}" style="display:flex;flex-direction:column;align-items:stretch;${baseStyle}">
-             <div style="display:flex;align-items:flex-start;gap:2px;">${rowHTML}</div>${feedBadge}
+             <div style="display:flex;align-items:flex-start;gap:2px;">${rowHTML}</div>${subRow}
            </div>`
         : `<div title="${titleAttr}" style="display:flex;align-items:flex-start;gap:2px;${baseStyle}">
              ${rowHTML}
@@ -1768,9 +1781,8 @@ calendar.on('eventClick', info => {
     return;
   }
 
-  // 링크와 연결된 떡밥이 둘 다 있으면 어느 쪽을 볼지 선택하게 하고,
-  // 하나만 있으면 그쪽으로 바로 이동한다. (배지처럼 작은 영역을 정확히 눌러야 하는
-  // 방식은 모바일에서 오탭이 잦아서, 일정 전체를 눌러도 동일하게 동작하도록 통일함)
+  // 일정 전체를 눌러도 동작하도록 통일함 (배지처럼 작은 영역을 정확히 눌러야 하는 방식은 모바일에서 오탭이 잦음).
+  // 링크는 어떤 경우에도 바로 열지 않고, 팝업/선택 창의 버튼을 눌렀을 때만 연다.
   const feedCnt = (feedByEvent[e.id]||[]).length;
 
   // 링크가 있는 일정은 눌러도 바로 이동하지 않는다.
